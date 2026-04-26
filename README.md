@@ -13,3 +13,12 @@ Plataforma de leitura de mangás dividida em um monorepo.
 - `/apps/backend`: API principal
 - `/apps/admin`: Painel de controle do administrador
 - `/apps/web`: Plataforma voltada para o usuário final
+
+## 🏃‍♂️ Como rodar o projeto
+
+Este projeto utiliza o **Turborepo** para gerenciar a execução dos aplicativos. 
+Na pasta raiz, você pode usar os seguintes comandos:
+
+- `npm run dev`: Inicia o servidor de desenvolvimento de todos os apps simultaneamente.
+- `npm run build`: Cria a versão de produção de todos os apps.
+- `npm run lint`: Executa a verificação de código em todos os apps.
