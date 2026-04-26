@@ -8,9 +8,11 @@
 		"packages/*"
 	],
 	"scripts": {
-		"dev": "turbo run dev",
-		"build": "turbo run build",
-		"lint": "turbo run lint"
+		"build": "turbo build",
+		"dev": "turbo dev",
+		"lint": "turbo lint",
+		"format": "turbo format",
+		"typecheck": "turbo typecheck"
 	},
 	"keywords": [],
 	"author": "",
@@ -23,5 +25,9 @@
 		"prettier": "^3.8.1",
 		"prettier-plugin-tailwindcss": "^0.7.2",
 		"typescript": "5.9.3"
+	},
+	"packageManager": "npm@11.11.0",
+	"engines": {
+		"node": ">=20"
 	}
 }
