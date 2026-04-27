@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import { mangaRoutes } from './routes/mangaRoutes'
+import { userRoutes } from './routes/userRoutes' // Adicione este import
 
 dotenv.config()
 
@@ -13,6 +14,7 @@ app.use(express.json())
 
 // Toda rota que começar com /mangas vai ser direcionada para mangaRoutes
 app.use('/mangas', mangaRoutes)
+app.use('/users', userRoutes) // Adicione esta linha
 
 app.get('/', (req, res) => {
 	res.send('API do Over-Reader está online! 🚀')
