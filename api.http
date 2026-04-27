@@ -35,3 +35,17 @@ Content-Type: application/json
   "name": "Leitor Assíduo",
   "email": "leitor@overreader.com"
 }
+
+### Listar todos os usuários (GET)
+GET http://localhost:3333/users
+
+###
+
+### Banir ou suspender um usuário (PATCH)
+# Mude o "1" pelo ID do usuário que você criou na etapa anterior
+PATCH http://localhost:3333/users/1/status
+Content-Type: application/json
+
+{
+  "status": "BANIDO"
+}

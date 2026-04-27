@@ -49,3 +49,15 @@ As entidades do banco estão localizadas em `apps/backend/src/entities`.
 
 - `npm run db:generate`: Gera os arquivos de migração.
 - `npm run db:push`: Sincroniza as tabelas com o banco de dados.
+
+## 👥 Gestão de Mangás e Usuários (Backend)
+
+A API de mangás e usuários também segue os princípios de Clean Architecture.
+A tabela `users` garante unicidade de emails e gerencia os níveis de acesso e status da conta.
+
+**Entidades e Rotas Principais:**
+
+- `POST /mangas`: Cadastro de novos mangás.
+- `POST /users`: Cadastro de novos usuários (Role padrão: 'USER', Status padrão: 'ativo').
+- `GET /users`: Lista todos os usuários cadastrados.
+- `PATCH /users/:id/status`: Altera o status de um usuário (ativo, banido, suspenso).
