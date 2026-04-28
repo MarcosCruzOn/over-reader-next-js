@@ -61,3 +61,11 @@ A tabela `users` garante unicidade de emails e gerencia os níveis de acesso e s
 - `POST /users`: Cadastro de novos usuários (Role padrão: 'USER', Status padrão: 'ativo').
 - `GET /users`: Lista todos os usuários cadastrados.
 - `PATCH /users/:id/status`: Altera o status de um usuário (ativo, banido, suspenso).
+
+## 💬 Engajamento (Tabelas Relacionais)
+
+O sistema possui três tabelas principais para engajamento dos usuários com os mangás:
+
+- `favorites`: Relação de mangás favoritados pelos usuários.
+- `reviews`: Sistema de notas (rating) de usuários para os mangás.
+- `comments`: Comentários atrelados a um mangá e um usuário.
