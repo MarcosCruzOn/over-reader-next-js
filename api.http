@@ -49,3 +49,15 @@ Content-Type: application/json
 {
   "status": "BANIDO"
 }
+
+
+### Avaliar um Mangá (1 a 5 estrelas)
+# IMPORTANTE: Use o userId de um usuário que você já criou, e o mangaId de um mangá que você já cadastrou!
+POST http://localhost:3333/reviews
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "mangaId": 1,
+  "rating": 9
+}
