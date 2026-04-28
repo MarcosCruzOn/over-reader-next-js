@@ -47,7 +47,7 @@ PATCH http://localhost:3333/users/1/status
 Content-Type: application/json
 
 {
-  "status": "BANIDO"
+  "status": "ATIVO"
 }
 
 
@@ -82,3 +82,17 @@ Content-Type: application/json
   "mangaId": 1,
   "content": "Arte simplesmente incrível! Ansioso pelo próximo capítulo."
 }
+
+### Listar Mangás
+GET http://localhost:3333/mangas
+
+### Atualizar Mangá (Ex: mudar o status)
+PUT http://localhost:3333/mangas/1
+Content-Type: application/json
+
+{
+  "status": "Em andamento"
+}
+
+### Deletar Mangá
+DELETE http://localhost:3333/mangas/1
