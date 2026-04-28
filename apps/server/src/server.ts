@@ -4,6 +4,8 @@ import dotenv from 'dotenv'
 import { mangaRoutes } from './routes/mangaRoutes'
 import { userRoutes } from './routes/userRoutes'
 import { reviewRoutes } from './routes/reviewRoutes'
+import { favoriteRoutes } from './routes/favoriteRoutes'
+import { commentRoutes } from './routes/commentRoutes'
 
 dotenv.config()
 
@@ -17,6 +19,8 @@ app.use(express.json())
 app.use('/mangas', mangaRoutes)
 app.use('/users', userRoutes)
 app.use('/reviews', reviewRoutes)
+app.use('/favorites', favoriteRoutes)
+app.use('/comments', commentRoutes)
 
 app.get('/', (req, res) => {
 	res.send('API do Over-Reader está online! 🚀')

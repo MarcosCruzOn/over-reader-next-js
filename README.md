@@ -70,3 +70,9 @@ O sistema possui três tabelas principais para engajamento dos usuários com os 
 - `favorites`: Relação de mangás favoritados pelos usuários.
 - `reviews`: Sistema de notas (rating) de usuários para os mangás.
 - `comments`: Comentários atrelados a um mangá e um usuário.
+
+**Rotas de Engajamento:**
+
+- `POST /reviews`: Adiciona uma avaliação (1 a 5 estrelas).
+- `POST /favorites`: Favorita um mangá.
+- `POST /comments`: Adiciona um comentário a um mangá.

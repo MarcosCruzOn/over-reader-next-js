@@ -59,5 +59,26 @@ Content-Type: application/json
 {
   "userId": 1,
   "mangaId": 1,
-  "rating": 9
+  "rating": 5,
+}
+
+### Favoritar um Mangá
+POST http://localhost:3333/favorites
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "mangaId": 1
+}
+
+###
+
+### Comentar em um Mangá
+POST http://localhost:3333/comments
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "mangaId": 1,
+  "content": "Arte simplesmente incrível! Ansioso pelo próximo capítulo."
 }
