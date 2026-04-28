@@ -76,3 +76,19 @@ O sistema possui três tabelas principais para engajamento dos usuários com os 
 - `POST /reviews`: Adiciona uma avaliação (1 a 5 estrelas).
 - `POST /favorites`: Favorita um mangá.
 - `POST /comments`: Adiciona um comentário a um mangá.
+
+## 📚 Gestão de Conteúdo (Admin)
+
+O sistema permite o gerenciamento completo do ciclo de vida dos mangás, desde o cadastro inicial até a publicação de capítulos.
+
+### Rotas de Mangás
+
+- `GET /mangas`: Lista todos os mangás.
+- `POST /mangas`: Cadastra um novo mangá.
+- `PUT /mangas/:id`: Atualiza dados de um mangá existente.
+- `DELETE /mangas/:id`: Remove um mangá e todo o seu conteúdo relacionado (cascata).
+
+### Estrutura de Publicação
+
+- **Volumes**: Organização lógica de capítulos dentro de um mangá.
+- **Capítulos**: Contém o número do capítulo, título e a lista de links (JSON) das páginas para leitura.

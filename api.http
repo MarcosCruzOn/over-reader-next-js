@@ -96,3 +96,26 @@ Content-Type: application/json
 
 ### Deletar Mangá
 DELETE http://localhost:3333/mangas/1
+
+### Criar Volume 1 para o Mangá 1
+POST http://localhost:3333/volumes
+Content-Type: application/json
+
+{
+  "mangaId": 1,
+  "volumeNumber": 1,
+  "title": "O Despertar"
+}
+
+###
+
+### Criar Capítulo 1 no Volume 1
+POST http://localhost:3333/chapters
+Content-Type: application/json
+
+{
+  "volumeId": 1,
+  "chapterNumber": 1,
+  "title": "O Início de Tudo",
+  "pages": ["https://link-da-pagina-1.jpg", "https://link-da-pagina-2.jpg"]
+}
