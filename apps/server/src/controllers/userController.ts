@@ -3,6 +3,7 @@ import { UserRepository } from '../repositories/userRepository'
 import { CreateUserUseCase } from '../useCases/createUserUseCase'
 import { ListUsersUseCase } from '../useCases/listUsersUseCase'
 import { ChangeUserStatusUseCase } from '../useCases/changeUserStatusUseCase'
+import { UpdateUserAvatarUseCase } from '../useCases/updateUserAvatarUseCase'
 
 export class UserController {
 	async create(req: Request, res: Response) {
@@ -35,6 +36,32 @@ export class UserController {
 			const useCase = new ChangeUserStatusUseCase(repository)
 
 			const user = await useCase.execute(id, status)
+			res.json(user)
+		} catch (error: any) {
+			res.status(400).json({ error: error.message })
+		}
+	}
+
+	// Função para receber o upload e salvar no banco
+	async updateAvatar(req: Request, res: Response) {
+		try {
+			const id = Number(req.params.id)
+
+			// O multer-s3 anexa o arquivo processado dentro de req.file
+			// A propriedade "location" é a URL pública gerada pela AWS S3
+			const file = req.file as any
+
+			if (!file) {
+				return res.status(400).json({ error: 'Nenhuma imagem foi enviada.' })
+			}
+
+			const avatarUrl = file.location
+
+			const repository = new UserRepository()
+			const useCase = new UpdateUserAvatarUseCase(repository)
+
+			const user = await useCase.execute(id, avatarUrl)
+
 			res.json(user)
 		} catch (error: any) {
 			res.status(400).json({ error: error.message })

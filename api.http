@@ -119,3 +119,17 @@ Content-Type: application/json
   "title": "O Início de Tudo",
   "pages": ["https://link-da-pagina-1.jpg", "https://link-da-pagina-2.jpg"]
 }
+
+
+
+### Atualizar Foto de Perfil (Upload para AWS S3)
+# O boundary serve para separar os dados do arquivo
+PATCH http://localhost:3333/users/1/avatar
+Content-Type: multipart/form-data; boundary=----BoundaryParaUploadDaImagem
+
+------BoundaryParaUploadDaImagem
+Content-Disposition: form-data; name="avatar"; filename="teste.jpg"
+Content-Type: image/jpeg
+
+< ./teste.jpg
+------BoundaryParaUploadDaImagem--

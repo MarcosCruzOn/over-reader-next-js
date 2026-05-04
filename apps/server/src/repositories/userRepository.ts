@@ -10,14 +10,20 @@ export class UserRepository {
 		return result[0]
 	}
 
-	// NOVO: Busca todos os usuários
+	// Busca todos os usuários
 	async findAll() {
 		return await db.select().from(users)
 	}
 
-	// NOVO: Atualiza apenas o status de um usuário pelo ID
+	// Atualiza apenas o status de um usuário pelo ID
 	async updateStatus(id: number, status: string) {
 		const result = await db.update(users).set({ status }).where(eq(users.id, id)).returning()
+		return result[0]
+	}
+
+	// Atualiza a foto de perfil
+	async updateAvatar(id: number, avatarUrl: string) {
+		const result = await db.update(users).set({ avatarUrl }).where(eq(users.id, id)).returning()
 		return result[0]
 	}
 }
