@@ -4,6 +4,7 @@ import { CreateMangaUseCase } from '../useCases/createMangaUseCase'
 import { ListMangasUseCase } from '../useCases/listMangasUseCase'
 import { UpdateMangaUseCase } from '../useCases/updateMangaUseCase'
 import { DeleteMangaUseCase } from '../useCases/deleteMangaUseCase'
+import { UpdateMangaCoverUseCase } from '../useCases/updateMangaCoverUseCase'
 
 export class MangaController {
 	async create(req: Request, res: Response) {
@@ -51,6 +52,28 @@ export class MangaController {
 			const useCase = new DeleteMangaUseCase(repository)
 			await useCase.execute(id)
 			res.status(204).send() // 204 significa "Deletado com sucesso, sem conteúdo pra retornar"
+		} catch (error: any) {
+			res.status(400).json({ error: error.message })
+		}
+	}
+
+	async updateCover(req: Request, res: Response) {
+		try {
+			const id = Number(req.params.id)
+			const file = req.file as any
+
+			if (!file) {
+				return res.status(400).json({ error: 'Nenhuma imagem foi enviada.' })
+			}
+
+			const coverUrl = file.location
+
+			const repository = new MangaRepository()
+			const useCase = new UpdateMangaCoverUseCase(repository)
+
+			const manga = await useCase.execute(id, coverUrl)
+
+			res.json(manga)
 		} catch (error: any) {
 			res.status(400).json({ error: error.message })
 		}

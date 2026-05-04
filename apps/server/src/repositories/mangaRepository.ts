@@ -28,4 +28,13 @@ export class MangaRepository {
 		const result = await db.delete(mangas).where(eq(mangas.id, id)).returning()
 		return result[0]
 	}
+
+	async updateCover(id: number, coverUrl: string) {
+		const result = await db
+			.update(mangas)
+			.set({ coverUrl })
+			.where(eq(mangas.id, id))
+			.returning()
+		return result[0]
+	}
 }

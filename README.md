@@ -87,6 +87,8 @@ O sistema permite o gerenciamento completo do ciclo de vida dos mangás, desde o
 - `POST /mangas`: Cadastra um novo mangá.
 - `PUT /mangas/:id`: Atualiza dados de um mangá existente.
 - `DELETE /mangas/:id`: Remove um mangá e todo o seu conteúdo relacionado (cascata).
+- `PATCH /users/:id/avatar`: Faz o upload da foto de perfil para a AWS S3 e atualiza o banco de dados.
+- `PATCH /users/:id/cover`: Faz o upload da capa do mangá para a AWS S3 e atualiza o banco de dados.
 
 ### Estrutura de Publicação
 

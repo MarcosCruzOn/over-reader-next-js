@@ -133,3 +133,16 @@ Content-Type: image/jpeg
 
 < ./teste.jpg
 ------BoundaryParaUploadDaImagem--
+
+
+### Atualizar A capa do Mangá(Upload para AWS S3)
+# O boundary serve para separar os dados do arquivo
+PATCH http://localhost:3333/mangas/1/cover
+Content-Type: multipart/form-data; boundary=----BoundaryParaUploadDaImagem
+
+------BoundaryParaUploadDaImagem
+Content-Disposition: form-data; name="cover"; filename="NarutoVolume1.jpg"
+Content-Type: image/jpeg
+
+< ./NarutoVolume1.jpg
+------BoundaryParaUploadDaImagem--
