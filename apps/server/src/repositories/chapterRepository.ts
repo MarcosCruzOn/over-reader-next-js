@@ -17,4 +17,13 @@ export class ChapterRepository {
 	async delete(id: number) {
 		return await db.delete(chapters).where(eq(chapters.id, id)).returning()
 	}
+
+	async updatePages(id: number, pages: string[]) {
+		const result = await db
+			.update(chapters)
+			.set({ pages })
+			.where(eq(chapters.id, id))
+			.returning()
+		return result[0]
+	}
 }

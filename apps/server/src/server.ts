@@ -1,14 +1,15 @@
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
+
+// Importando todas as rotas
 import { mangaRoutes } from './routes/mangaRoutes'
 import { userRoutes } from './routes/userRoutes'
 import { reviewRoutes } from './routes/reviewRoutes'
 import { favoriteRoutes } from './routes/favoriteRoutes'
 import { commentRoutes } from './routes/commentRoutes'
-
-import { VolumeController } from './controllers/volumeController'
-import { ChapterController } from './controllers/chapterController'
+import { volumeRoutes } from './routes/volumeRoutes'
+import { chapterRoutes } from './routes/chapterRoutes'
 
 dotenv.config()
 
@@ -18,23 +19,14 @@ const PORT = process.env.PORT || 3333
 app.use(cors())
 app.use(express.json())
 
-const volumeController = new VolumeController()
-const chapterController = new ChapterController()
-
-// Toda rota que começar com /mangas vai ser direcionada para mangaRoutes
+// Registrando as rotas no Express
 app.use('/mangas', mangaRoutes)
 app.use('/users', userRoutes)
 app.use('/reviews', reviewRoutes)
 app.use('/favorites', favoriteRoutes)
 app.use('/comments', commentRoutes)
-
-// Rotas de Volumes
-app.post('/volumes', (req, res) => volumeController.create(req, res))
-app.get('/mangas/:mangaId/volumes', (req, res) => volumeController.listByManga(req, res))
-
-// Rotas de Capítulos
-app.post('/chapters', (req, res) => chapterController.create(req, res))
-app.get('/volumes/:volumeId/chapters', (req, res) => chapterController.listByVolume(req, res))
+app.use('/volumes', volumeRoutes) // Registramos os Volumes aqui!
+app.use('/chapters', chapterRoutes) // Registramos os Capítulos aqui!
 
 app.get('/', (req, res) => {
 	res.send('API do Over-Reader está online! 🚀')

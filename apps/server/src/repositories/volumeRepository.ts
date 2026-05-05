@@ -13,6 +13,14 @@ export class VolumeRepository {
 	async findByManga(mangaId: number) {
 		return await db.select().from(volumes).where(eq(volumes.mangaId, mangaId))
 	}
+	async findByMangaId(mangaId: number) {
+		return await db
+			.select()
+			.from(volumes)
+			.where(eq(volumes.mangaId, mangaId))
+			// Ordenamos para o Volume 1 aparecer antes do Volume 2
+			.orderBy(volumes.volumeNumber)
+	}
 
 	async delete(id: number) {
 		return await db.delete(volumes).where(eq(volumes.id, id)).returning()

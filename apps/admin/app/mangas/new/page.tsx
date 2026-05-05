@@ -28,50 +28,60 @@ import {
 export default function NewMangaPage() {
 	const router = useRouter()
 
-	// Estados do nosso formulário
 	const [title, setTitle] = React.useState('')
+	const [author, setAuthor] = React.useState('')
+	const [genres, setGenres] = React.useState('')
 	const [synopsis, setSynopsis] = React.useState('')
 	const [status, setStatus] = React.useState('Em andamento')
+
+	// NOVOS CAMPOS OPCIONAIS
+	const [releaseYear, setReleaseYear] = React.useState('')
+	const [publisher, setPublisher] = React.useState('')
+
 	const [coverFile, setCoverFile] = React.useState<File | null>(null)
 	const [isLoading, setIsLoading] = React.useState(false)
 
-	// O "Chefão": Função que lida com o envio para o Backend + AWS S3
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
 		setIsLoading(true)
 
 		try {
-			// Step 1: Cria o Mangá (Apenas os dados de texto)
 			const mangaRes = await fetch('http://localhost:3333/mangas', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					title,
+					author,
+					genres,
 					synopsis,
 					status,
+					// Convertendo o ano para número (se preenchido)
+					releaseYear: releaseYear ? Number(releaseYear) : undefined,
+					// Enviando a editora (se preenchido)
+					publisher: publisher ? publisher : undefined,
 				}),
 			})
 
-			if (!mangaRes.ok) throw new Error('Falha ao criar os dados do mangá.')
+			if (!mangaRes.ok) {
+				const errorData = await mangaRes.json().catch(() => ({}))
+				throw new Error(errorData.error || `Erro no servidor: Status ${mangaRes.status}`)
+			}
+
 			const newManga = await mangaRes.json()
 
-			// Step 2: Se o usuário selecionou uma capa, fazemos o Upload!
 			if (coverFile && newManga.id) {
-				// FormData é o padrão da web para enviar arquivos (multipart/form-data)
 				const formData = new FormData()
-				formData.append('cover', coverFile) // O nome 'cover' deve bater com o nome no multer do backend
+				formData.append('cover', coverFile)
 
 				const uploadRes = await fetch(`http://localhost:3333/mangas/${newManga.id}/cover`, {
 					method: 'PATCH',
 					body: formData,
-					// Importante: NÃO defina o Content-Type manualmente aqui.
-					// O navegador calcula o "boundary" automaticamente quando usamos FormData!
 				})
 
-				if (!uploadRes.ok) throw new Error('Mangá criado, mas falhou ao enviar a capa.')
+				if (!uploadRes.ok)
+					throw new Error('Mangá criado, mas falhou ao enviar a capa para a AWS.')
 			}
 
-			// Sucesso! Volta para a página inicial do Dashboard
 			router.push('/')
 		} catch (error) {
 			console.error(error)
@@ -95,7 +105,6 @@ export default function NewMangaPage() {
 				<SidebarInset>
 					<SiteHeader />
 					<div className="flex flex-1 flex-col gap-4 p-4 lg:p-8">
-						{/* Cabeçalho da Página */}
 						<div className="flex items-center gap-4 mb-4">
 							<Button variant="outline" size="icon" onClick={() => router.back()}>
 								<ArrowLeft className="h-4 w-4" />
@@ -106,7 +115,6 @@ export default function NewMangaPage() {
 						</div>
 
 						<div className="grid gap-6 lg:grid-cols-[1fr_400px]">
-							{/* Coluna Principal: Formulário */}
 							<Card>
 								<CardHeader>
 									<CardTitle>Informações do Mangá</CardTitle>
@@ -131,11 +139,65 @@ export default function NewMangaPage() {
 											/>
 										</div>
 
+										<div className="grid grid-cols-2 gap-4">
+											<div className="space-y-2">
+												<Label htmlFor="author">Autor / Desenhista</Label>
+												<Input
+													id="author"
+													placeholder="Ex: Chugong, DUBU"
+													required
+													value={author}
+													onChange={(e) => setAuthor(e.target.value)}
+												/>
+											</div>
+
+											<div className="space-y-2">
+												<Label htmlFor="genres">
+													Gêneros (Separados por vírgula)
+												</Label>
+												<Input
+													id="genres"
+													placeholder="Ex: Ação, Fantasia, Shounen"
+													required
+													value={genres}
+													onChange={(e) => setGenres(e.target.value)}
+												/>
+											</div>
+										</div>
+
+										{/* NOVOS CAMPOS: Ano e Editora */}
+										<div className="grid grid-cols-2 gap-4">
+											<div className="space-y-2">
+												<Label htmlFor="releaseYear">
+													Ano de Lançamento (Opcional)
+												</Label>
+												<Input
+													id="releaseYear"
+													type="number"
+													placeholder="Ex: 2018"
+													value={releaseYear}
+													onChange={(e) => setReleaseYear(e.target.value)}
+												/>
+											</div>
+
+											<div className="space-y-2">
+												<Label htmlFor="publisher">
+													Editora / Revista (Opcional)
+												</Label>
+												<Input
+													id="publisher"
+													placeholder="Ex: Shonen Jump, D&C Media"
+													value={publisher}
+													onChange={(e) => setPublisher(e.target.value)}
+												/>
+											</div>
+										</div>
+
 										<div className="space-y-2">
-											<Label htmlFor="synopsis">Sinopse (Opcional)</Label>
-											{/* Usando uma textarea HTML padronizada com as classes do Input do shadcn */}
+											<Label htmlFor="synopsis">Sinopse</Label>
 											<textarea
 												id="synopsis"
+												required
 												placeholder="Uma breve descrição da história..."
 												className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 												value={synopsis}
@@ -181,7 +243,6 @@ export default function NewMangaPage() {
 								</CardContent>
 							</Card>
 
-							{/* Coluna Lateral: Upload da Capa & Ações */}
 							<div className="space-y-6">
 								<Card>
 									<CardHeader>
@@ -192,10 +253,8 @@ export default function NewMangaPage() {
 									</CardHeader>
 									<CardContent>
 										<div className="flex flex-col items-center justify-center gap-4 border-2 border-dashed border-border rounded-lg p-6 bg-muted/20">
-											{/* Preview da Imagem ou Ícone Padrão */}
 											{coverFile ? (
 												<div className="relative w-full aspect-[2/3] rounded-md overflow-hidden bg-muted">
-													{/* Usamos URL.createObjectURL para mostrar a imagem antes de enviar pro servidor! */}
 													<img
 														src={URL.createObjectURL(coverFile)}
 														alt="Preview da Capa"
@@ -219,7 +278,6 @@ export default function NewMangaPage() {
 												{coverFile ? 'Trocar Imagem' : 'Selecionar Arquivo'}
 											</Label>
 
-											{/* Input de arquivo invisível (escondido pelo label acima) */}
 											<input
 												id="cover-upload"
 												type="file"
@@ -240,10 +298,9 @@ export default function NewMangaPage() {
 									</CardContent>
 								</Card>
 
-								{/* Botão de Salvar Global */}
 								<Button
 									type="submit"
-									form="manga-form" // O form="id" liga este botão ao formulário da outra coluna!
+									form="manga-form"
 									className="w-full h-12 text-md font-bold"
 									disabled={isLoading}
 								>
