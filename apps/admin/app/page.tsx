@@ -5,11 +5,34 @@ import { SiteHeader } from '@workspace/ui/components/site-header'
 import { SidebarInset, SidebarProvider } from '@workspace/ui/components/sidebar'
 import { Card, CardContent, CardHeader, CardTitle } from '@workspace/ui/components/card'
 import { BookOpen, Users, Activity } from 'lucide-react'
-
-// 1. Importamos as nossas colunas do Admin
 import { columns } from './columns'
 
-// 2. Não precisamos mais do import do data.json! Pode apagar o arquivo data.json da pasta app se quiser.
+// Pega as listas e agrupa contando quantos cadastros ocorreram por dia
+function generateChartData(mangas: any[], users: any[]) {
+	const dateMap = new Map<string, { date: string; mangas: number; users: number }>()
+
+	// FIX: Agora geramos os últimos 90 dias para o filtro "Últimos 3 meses" funcionar perfeitamente
+	for (let i = 89; i >= 0; i--) {
+		const d = new Date()
+		d.setDate(d.getDate() - i)
+		const dateStr = d.toISOString().split('T')[0]!
+		dateMap.set(dateStr, { date: dateStr, mangas: 0, users: 0 })
+	}
+
+	mangas.forEach((m) => {
+		if (!m.createdAt) return
+		const dateStr = new Date(m.createdAt).toISOString().split('T')[0]!
+		if (dateMap.has(dateStr)) dateMap.get(dateStr)!.mangas += 1
+	})
+
+	users.forEach((u) => {
+		if (!u.createdAt) return
+		const dateStr = new Date(u.createdAt).toISOString().split('T')[0]!
+		if (dateMap.has(dateStr)) dateMap.get(dateStr)!.users += 1
+	})
+
+	return Array.from(dateMap.values()).sort((a, b) => a.date.localeCompare(b.date))
+}
 
 async function getDashboardStats() {
 	try {
@@ -27,18 +50,19 @@ async function getDashboardStats() {
 				totalUsers: users.length || 0,
 				ativos: users.filter((u: any) => u.status === 'ativo').length || 0,
 			},
-			// 3. Agora retornamos também a lista completa de usuários!
 			usersList: users,
+			// Passamos os dados processados pelo nosso agrupador
+			chartData: generateChartData(mangas, users),
 		}
 	} catch (error) {
 		console.error('Erro ao buscar dados da API:', error)
-		return { stats: { totalMangas: 0, totalUsers: 0, ativos: 0 }, usersList: [] }
+		return { stats: { totalMangas: 0, totalUsers: 0, ativos: 0 }, usersList: [], chartData: [] }
 	}
 }
 
 export default async function Page() {
-	// 4. Desestruturamos para pegar as stats e a lista de usuários
-	const { stats, usersList } = await getDashboardStats()
+	// Desestruturamos também o chartData
+	const { stats, usersList, chartData } = await getDashboardStats()
 
 	return (
 		<div className="dark min-h-screen bg-background text-foreground">
@@ -56,8 +80,8 @@ export default async function Page() {
 					<div className="flex flex-1 flex-col">
 						<div className="@container/main flex flex-1 flex-col gap-2">
 							<div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+								{/* 1. SEÇÃO DE CARDS */}
 								<div className="grid gap-4 md:grid-cols-3 px-4 lg:px-6">
-									{/* ... Mantenha seus Cards exatamente como estavam aqui ... */}
 									<Card>
 										<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 											<CardTitle className="text-sm font-medium">
@@ -71,7 +95,6 @@ export default async function Page() {
 											</div>
 										</CardContent>
 									</Card>
-
 									<Card>
 										<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 											<CardTitle className="text-sm font-medium">
@@ -85,7 +108,6 @@ export default async function Page() {
 											</div>
 										</CardContent>
 									</Card>
-
 									<Card>
 										<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 											<CardTitle className="text-sm font-medium">
@@ -99,11 +121,12 @@ export default async function Page() {
 									</Card>
 								</div>
 
+								{/* 🚀 2. SEÇÃO DO GRÁFICO (AGORA COM DADOS REAIS!) */}
 								<div className="px-4 lg:px-6">
-									<ChartAreaInteractive />
+									<ChartAreaInteractive chartData={chartData} />
 								</div>
 
-								{/* 🚀 5. A mágica acontece aqui: Passamos as colunas e os dados reais! */}
+								{/* 3. SEÇÃO DA TABELA */}
 								<div className="px-4 lg:px-6">
 									<h2 className="text-xl font-bold mb-4">Usuários Recentes</h2>
 									<DataTable columns={columns} data={usersList} />
