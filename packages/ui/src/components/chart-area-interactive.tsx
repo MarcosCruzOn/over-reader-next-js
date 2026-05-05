@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts'
 
+import { useIsMobile } from '@workspace/ui/hooks/use-mobile'
 import {
 	Card,
 	CardAction,
@@ -12,12 +13,12 @@ import {
 	CardTitle,
 } from '@workspace/ui/components/card'
 import {
-	ChartConfig,
 	ChartContainer,
-	ChartLegend,
-	ChartLegendContent,
 	ChartTooltip,
 	ChartTooltipContent,
+	ChartLegend,
+	ChartLegendContent,
+	type ChartConfig,
 } from '@workspace/ui/components/chart'
 import {
 	Select,
@@ -28,7 +29,8 @@ import {
 } from '@workspace/ui/components/select'
 import { ToggleGroup, ToggleGroupItem } from '@workspace/ui/components/toggle-group'
 
-// FIX: Removemos o hsl() que estava quebrando o seu HEX #c41e3a
+export const description = 'An interactive area chart'
+
 const chartConfig = {
 	mangas: {
 		label: 'Mangás',
@@ -49,10 +51,8 @@ interface ChartProps {
 }
 
 export function ChartAreaInteractive({ chartData }: ChartProps) {
-	// RESTAURADO: O estado do filtro de tempo
 	const [timeRange, setTimeRange] = React.useState('90d')
 
-	// RESTAURADO: A lógica que filtra os dados baseados na seleção
 	const filteredData = React.useMemo(() => {
 		const referenceDate = new Date()
 		let daysToSubtract = 90
@@ -69,38 +69,36 @@ export function ChartAreaInteractive({ chartData }: ChartProps) {
 		})
 	}, [chartData, timeRange])
 
-	// Calcula os totais com base apenas nos dados filtrados
-	const totalMangas = React.useMemo(
-		() => filteredData.reduce((acc, curr) => acc + curr.mangas, 0),
-		[filteredData]
-	)
-	const totalUsers = React.useMemo(
-		() => filteredData.reduce((acc, curr) => acc + curr.users, 0),
-		[filteredData]
-	)
-
 	return (
-		<Card>
-			<CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
-				<div className="grid flex-1 gap-1 text-center sm:text-left">
-					<CardTitle>Crescimento da Plataforma</CardTitle>
-					<CardDescription>Cadastros no período selecionado</CardDescription>
-				</div>
-
-				{/* RESTAURADO: O Dropdown de Filtro */}
+		<Card className="@container/card">
+			<CardHeader>
+				<CardTitle>Total de visitantes</CardTitle>
+				<CardDescription>
+					<span className="hidden @[540px]/card:block">Crescimento da Plataforma</span>
+					<span className="@[540px]/card:hidden">Últimos 3 meses</span>
+				</CardDescription>
 				<CardAction>
 					<ToggleGroup
-						type="single"
-						value={timeRange}
-						onValueChange={setTimeRange}
+						multiple={false}
+						value={timeRange ? [timeRange] : []}
+						onValueChange={(value) => {
+							setTimeRange(value[0] ?? '90d')
+						}}
 						variant="outline"
 						className="hidden *:data-[slot=toggle-group-item]:px-4! @[767px]/card:flex"
 					>
-						<ToggleGroupItem value="90d">últimos 3 meses</ToggleGroupItem>
-						<ToggleGroupItem value="30d">últimos 30 dias</ToggleGroupItem>
-						<ToggleGroupItem value="7d">últimos 7 dias</ToggleGroupItem>
+						<ToggleGroupItem value="90d">Últimos 3 meses</ToggleGroupItem>
+						<ToggleGroupItem value="30d">Últimos 30 dias</ToggleGroupItem>
+						<ToggleGroupItem value="7d">Últimos 7 dias</ToggleGroupItem>
 					</ToggleGroup>
-					<Select value={timeRange} onValueChange={setTimeRange}>
+					<Select
+						value={timeRange}
+						onValueChange={(value) => {
+							if (value !== null) {
+								setTimeRange(value)
+							}
+						}}
+					>
 						<SelectTrigger
 							className="flex w-40 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate @[767px]/card:hidden"
 							size="sm"
@@ -125,8 +123,35 @@ export function ChartAreaInteractive({ chartData }: ChartProps) {
 
 			<CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
 				<ChartContainer config={chartConfig} className="aspect-auto h-[250px] w-full">
-					{/* USANDO OS DADOS FILTRADOS */}
 					<AreaChart data={filteredData} margin={{ left: 12, right: 12 }}>
+						{/* Restaurado: Os gradientes agora usam as nossas variáveis crimson! */}
+						<defs>
+							<linearGradient id="fillMangas" x1="0" y1="0" x2="0" y2="1">
+								<stop
+									offset="5%"
+									stopColor="var(--color-mangas)"
+									stopOpacity={0.8}
+								/>
+								<stop
+									offset="95%"
+									stopColor="var(--color-mangas)"
+									stopOpacity={0.1}
+								/>
+							</linearGradient>
+							<linearGradient id="fillUsers" x1="0" y1="0" x2="0" y2="1">
+								<stop
+									offset="5%"
+									stopColor="var(--color-users)"
+									stopOpacity={0.8}
+								/>
+								<stop
+									offset="95%"
+									stopColor="var(--color-users)"
+									stopOpacity={0.1}
+								/>
+							</linearGradient>
+						</defs>
+
 						<CartesianGrid vertical={false} />
 						<XAxis
 							dataKey="date"
@@ -157,21 +182,20 @@ export function ChartAreaInteractive({ chartData }: ChartProps) {
 								/>
 							}
 						/>
+
+						{/* FIX 1: Removido o stackId="a" para sobrepor em vez de somar */}
+						{/* FIX 2: Alterado type para "linear" para acabar com a barriga negativa */}
 						<Area
 							dataKey="users"
-							type="natural"
-							fill="var(--color-users)"
-							fillOpacity={0.4}
+							type="linear"
+							fill="url(#fillUsers)"
 							stroke="var(--color-users)"
-							stackId="a"
 						/>
 						<Area
 							dataKey="mangas"
-							type="natural"
-							fill="var(--color-mangas)"
-							fillOpacity={0.4}
+							type="linear"
+							fill="url(#fillMangas)"
 							stroke="var(--color-mangas)"
-							stackId="a"
 						/>
 						<ChartLegend content={<ChartLegendContent />} />
 					</AreaChart>
