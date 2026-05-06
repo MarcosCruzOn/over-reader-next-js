@@ -1,11 +1,12 @@
 'use client'
 
+import * as React from 'react'
 import { ColumnDef } from '@tanstack/react-table'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { BookCopy, Edit, Trash2, Image as ImageIcon } from 'lucide-react'
 import { Button } from '@workspace/ui/components/button'
 
-// 1. Atualizamos a tipagem para incluir os campos que o backend já nos manda
 export type Manga = {
 	id: number
 	title: string
@@ -15,15 +16,80 @@ export type Manga = {
 	releaseYear: number | null
 }
 
+// 🚀 O Pulo do Gato: Criamos um componente React só para a célula de Ações.
+// Assim podemos usar hooks como useState e useRouter sem quebrar a tabela!
+const MangaActionsCell = ({ manga }: { manga: Manga }) => {
+	const router = useRouter()
+	const [isDeleting, setIsDeleting] = React.useState(false)
+
+	const handleDelete = async () => {
+		// Alerta de segurança antes de explodir tudo
+		if (
+			!window.confirm(
+				`Tem certeza que deseja deletar "${manga.title}"? \nIsso apagará TODOS os volumes e capítulos também!`
+			)
+		) {
+			return
+		}
+
+		setIsDeleting(true)
+		try {
+			const res = await fetch(`http://localhost:3333/mangas/${manga.id}`, {
+				method: 'DELETE',
+			})
+
+			if (!res.ok) throw new Error('Falha ao deletar mangá')
+
+			// Atualiza a tabela magicamente sem precisar dar F5 na página
+			router.refresh()
+		} catch (error) {
+			console.error(error)
+			alert('Erro ao deletar o mangá.')
+		} finally {
+			setIsDeleting(false)
+		}
+	}
+
+	return (
+		<div className="flex items-center gap-2">
+			<Link href={`/mangas/${manga.id}/volumes`}>
+				<Button
+					variant="outline"
+					size="sm"
+					className="h-8 gap-1 border-primary/50 text-primary hover:bg-primary/10"
+				>
+					<BookCopy className="h-4 w-4" />
+					<span>Volumes</span>
+				</Button>
+			</Link>
+
+			<Button
+				variant="ghost"
+				size="icon"
+				className="h-8 w-8 text-muted-foreground hover:text-primary"
+			>
+				<Edit className="h-4 w-4" />
+			</Button>
+
+			<Button
+				variant="ghost"
+				size="icon"
+				className="h-8 w-8 text-destructive hover:bg-destructive/10"
+				onClick={handleDelete}
+				disabled={isDeleting}
+			>
+				<Trash2 className="h-4 w-4" />
+			</Button>
+		</div>
+	)
+}
+
 export const columns: ColumnDef<Manga>[] = [
-	// 2. Removemos o objeto do "id" e adicionamos a Capa logo no início
 	{
 		accessorKey: 'coverUrl',
 		header: 'Capa',
 		cell: ({ row }) => {
 			const coverUrl = row.getValue('coverUrl') as string | null
-
-			// Se tiver capa, mostra a imagem arredondada. Se não, mostra um ícone de fallback.
 			return coverUrl ? (
 				<img
 					src={coverUrl}
@@ -43,7 +109,7 @@ export const columns: ColumnDef<Manga>[] = [
 		cell: ({ row }) => <span className="font-bold">{row.getValue('title')}</span>,
 	},
 	{
-		accessorKey: 'author', // Adicionamos o autor aqui
+		accessorKey: 'author',
 		header: 'Autor',
 		cell: ({ row }) => row.getValue('author'),
 	},
@@ -76,40 +142,6 @@ export const columns: ColumnDef<Manga>[] = [
 	{
 		id: 'actions',
 		header: 'Ações',
-		cell: ({ row }) => {
-			const manga = row.original
-
-			return (
-				<div className="flex items-center gap-2">
-					{/* O link dinâmico para os volumes continua firme e forte! */}
-					<Link href={`/mangas/${manga.id}/volumes`}>
-						<Button
-							variant="outline"
-							size="sm"
-							className="h-8 gap-1 border-primary/50 text-primary hover:bg-primary/10"
-						>
-							<BookCopy className="h-4 w-4" />
-							<span>Volumes</span>
-						</Button>
-					</Link>
-
-					<Button
-						variant="ghost"
-						size="icon"
-						className="h-8 w-8 text-muted-foreground hover:text-primary"
-					>
-						<Edit className="h-4 w-4" />
-					</Button>
-
-					<Button
-						variant="ghost"
-						size="icon"
-						className="h-8 w-8 text-destructive hover:bg-destructive/10"
-					>
-						<Trash2 className="h-4 w-4" />
-					</Button>
-				</div>
-			)
-		},
+		cell: ({ row }) => <MangaActionsCell manga={row.original} />, // Usamos o nosso componente aqui!
 	},
 ]

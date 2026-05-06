@@ -7,6 +7,7 @@ export const volumes = pgTable('volumes', {
 		.references(() => mangas.id, { onDelete: 'cascade' })
 		.notNull(),
 	volumeNumber: integer('volume_number').notNull(),
-	title: varchar('title', { length: 255 }), // Ex: "O Início"
+	title: varchar('title', { length: 255 }),
+	coverUrl: varchar('cover_url', { length: 500 }), // NOVO CAMPO: Capa do Volume!
 	createdAt: timestamp('created_at').defaultNow(),
 })

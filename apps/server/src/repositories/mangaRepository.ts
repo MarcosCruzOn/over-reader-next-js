@@ -37,4 +37,13 @@ export class MangaRepository {
 			.returning()
 		return result[0]
 	}
+
+	async updateBanner(id: number, bannerUrl: string) {
+		const result = await db
+			.update(mangas)
+			.set({ bannerUrl })
+			.where(eq(mangas.id, id))
+			.returning()
+		return result[0]
+	}
 }

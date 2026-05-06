@@ -15,3 +15,11 @@ mangaRoutes.delete('/:id', (req, res) => mangaController.delete(req, res))
 mangaRoutes.patch('/:id/cover', uploadConfig.single('cover'), (req, res) =>
 	mangaController.updateCover(req, res)
 )
+
+// O "single('banner')" diz que esperamos um campo chamado "banner" no formulário
+mangaRoutes.patch('/:id/banner', uploadConfig.single('banner'), (req, res) =>
+	mangaController.updateBanner(req, res)
+)
+
+// NOVA ROTA: Busca 1 mangá específico pelo ID
+mangaRoutes.get('/:id', (req, res) => mangaController.getById(req, res))

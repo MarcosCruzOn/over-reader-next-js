@@ -25,4 +25,13 @@ export class VolumeRepository {
 	async delete(id: number) {
 		return await db.delete(volumes).where(eq(volumes.id, id)).returning()
 	}
+
+	async updateCover(id: number, coverUrl: string) {
+		const result = await db
+			.update(volumes)
+			.set({ coverUrl })
+			.where(eq(volumes.id, id))
+			.returning()
+		return result[0]
+	}
 }

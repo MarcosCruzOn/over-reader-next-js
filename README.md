@@ -6,6 +6,7 @@ Plataforma de leitura de mangás dividida em um monorepo.
 
 - **Backend:** Node.js, Express, PostgreSQL, Drizzle ORM
 - **Frontend (Web e Admin):** Next.js, shadcn/ui
+- **Cloud/Armazenamento:** AWS S3 (Uploads via Multer)
 - **Boas Práticas:** SOLID, Clean Code, TDD, DRY
 
 ## 📁 Estrutura do Monorepo
@@ -34,63 +35,26 @@ Na pasta raiz, você pode usar os seguintes comandos:
 O backend foi construído visando os princípios SOLID e Clean Architecture:
 
 - `src/routes`: Definição dos endpoints.
-- `src/controllers`: Validação de entrada e saída.
+- `src/controllers`: Validação de entrada e saída, e integração com AWS S3.
 - `src/useCases`: Regras de negócio da aplicação (ex: cadastro de mangás, ranking de engajamento).
 - `src/repositories`: Acesso a dados via Drizzle ORM / PostgreSQL.
 
-**Para rodar isoladamente:**
-Acesse `apps/backend` e rode `npm run dev`.
-
 ## 🗄️ Banco de Dados (Drizzle + PostgreSQL)
 
-As entidades do banco estão localizadas em `apps/backend/src/entities`.
+As entidades do banco estão localizadas em `apps/backend/src/entities`. A arquitetura relacional utiliza exclusão em cascata (`ON DELETE cascade`) para manter a integridade dos dados.
 
 **Comandos úteis do Banco de Dados (Rode dentro de `apps/backend`):**
 
 - `npm run db:generate`: Gera os arquivos de migração.
 - `npm run db:push`: Sincroniza as tabelas com o banco de dados.
 
-## 👥 Gestão de Mangás e Usuários (Backend)
+## 📚 Gestão de Conteúdo e Uploads (Admin)
 
-A API de mangás e usuários também segue os princípios de Clean Architecture.
-A tabela `users` garante unicidade de emails e gerencia os níveis de acesso e status da conta.
+O sistema permite o gerenciamento completo do ciclo de vida dos mangás, estruturado em três níveis hierárquicos:
 
-**Entidades e Rotas Principais:**
+1. **Mangás:** Obra principal (Capa, Banner, Título, Sinopse).
+2. **Volumes:** Organização lógica (Arco/Saga) atrelada a um mangá.
+3. **Capítulos:** Páginas de leitura atreladas a um volume.
 
-- `POST /mangas`: Cadastro de novos mangás.
-- `POST /users`: Cadastro de novos usuários (Role padrão: 'USER', Status padrão: 'ativo').
-- `GET /users`: Lista todos os usuários cadastrados.
-- `PATCH /users/:id/status`: Altera o status de um usuário (ativo, banido, suspenso).
-- `POST /reviews`: Adiciona uma avaliação (1 a 5 estrelas) de um usuário a um mangá.
-
-## 💬 Engajamento (Tabelas Relacionais)
-
-O sistema possui três tabelas principais para engajamento dos usuários com os mangás:
-
-- `favorites`: Relação de mangás favoritados pelos usuários.
-- `reviews`: Sistema de notas (rating) de usuários para os mangás.
-- `comments`: Comentários atrelados a um mangá e um usuário.
-
-**Rotas de Engajamento:**
-
-- `POST /reviews`: Adiciona uma avaliação (1 a 5 estrelas).
-- `POST /favorites`: Favorita um mangá.
-- `POST /comments`: Adiciona um comentário a um mangá.
-
-## 📚 Gestão de Conteúdo (Admin)
-
-O sistema permite o gerenciamento completo do ciclo de vida dos mangás, desde o cadastro inicial até a publicação de capítulos.
-
-### Rotas de Mangás
-
-- `GET /mangas`: Lista todos os mangás.
-- `POST /mangas`: Cadastra um novo mangá.
-- `PUT /mangas/:id`: Atualiza dados de um mangá existente.
-- `DELETE /mangas/:id`: Remove um mangá e todo o seu conteúdo relacionado (cascata).
-- `PATCH /users/:id/avatar`: Faz o upload da foto de perfil para a AWS S3 e atualiza o banco de dados.
-- `PATCH /users/:id/cover`: Faz o upload da capa do mangá para a AWS S3 e atualiza o banco de dados.
-
-### Estrutura de Publicação
-
-- **Volumes**: Organização lógica de capítulos dentro de um mangá.
-- **Capítulos**: Contém o número do capítulo, título e a lista de links (JSON) das páginas para leitura.
+**Uploads para AWS S3:**
+A plataforma suporta envio de arquivos únicos (Capas e Banners de Mangás/Volumes) e envios em lote (Upload múltiplo de até 100 páginas simultâneas por capítulo, salvas em um JSON Array no banco).

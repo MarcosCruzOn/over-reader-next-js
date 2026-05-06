@@ -1,5 +1,8 @@
+'use client'
+
+import * as React from 'react'
 import Link from 'next/link'
-import { Plus, ArrowLeft } from 'lucide-react'
+import { Plus, ArrowLeft, LayoutGrid, List } from 'lucide-react'
 
 import { AppSidebar } from '@workspace/ui/components/app-sidebar'
 import { SiteHeader } from '@workspace/ui/components/site-header'
@@ -9,37 +12,38 @@ import { Button } from '@workspace/ui/components/button'
 
 import { columns } from './columns'
 
-// Função para buscar os volumes do backend usando o mangaId da URL
-async function getVolumes(mangaId: string) {
-	try {
-		const res = await fetch(`http://localhost:3333/volumes/manga/${mangaId}`, {
-			cache: 'no-store',
-		})
+export default function VolumesPage({ params }: { params: Promise<{ mangaId: string }> }) {
+	const resolvedParams = React.use(params)
+	const mangaId = resolvedParams.mangaId
 
-		// 🔥 O Fofoqueiro: Se der erro, ele lê o texto inteiro do backend antes de quebrar
-		if (!res.ok) {
-			const errorText = await res.text()
-			throw new Error(`Backend retornou Status ${res.status}: ${errorText}`)
-		}
+	// Estados
+	const [viewMode, setViewMode] = React.useState<'table' | 'grid'>('grid')
+	const [manga, setManga] = React.useState<any>(null)
+	const [volumes, setVolumes] = React.useState<any[]>([])
 
-		return await res.json()
-	} catch (error) {
-		console.error('Erro completo da requisição:', error)
-		return []
-	}
-}
-
-// O Next.js injeta o "params" contendo o mangaId da URL
-// 1. Atualizamos a tipagem para indicar que params é uma Promise
-export default async function VolumesPage({ params }: { params: Promise<{ mangaId: string }> }) {
-	// 2. Agora nós aguardamos a Promise ser resolvida antes de pegar o ID!
-	const resolvedParams = await params
-
-	// 3. E passamos o ID real (e não mais undefined) para o fetch
-	const volumes = await getVolumes(resolvedParams.mangaId)
+	React.useEffect(() => {
+		Promise.all([
+			fetch(`http://localhost:3333/mangas/${mangaId}`).then((res) => {
+				if (!res.ok) return null
+				return res.json()
+			}),
+			fetch(`http://localhost:3333/volumes/manga/${mangaId}`).then((res) => {
+				if (!res.ok) return []
+				return res.json()
+			}),
+		])
+			.then(([mangaData, volumesData]) => {
+				setManga(mangaData)
+				setVolumes(volumesData)
+			})
+			.catch((error) => {
+				console.error('Erro ao carregar dados:', error)
+			})
+	}, [mangaId])
 
 	return (
 		<div className="dark min-h-screen bg-background text-foreground">
+			{/* O MENU LATERAL VOLTOU AQUI! 🎉 */}
 			<SidebarProvider
 				style={
 					{
@@ -52,9 +56,8 @@ export default async function VolumesPage({ params }: { params: Promise<{ mangaI
 				<SidebarInset>
 					<SiteHeader />
 					<div className="flex flex-1 flex-col gap-4 p-4 lg:p-8">
-						{/* Cabeçalho */}
+						{/* CABEÇALHO E BOTÃO DE VOLTAR */}
 						<div className="flex items-center gap-4 mb-4">
-							{/* Botão de voltar para a lista de mangás */}
 							<Link href="/mangas">
 								<Button variant="outline" size="icon">
 									<ArrowLeft className="h-4 w-4" />
@@ -62,25 +65,109 @@ export default async function VolumesPage({ params }: { params: Promise<{ mangaI
 							</Link>
 							<div className="flex-1">
 								<h1 className="text-2xl font-bold tracking-tight">
-									Gerenciar Volumes
+									{manga
+										? `Gerenciar Volumes: ${manga.title}`
+										: 'Gerenciar Volumes'}
 								</h1>
 								<p className="text-muted-foreground text-sm">
 									Organize as edições desta obra.
 								</p>
 							</div>
+						</div>
 
-							{/* Botão para adicionar um novo volume (vamos criar essa página depois!) */}
-							<Link href={`/mangas/${resolvedParams.mangaId}/volumes/new`}>
+						{/* BANNER DO MANGÁ */}
+						{manga && manga.bannerUrl ? (
+							<div className="w-full h-48 md:h-64 rounded-xl overflow-hidden relative mb-6">
+								<img
+									src={manga.bannerUrl}
+									alt={manga.title}
+									className="w-full h-full object-cover"
+								/>
+								<div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-6">
+									<h1 className="text-3xl font-bold text-white">{manga.title}</h1>
+								</div>
+							</div>
+						) : (
+							<div className="w-full h-32 rounded-xl bg-muted flex items-center justify-center mb-6 border-2 border-dashed border-border">
+								<span className="text-muted-foreground font-medium">
+									Este mangá é antigo e não possui um banner cadastrado.
+								</span>
+							</div>
+						)}
+
+						{/* Controles de Visualização */}
+						<div className="flex items-center justify-between mb-4">
+							<div className="flex gap-2">
+								<Button
+									variant={viewMode === 'grid' ? 'default' : 'outline'}
+									size="icon"
+									onClick={() => setViewMode('grid')}
+								>
+									<LayoutGrid className="h-4 w-4" />
+								</Button>
+								<Button
+									variant={viewMode === 'table' ? 'default' : 'outline'}
+									size="icon"
+									onClick={() => setViewMode('table')}
+								>
+									<List className="h-4 w-4" />
+								</Button>
+							</div>
+
+							<Link href={`/mangas/${mangaId}/volumes/new`}>
 								<Button className="font-bold">
 									<Plus className="mr-2 h-4 w-4" /> Adicionar Volume
 								</Button>
 							</Link>
 						</div>
 
-						{/* Tabela de Volumes */}
-						<div className="bg-card rounded-xl border border-border p-4">
-							<DataTable columns={columns} data={volumes} />
-						</div>
+						{/* RENDERIZAÇÃO CONDICIONAL: Grid vs Tabela */}
+						{viewMode === 'table' ? (
+							<div className="bg-card rounded-xl border p-4">
+								<DataTable columns={columns} data={volumes} />
+							</div>
+						) : (
+							<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+								{volumes.map((vol) => (
+									<div
+										key={vol.id}
+										className="group relative rounded-lg border overflow-hidden bg-card hover:border-primary transition-all flex flex-col"
+									>
+										<div className="aspect-[2/3] bg-muted w-full">
+											{vol.coverUrl ? (
+												<img
+													src={vol.coverUrl}
+													className="w-full h-full object-cover"
+												/>
+											) : (
+												<div className="flex h-full items-center justify-center text-muted-foreground text-sm">
+													Sem Capa
+												</div>
+											)}
+										</div>
+										<div className="p-4 flex flex-col flex-1 justify-between">
+											<div>
+												<h3 className="font-bold text-lg">
+													Volume {vol.volumeNumber}
+												</h3>
+												<p className="text-sm text-muted-foreground truncate mb-4">
+													{vol.title || 'S/ Título'}
+												</p>
+											</div>
+
+											<Link
+												href={`/mangas/${mangaId}/volumes/${vol.id}/chapters`}
+												className="w-full mt-auto"
+											>
+												<Button className="w-full font-semibold">
+													Capítulos
+												</Button>
+											</Link>
+										</div>
+									</div>
+								))}
+							</div>
+						)}
 					</div>
 				</SidebarInset>
 			</SidebarProvider>

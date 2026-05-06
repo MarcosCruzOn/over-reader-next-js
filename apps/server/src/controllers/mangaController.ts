@@ -5,6 +5,8 @@ import { ListMangasUseCase } from '../useCases/listMangasUseCase'
 import { UpdateMangaUseCase } from '../useCases/updateMangaUseCase'
 import { DeleteMangaUseCase } from '../useCases/deleteMangaUseCase'
 import { UpdateMangaCoverUseCase } from '../useCases/updateMangaCoverUseCase'
+import { UpdateMangaBannerUseCase } from '../useCases/updateMangaBannerUseCase'
+import { GetMangaUseCase } from '../useCases/getMangaUseCase'
 
 export class MangaController {
 	async create(req: Request, res: Response) {
@@ -76,6 +78,39 @@ export class MangaController {
 			res.json(manga)
 		} catch (error: any) {
 			res.status(400).json({ error: error.message })
+		}
+	}
+
+	async updateBanner(req: Request, res: Response) {
+		try {
+			const id = Number(req.params.id)
+			const file = req.file as any
+
+			if (!file) {
+				return res.status(400).json({ error: 'Nenhum banner foi enviado.' })
+			}
+
+			const bannerUrl = file.location
+			const repository = new MangaRepository()
+			const useCase = new UpdateMangaBannerUseCase(repository)
+
+			const manga = await useCase.execute(id, bannerUrl)
+			res.json(manga)
+		} catch (error: any) {
+			res.status(400).json({ error: error.message })
+		}
+	}
+
+	async getById(req: Request, res: Response) {
+		try {
+			const id = Number(req.params.id)
+			const repository = new MangaRepository()
+			const useCase = new GetMangaUseCase(repository)
+
+			const manga = await useCase.execute(id)
+			res.json(manga)
+		} catch (error: any) {
+			res.status(404).json({ error: error.message })
 		}
 	}
 }
