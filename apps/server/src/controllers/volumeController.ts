@@ -3,6 +3,7 @@ import { VolumeRepository } from '../repositories/volumeRepository'
 import { CreateVolumeUseCase } from '../useCases/createVolumeUseCase'
 import { UpdateVolumeCoverUseCase } from '../useCases/updateVolumeCoverUseCase'
 import { DeleteVolumeUseCase } from '../useCases/deleteVolumeUseCase'
+import { UpdateVolumeUseCase } from '../useCases/UpdateVolumeUseCase'
 
 export class VolumeController {
 	async create(req: Request, res: Response) {
@@ -46,6 +47,35 @@ export class VolumeController {
 
 			await useCase.execute(id)
 			res.status(204).send()
+		} catch (error: any) {
+			res.status(400).json({ error: error.message })
+		}
+	}
+
+	async update(req: Request, res: Response) {
+		try {
+			const id = Number(req.params.id)
+			const data = req.body
+
+			const repository = new VolumeRepository()
+			const useCase = new UpdateVolumeUseCase(repository)
+
+			const updatedVolume = await useCase.execute(id, data)
+			res.json(updatedVolume)
+		} catch (error: any) {
+			res.status(400).json({ error: error.message })
+		}
+	}
+
+	async getById(req: Request, res: Response) {
+		try {
+			const id = Number(req.params.id)
+			const repository = new VolumeRepository()
+			const volume = await repository.findById(id)
+
+			if (!volume) return res.status(404).json({ error: 'Volume não encontrado' })
+
+			res.json(volume)
 		} catch (error: any) {
 			res.status(400).json({ error: error.message })
 		}

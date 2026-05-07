@@ -15,7 +15,13 @@ export class ChapterRepository {
 	}
 
 	async delete(id: number) {
-		return await db.delete(chapters).where(eq(chapters.id, id)).returning()
+		const result = await db.delete(chapters).where(eq(chapters.id, id)).returning()
+		return result[0]
+	}
+
+	async update(id: number, data: Partial<CreateChapterDTO>) {
+		const result = await db.update(chapters).set(data).where(eq(chapters.id, id)).returning()
+		return result[0]
 	}
 
 	async updatePages(id: number, pages: string[]) {
@@ -24,6 +30,11 @@ export class ChapterRepository {
 			.set({ pages })
 			.where(eq(chapters.id, id))
 			.returning()
+		return result[0]
+	}
+
+	async findById(id: number) {
+		const result = await db.select().from(chapters).where(eq(chapters.id, id))
 		return result[0]
 	}
 }

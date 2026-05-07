@@ -1,204 +1,87 @@
-"use client"
+'use client'
 
-import * as React from "react"
+import * as React from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { BookOpen, Library, LayoutDashboard, Settings, Users } from 'lucide-react'
 
-import { NavDocuments } from "@workspace/ui/components/nav-documents"
-import { NavMain } from "@workspace/ui/components/nav-main"
-import { NavSecondary } from "@workspace/ui/components/nav-secondary"
-import { NavUser } from "@workspace/ui/components/nav-user"
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@workspace/ui/components/sidebar"
-import { LayoutDashboardIcon, ListIcon, ChartBarIcon, FolderIcon, UsersIcon, CameraIcon, FileTextIcon, Settings2Icon, CircleHelpIcon, SearchIcon, DatabaseIcon, FileChartColumnIcon, FileIcon, CommandIcon } from "lucide-react"
+	Sidebar,
+	SidebarContent,
+	SidebarFooter,
+	SidebarHeader,
+	SidebarMenu,
+	SidebarMenuButton,
+	SidebarMenuItem,
+	SidebarRail,
+} from '@workspace/ui/components/sidebar'
 
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  navMain: [
-    {
-      title: "Dashboard",
-      url: "#",
-      icon: (
-        <LayoutDashboardIcon
-        />
-      ),
-    },
-    {
-      title: "Lifecycle",
-      url: "#",
-      icon: (
-        <ListIcon
-        />
-      ),
-    },
-    {
-      title: "Analytics",
-      url: "#",
-      icon: (
-        <ChartBarIcon
-        />
-      ),
-    },
-    {
-      title: "Projects",
-      url: "#",
-      icon: (
-        <FolderIcon
-        />
-      ),
-    },
-    {
-      title: "Team",
-      url: "#",
-      icon: (
-        <UsersIcon
-        />
-      ),
-    },
-  ],
-  navClouds: [
-    {
-      title: "Capture",
-      icon: (
-        <CameraIcon
-        />
-      ),
-      isActive: true,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Proposal",
-      icon: (
-        <FileTextIcon
-        />
-      ),
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Prompts",
-      icon: (
-        <FileTextIcon
-        />
-      ),
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: (
-        <Settings2Icon
-        />
-      ),
-    },
-    {
-      title: "Get Help",
-      url: "#",
-      icon: (
-        <CircleHelpIcon
-        />
-      ),
-    },
-    {
-      title: "Search",
-      url: "#",
-      icon: (
-        <SearchIcon
-        />
-      ),
-    },
-  ],
-  documents: [
-    {
-      name: "Data Library",
-      url: "#",
-      icon: (
-        <DatabaseIcon
-        />
-      ),
-    },
-    {
-      name: "Reports",
-      url: "#",
-      icon: (
-        <FileChartColumnIcon
-        />
-      ),
-    },
-    {
-      name: "Word Assistant",
-      url: "#",
-      icon: (
-        <FileIcon
-        />
-      ),
-    },
-  ],
-}
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  return (
-    <Sidebar collapsible="offcanvas" {...props}>
-      <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              className="data-[slot=sidebar-menu-button]:p-1.5!"
-              render={<a href="#" />}
-            >
-              <CommandIcon className="size-5!" />
-              <span className="text-base font-semibold">Acme Inc.</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarHeader>
-      <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
-      </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={data.user} />
-      </SidebarFooter>
-    </Sidebar>
-  )
+	const pathname = usePathname()
+
+	const navigation = [
+		{ name: 'Dashboard', href: '/', icon: LayoutDashboard },
+		{ name: 'Catálogo (Mangás)', href: '/mangas', icon: BookOpen },
+		{ name: 'Usuários', href: '/users', icon: Users },
+		{ name: 'Configurações', href: '/settings', icon: Settings },
+	]
+
+	return (
+		<Sidebar {...props}>
+			<SidebarHeader className="border-b border-border/50 pb-4 pt-4 px-4">
+				{/* NOSSA NOVA LOGO OVER READER */}
+				<Link
+					href="/"
+					className="flex items-center gap-3 transition-opacity hover:opacity-80"
+				>
+					<div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+						<Library className="h-6 w-6" />
+					</div>
+					<div className="flex flex-col">
+						<span className="font-black text-xl leading-none tracking-tight">OVER</span>
+						<span className="font-medium text-sm text-muted-foreground uppercase tracking-widest">
+							Reader
+						</span>
+					</div>
+				</Link>
+			</SidebarHeader>
+
+			<SidebarContent className="px-2 pt-4">
+				<SidebarMenu>
+					{navigation.map((item) => {
+						const isActive =
+							pathname === item.href || pathname.startsWith(`${item.href}/`)
+						return (
+							<SidebarMenuItem key={item.name}>
+								<SidebarMenuButton
+									asChild
+									isActive={isActive}
+									tooltip={item.name}
+									className="h-10"
+								>
+									<Link href={item.href} className="flex items-center gap-3">
+										<item.icon className="h-5 w-5" />
+										<span className="font-medium">{item.name}</span>
+									</Link>
+								</SidebarMenuButton>
+							</SidebarMenuItem>
+						)
+					})}
+				</SidebarMenu>
+			</SidebarContent>
+
+			<SidebarFooter className="border-t border-border/50 p-4">
+				<div className="flex items-center gap-3">
+					<div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center border border-border">
+						<span className="text-xs font-bold">AD</span>
+					</div>
+					<div className="flex flex-col">
+						<span className="text-sm font-semibold">Admin Master</span>
+						<span className="text-xs text-muted-foreground">admin@overreader.com</span>
+					</div>
+				</div>
+			</SidebarFooter>
+			<SidebarRail />
+		</Sidebar>
+	)
 }

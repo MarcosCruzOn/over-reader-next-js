@@ -2,7 +2,8 @@
 
 import * as React from 'react'
 import Link from 'next/link'
-import { Plus, ArrowLeft, LayoutGrid, List } from 'lucide-react'
+import { useRouter } from 'next/navigation' // <-- Importação que faltava!
+import { Plus, ArrowLeft, LayoutGrid, List, Edit, Trash2 } from 'lucide-react'
 
 import { AppSidebar } from '@workspace/ui/components/app-sidebar'
 import { SiteHeader } from '@workspace/ui/components/site-header'
@@ -13,6 +14,7 @@ import { Button } from '@workspace/ui/components/button'
 import { columns } from './columns'
 
 export default function VolumesPage({ params }: { params: Promise<{ mangaId: string }> }) {
+	const router = useRouter() // <-- Inicialização do Router para o refresh funcionar
 	const resolvedParams = React.use(params)
 	const mangaId = resolvedParams.mangaId
 
@@ -41,9 +43,32 @@ export default function VolumesPage({ params }: { params: Promise<{ mangaId: str
 			})
 	}, [mangaId])
 
+	const handleDeleteVolume = async (id: number) => {
+		if (
+			!window.confirm(
+				'Tem certeza que deseja apagar este volume? Todos os capítulos serão perdidos!'
+			)
+		) {
+			return
+		}
+
+		try {
+			const res = await fetch(`http://localhost:3333/volumes/${id}`, { method: 'DELETE' })
+			if (res.ok) {
+				// Remove o volume da tela instantaneamente
+				setVolumes((prev) => prev.filter((vol) => vol.id !== id))
+				router.refresh()
+			} else {
+				alert('Erro ao apagar volume do banco de dados.')
+			}
+		} catch (error) {
+			console.error(error)
+			alert('Falha na comunicação com o servidor.')
+		}
+	}
+
 	return (
 		<div className="dark min-h-screen bg-background text-foreground">
-			{/* O MENU LATERAL VOLTOU AQUI! 🎉 */}
 			<SidebarProvider
 				style={
 					{
@@ -155,14 +180,41 @@ export default function VolumesPage({ params }: { params: Promise<{ mangaId: str
 												</p>
 											</div>
 
-											<Link
-												href={`/mangas/${mangaId}/volumes/${vol.id}/chapters`}
-												className="w-full mt-auto"
-											>
-												<Button className="w-full font-semibold">
-													Capítulos
+											{/* BOTÕES DO GRID (Capítulos, Editar, Excluir) */}
+											<div className="flex items-center gap-2 mt-auto">
+												<Link
+													href={`/mangas/${mangaId}/volumes/${vol.id}/chapters`}
+													className="flex-1"
+												>
+													<Button
+														className="w-full font-semibold"
+														size="sm"
+													>
+														Capítulos
+													</Button>
+												</Link>
+
+												<Link
+													href={`/mangas/${mangaId}/volumes/${vol.id}/edit`}
+												>
+													<Button
+														variant="outline"
+														size="icon"
+														className="h-9 w-9 text-muted-foreground hover:text-primary"
+													>
+														<Edit className="h-4 w-4" />
+													</Button>
+												</Link>
+
+												<Button
+													variant="outline"
+													size="icon"
+													className="h-9 w-9 text-destructive hover:bg-destructive/10 hover:text-destructive"
+													onClick={() => handleDeleteVolume(vol.id)}
+												>
+													<Trash2 className="h-4 w-4" />
 												</Button>
-											</Link>
+											</div>
 										</div>
 									</div>
 								))}

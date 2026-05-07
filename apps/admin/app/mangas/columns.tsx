@@ -63,13 +63,16 @@ const MangaActionsCell = ({ manga }: { manga: Manga }) => {
 				</Button>
 			</Link>
 
-			<Button
-				variant="ghost"
-				size="icon"
-				className="h-8 w-8 text-muted-foreground hover:text-primary"
-			>
-				<Edit className="h-4 w-4" />
-			</Button>
+			{/* Botão de Editar (Novo!) */}
+			<Link href={`/mangas/${manga.id}/edit`}>
+				<Button
+					variant="ghost"
+					size="icon"
+					className="h-8 w-8 text-muted-foreground hover:text-primary"
+				>
+					<Edit className="h-4 w-4" />
+				</Button>
+			</Link>
 
 			<Button
 				variant="ghost"

@@ -46,7 +46,7 @@ export default function NewChapterPage({
 		setIsLoading(true)
 
 		try {
-			// Step 1: Criar o Capítulo primeiro (passamos array de pages vazio por enquanto)
+			// Step 1: Criar o Capítulo no banco de dados
 			const chapterRes = await fetch('http://localhost:3333/chapters', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
@@ -54,7 +54,7 @@ export default function NewChapterPage({
 					volumeId,
 					chapterNumber: Number(chapterNumber),
 					title: title ? title : undefined,
-					pages: [], // Opcional se o banco exigir NOT NULL, passamos array vazio inicial
+					pages: [],
 				}),
 			})
 
@@ -68,7 +68,6 @@ export default function NewChapterPage({
 			if (pagesFiles.length > 0 && newChapter.id) {
 				const formData = new FormData()
 
-				// Adicionamos todos os arquivos no mesmo campo 'pages'
 				pagesFiles.forEach((file) => {
 					formData.append('pages', file)
 				})
@@ -81,8 +80,20 @@ export default function NewChapterPage({
 					}
 				)
 
-				if (!uploadRes.ok)
-					throw new Error('Capítulo criado, mas falhou ao enviar as páginas para a AWS.')
+				// ROLLBACK
+				if (!uploadRes.ok) {
+					// Se a AWS falhou, nós imediatamente deletamos o capítulo "vazio" que acabou de ser criado!
+					console.log(
+						'Falha na AWS detectada. Executando Rollback (Deletando capítulo fantasma)...'
+					)
+					await fetch(`http://localhost:3333/chapters/${newChapter.id}`, {
+						method: 'DELETE',
+					})
+
+					throw new Error(
+						'Falha no upload para a AWS. A operação foi cancelada e o banco de dados foi limpo.'
+					)
+				}
 			}
 
 			router.push(`/mangas/${mangaId}/volumes/${volumeId}/chapters`)

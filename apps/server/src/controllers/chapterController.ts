@@ -2,6 +2,8 @@ import type { Request, Response } from 'express'
 import { ChapterRepository } from '../repositories/chapterRepository'
 import { CreateChapterUseCase } from '../useCases/createChapterUseCase'
 import { UpdateChapterPagesUseCase } from '../useCases/updateChapterPagesUseCase'
+import { DeleteChapterUseCase } from '../useCases/deleteChapterUseCase'
+import { UpdateChapterUseCase } from '../useCases/updateChapterUseCase'
 
 export class ChapterController {
 	async create(req: Request, res: Response) {
@@ -40,6 +42,48 @@ export class ChapterController {
 
 			const chapter = await useCase.execute(id, pagesUrls)
 
+			res.json(chapter)
+		} catch (error: any) {
+			res.status(400).json({ error: error.message })
+		}
+	}
+
+	async delete(req: Request, res: Response) {
+		try {
+			const id = Number(req.params.id)
+			const repository = new ChapterRepository()
+			const useCase = new DeleteChapterUseCase(repository)
+
+			await useCase.execute(id)
+
+			// Retornamos 204 (No Content) que é o padrão REST perfeito para exclusões com sucesso
+			res.status(204).send()
+		} catch (error: any) {
+			res.status(400).json({ error: error.message })
+		}
+	}
+
+	async getById(req: Request, res: Response) {
+		try {
+			const id = Number(req.params.id)
+			const repository = new ChapterRepository()
+			const chapter = await repository.findById(id)
+
+			if (!chapter) return res.status(404).json({ error: 'Capítulo não encontrado' })
+
+			res.json(chapter)
+		} catch (error: any) {
+			res.status(400).json({ error: error.message })
+		}
+	}
+
+	async update(req: Request, res: Response) {
+		try {
+			const id = Number(req.params.id)
+			const repository = new ChapterRepository()
+			const useCase = new UpdateChapterUseCase(repository)
+
+			const chapter = await useCase.execute(id, req.body)
 			res.json(chapter)
 		} catch (error: any) {
 			res.status(400).json({ error: error.message })

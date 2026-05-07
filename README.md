@@ -58,3 +58,20 @@ O sistema permite o gerenciamento completo do ciclo de vida dos mangás, estrutu
 
 **Uploads para AWS S3:**
 A plataforma suporta envio de arquivos únicos (Capas e Banners de Mangás/Volumes) e envios em lote (Upload múltiplo de até 100 páginas simultâneas por capítulo, salvas em um JSON Array no banco).
+
+## 🛡️ Módulo: Painel Administrativo (Admin)
+
+O painel de controle do **Over Reader** foi construído com foco em produtividade e consistência de dados, utilizando **Next.js (App Router)** e componentes do **shadcn/ui**, integrado à nossa API REST (Node.js + Drizzle ORM).
+
+### ✨ Funcionalidades Principais
+
+- **Gestão de Mangás (CRUD):** \* Cadastro detalhado de obras com upload simultâneo de Capa e Banner para a nuvem (**AWS S3**).
+    - Exclusão segura com deleção em cascata (apaga os volumes e capítulos vinculados automaticamente no PostgreSQL).
+- **Organização de Volumes:** \* Interface alternável entre Grid (visual) e Tabela (analítica).
+    - Upload e preview dinâmico das capas das edições físicas.
+- **Gerenciador de Capítulos:** \* Upload de imagens em lote (múltiplas páginas simultâneas).
+    - Geração automática de _thumbnails_ utilizando a primeira página do capítulo.
+    - **Sistema de Rollback:** Proteção contra falhas de rede — caso o envio para a AWS falhe, o banco de dados desfaz a transação para evitar "capítulos fantasmas".
+- **Arquitetura UI/UX:**
+    - Tratamento de estado resiliente (Loadings, Erros 404/500 interceptados).
+    - Layout construído em um ambiente Monorepo (Turborepo), garantindo reaproveitamento de componentes UI.
