@@ -11,8 +11,10 @@ import { Library, Loader2 } from 'lucide-react'
 
 const IMAGES = [
 	'https://i.pinimg.com/originals/1b/e9/ca/1be9ca06921eb7c3516ec3a39b7348ac.jpg',
-	'https://i.pinimg.com/originals/a8/3f/0c/a83f0cfc68fe90d4c0631a5a56801680.webp',
+	'https://i.pinimg.com/736x/0d/57/b4/0d57b43db35fa79be4a2216665847e35.jpg',
 	'https://i.pinimg.com/originals/5b/11/39/5b1139f331116dfedc67628593ccb4e9.jpg',
+	'https://i.pinimg.com/736x/71/e5/67/71e56787c10d6a56eb039596fb3fc6b2.jpg',
+	'https://i.pinimg.com/736x/ca/fb/9d/cafb9d2ef331a920d9eee1f75c9b755e.jpg',
 ]
 
 export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) {

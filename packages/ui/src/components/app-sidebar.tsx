@@ -3,7 +3,7 @@
 import * as React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { BookOpen, Library, LayoutDashboard, Settings, Users } from 'lucide-react'
+import { BookOpen, Library, LayoutDashboard, Settings, Users, LogOut } from 'lucide-react'
 
 import {
 	Sidebar,
@@ -45,7 +45,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 					</div>
 				</Link>
 			</SidebarHeader>
-
 			<SidebarContent className="px-2 pt-4">
 				<SidebarMenu>
 					{navigation.map((item) => {
@@ -70,14 +69,33 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 			</SidebarContent>
 
 			<SidebarFooter className="border-t border-border/50 p-4">
-				<div className="flex items-center gap-3">
-					<div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center border border-border">
-						<span className="text-xs font-bold">AD</span>
+				<div className="flex items-center justify-between gap-3">
+					<div className="flex items-center gap-3">
+						<div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center border border-border">
+							<span className="text-xs font-bold">AD</span>
+						</div>
+						<div className="flex flex-col">
+							<span className="text-sm font-semibold">Admin Master</span>
+							<span className="text-xs text-muted-foreground">
+								admin@overreader.com
+							</span>
+						</div>
 					</div>
-					<div className="flex flex-col">
-						<span className="text-sm font-semibold">Admin Master</span>
-						<span className="text-xs text-muted-foreground">admin@overreader.com</span>
-					</div>
+
+					{/* 🔥 BOTÃO DE LOGOUT AQUI */}
+					<button
+						onClick={() => {
+							// Apaga o cookie definindo uma data de validade no passado
+							document.cookie =
+								'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+							// Força o recarregamento da página para limpar estados do React e acionar o Proxy
+							window.location.href = '/login'
+						}}
+						className="p-2 text-muted-foreground hover:text-destructive transition-colors rounded-md hover:bg-muted"
+						title="Sair do sistema"
+					>
+						<LogOut className="h-5 w-5" />
+					</button>
 				</div>
 			</SidebarFooter>
 			<SidebarRail />

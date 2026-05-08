@@ -19,15 +19,18 @@
 	"license": "ISC",
 	"type": "module",
 	"devDependencies": {
-		"turbo": "^2.9.6",
 		"@workspace/eslint-config": "*",
 		"@workspace/typescript-config": "*",
 		"prettier": "^3.8.1",
 		"prettier-plugin-tailwindcss": "^0.7.2",
+		"turbo": "^2.9.6",
 		"typescript": "5.9.3"
 	},
 	"packageManager": "npm@11.11.0",
 	"engines": {
 		"node": ">=20"
+	},
+	"dependencies": {
+		"framer-motion": "^12.38.0"
 	}
 }
