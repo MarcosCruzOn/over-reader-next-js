@@ -13,6 +13,7 @@ export class VolumeRepository {
 	async findByManga(mangaId: number) {
 		return await db.select().from(volumes).where(eq(volumes.mangaId, mangaId))
 	}
+
 	async findByMangaId(mangaId: number) {
 		return await db
 			.select()

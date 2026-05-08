@@ -54,7 +54,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 						return (
 							<SidebarMenuItem key={item.name}>
 								<SidebarMenuButton
-									asChild
 									isActive={isActive}
 									tooltip={item.name}
 									className="h-10"

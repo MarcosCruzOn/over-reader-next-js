@@ -26,4 +26,10 @@ export class UserRepository {
 		const result = await db.update(users).set({ avatarUrl }).where(eq(users.id, id)).returning()
 		return result[0]
 	}
+
+	// Busca um usuário pelo e-mail (Usado no Login)
+	async findByEmail(email: string) {
+		const result = await db.select().from(users).where(eq(users.email, email))
+		return result[0]
+	}
 }

@@ -75,3 +75,9 @@ O painel de controle do **Over Reader** foi construído com foco em produtividad
 - **Arquitetura UI/UX:**
     - Tratamento de estado resiliente (Loadings, Erros 404/500 interceptados).
     - Layout construído em um ambiente Monorepo (Turborepo), garantindo reaproveitamento de componentes UI.
+
+### 🔒 Segurança e Autenticação
+
+- **Proteção de Borda (Edge):** Utilização do `proxy.ts` (novo padrão Next.js) para interceptar requisições e garantir que apenas usuários com tokens válidos acessem o painel.
+- **Criptografia:** Senhas protegidas no banco de dados (PostgreSQL) com `bcryptjs`.
+- **Sessão:** Autenticação baseada em Tokens JWT (JSON Web Tokens) com validade configurável.

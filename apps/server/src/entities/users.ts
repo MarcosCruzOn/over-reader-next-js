@@ -4,9 +4,10 @@ export const users = pgTable('users', {
 	id: serial('id').primaryKey(),
 	name: varchar('name', { length: 255 }).notNull(),
 	email: varchar('email', { length: 255 }).notNull().unique(), // unique impede emails repetidos
+	password: varchar('password', { length: 255 }).notNull(),
 	avatarUrl: varchar('avatar_url', { length: 500 }),
 	role: varchar('role', { length: 50 }).default('USER'), // user, admin
-	status: varchar('status', { length: 50 }).default('ativo'), // ativo, banido, suspenso
+	status: varchar('status', { length: 50 }).default('ATIVO'), // ATIVO, BANIDO, SUSPENSO
 	createdAt: timestamp('created_at').defaultNow(),
 	lastAccess: timestamp('last_access').defaultNow(),
 })

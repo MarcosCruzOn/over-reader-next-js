@@ -1,6 +1,5 @@
 import { Router } from 'express'
 
-// Importando todas as rotas isoladas
 import { mangaRoutes } from './mangaRoutes'
 import { userRoutes } from './userRoutes'
 import { reviewRoutes } from './reviewRoutes'
@@ -8,11 +7,11 @@ import { favoriteRoutes } from './favoriteRoutes'
 import { commentRoutes } from './commentRoutes'
 import { volumeRoutes } from './volumeRoutes'
 import { chapterRoutes } from './chapterRoutes'
+import { authRoutes } from './authRoutes'
 
-// Criando o Roteador Principal
 export const routes = Router()
 
-// Registrando os caminhos base para cada arquivo de rotas
+routes.use('/auth', authRoutes)
 routes.use('/mangas', mangaRoutes)
 routes.use('/users', userRoutes)
 routes.use('/reviews', reviewRoutes)

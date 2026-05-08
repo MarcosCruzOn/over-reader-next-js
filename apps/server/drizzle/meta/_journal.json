@@ -43,6 +43,13 @@
       "when": 1778020206297,
       "tag": "0005_absent_human_torch",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1778179701790,
+      "tag": "0006_bumpy_ego",
+      "breakpoints": true
     }
   ]
 }
