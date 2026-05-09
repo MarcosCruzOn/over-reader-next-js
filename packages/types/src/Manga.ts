@@ -3,7 +3,7 @@ export interface Manga {
 	title: string
 	author: string | null
 	synopsis: string | null
-	genres: string[] | null
+	genres: string | null
 	coverUrl: string | null
 	bannerUrl: string | null
 	status: string | null

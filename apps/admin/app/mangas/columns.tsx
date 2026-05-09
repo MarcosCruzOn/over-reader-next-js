@@ -98,6 +98,7 @@ export const columns: ColumnDef<Manga>[] = [
 					src={coverUrl}
 					alt="Capa"
 					className="h-12 w-8 object-cover rounded-sm border border-border"
+					loading="lazy"
 				/>
 			) : (
 				<div className="h-12 w-8 bg-muted rounded-sm flex items-center justify-center border border-border">

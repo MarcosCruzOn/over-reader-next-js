@@ -36,8 +36,7 @@ export default async function WebHomePage({ manga }: MangaHero) {
 	const simulatedSavedMangas = mangas.slice(0, 3)
 
 	return (
-		// Fundo totalmente preto (bg-black) para destacar o vermelho e as capas
-		<div className="min-h-screen bg-black text-white font-sans selection:bg-[#C41E3A] selection:text-white">
+		<div className="dark min-h-screen bg-brand-black text-white font-sans selection:bg-brand-primary selection:text-white">
 			{/* 🧭 Navbar Premium */}
 			<Header />
 

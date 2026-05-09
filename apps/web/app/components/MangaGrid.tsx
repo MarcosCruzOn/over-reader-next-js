@@ -2,6 +2,7 @@
 
 import React from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
 // import { Bookmark } from 'lucide-react'
 import { Manga } from '@workspace/types'
@@ -18,7 +19,6 @@ export default function MangaGrid({ mangas }: MangaGridProps) {
 					? manga.coverUrl
 					: 'https://placehold.co/300x400/1a1a1a/white.png?text=Sem+Capa'
 
-				console.log('URL DA IMAGEM VINDA DO BANCO mangagrid:', manga.coverUrl)
 				return (
 					<motion.div
 						key={manga.id}
@@ -27,35 +27,37 @@ export default function MangaGrid({ mangas }: MangaGridProps) {
 						transition={{ duration: 0.4, delay: index * 0.05 }}
 						className="group cursor-pointer"
 					>
-						<div className="relative overflow-hidden rounded-xl bg-gray-900 transition-all duration-300 hover:scale-105 hover:shadow-2xl border border-gray-800 hover:border-[#C41E3A]">
-							<div className="aspect-3/4 relative bg-gray-950">
-								<Image
-									src={imageUrl}
-									alt={manga.title}
-									fill
-									sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-									className="object-cover"
-									unoptimized={imageUrl.includes('localhost')} // Resolve o erro de IP privado!
-								/>
-								<div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-							</div>
+						<Link href={`/mangas/${manga.id}`}>
+							<div className="relative overflow-hidden rounded-xl bg-gray-900 transition-all duration-300 hover:scale-105 hover:shadow-2xl border border-gray-800 hover:border-brand-primary">
+								<div className="aspect-3/4 relative bg-gray-950">
+									<Image
+										src={imageUrl}
+										alt={manga.title}
+										fill
+										sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+										className="object-cover"
+										loading="lazy"
+									/>
+									<div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+								</div>
 
-							<div className="p-4 bg-gray-900">
-								<h3
-									className="font-semibold text-white text-base mb-1 line-clamp-1"
-									title={manga.title}
-								>
-									{manga.title}
-								</h3>
-								<div className="flex items-center justify-between text-sm">
-									{/* Placeholders temporários */}
-									<span className="text-gray-400">Vol. 1</span>
-									<span className="text-[#C41E3A] font-medium text-xs tracking-wide">
-										NOVO
-									</span>
+								<div className="p-4 bg-brand-gray">
+									<h3
+										className="font-semibold text-white text-base mb-1 line-clamp-1"
+										title={manga.title}
+									>
+										{manga.title}
+									</h3>
+									<div className="flex items-center justify-between text-sm">
+										{/* Placeholders temporários */}
+										<span className="text-gray-400">Vol. 1</span>
+										<span className="text-brand-primary font-medium text-xs tracking-wide">
+											NOVO
+										</span>
+									</div>
 								</div>
 							</div>
-						</div>
+						</Link>
 					</motion.div>
 				)
 			})}

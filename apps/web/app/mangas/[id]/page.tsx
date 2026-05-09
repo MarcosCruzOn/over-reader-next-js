@@ -1,0 +1,238 @@
+import React from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
+import Header from '../../components/Header'
+import { Bookmark, Star, LayoutGrid, List as ListIcon } from 'lucide-react'
+import { Button } from '@workspace/ui/components/button'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@workspace/ui/components/tabs'
+import { Manga } from '@workspace/types'
+
+// ⚡ Server Action: Busca o mangá específico pelo ID
+async function getManga(id: string): Promise<Manga | null> {
+	try {
+		const res = await fetch(`http://localhost:3333/mangas/${id}`, {
+			cache: 'no-store',
+		})
+		if (!res.ok) return null
+		return res.json()
+	} catch (error) {
+		console.error('Erro ao buscar o mangá:', error)
+		return null
+	}
+}
+
+// Next.js 16 exige que os params sejam uma Promise
+export default async function MangaDetailPage({ params }: { params: Promise<{ id: string }> }) {
+	const resolvedParams = await params
+	const manga = await getManga(resolvedParams.id)
+
+	if (!manga) {
+		return (
+			<div className="dark min-h-screen bg-background text-foreground flex flex-col items-center justify-center">
+				<Header />
+				<h1 className="text-2xl font-bold mt-20">Mangá não encontrado.</h1>
+				<Link href="/" className="text-primary hover:underline mt-4">
+					Voltar para a Home
+				</Link>
+			</div>
+		)
+	}
+
+	const coverUrl = manga.coverUrl || 'https://placehold.co/300x400/1a1a1a/white.png?text=Sem+Capa'
+	const bannerUrl =
+		manga.bannerUrl || 'https://placehold.co/1920x800/1a1a1a/white.png?text=Sem+Banner'
+
+	// Mock de volumes (Como ainda não temos os capítulos no banco, criamos alguns para o visual)
+	const mockVolumes = Array.from({ length: 10 }, (_, i) => ({
+		id: i,
+		vol: 26 - i,
+		date: i === 0 ? '8 HORAS ATRÁS' : i === 1 ? '18 HORAS ATRÁS' : 'JULHO 26, 2026',
+		isNew: i === 0,
+	}))
+
+	return (
+		<div className="dark min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-primary-foreground pb-20">
+			<Header />
+
+			{/* 🎆 HERO SECTION (Banner de Fundo) */}
+			<section className="relative w-full h-[350px] md:h-[450px] overflow-hidden">
+				<Image
+					src={bannerUrl}
+					alt={`Banner de ${manga.title}`}
+					fill
+					priority
+					className="object-cover opacity-60 blur-[2px]"
+					unoptimized={bannerUrl.includes('localhost')}
+				/>
+				{/* Gradiente para fundir o banner com o fundo preto do site */}
+				<div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/60 to-background" />
+			</section>
+
+			{/* 📚 MANGA DETAIL CARD (Sobrepondo o Banner) */}
+			<main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 -mt-40 md:-mt-64">
+				<div className="bg-card border border-border shadow-2xl rounded-xl p-6 md:p-10 flex flex-col md:flex-row gap-8 lg:gap-12">
+					{/* Lado Esquerdo: Capa e Botão */}
+					<div className="flex-shrink-0 w-full md:w-[260px] flex flex-col gap-6">
+						<div className="relative aspect-[2/3] w-full rounded-lg overflow-hidden shadow-lg border border-border">
+							<Image
+								src={coverUrl}
+								alt={`Capa de ${manga.title}`}
+								fill
+								sizes="(max-width: 768px) 100vw, 260px"
+								className="object-cover"
+								unoptimized={coverUrl.includes('localhost')}
+							/>
+							{/* Badge de Volume igual ao seu layout */}
+							<div className="absolute top-2 left-2 bg-black/80 backdrop-blur text-white font-black text-xl px-2 py-1 rounded">
+								26
+							</div>
+						</div>
+						<Button
+							size="lg"
+							className="w-full text-md font-bold h-12 bg-primary hover:bg-brand-dark text-white"
+						>
+							Começar a ler Vol. 1
+						</Button>
+					</div>
+
+					{/* Lado Direito: Informações */}
+					<div className="flex-1 flex flex-col">
+						<div className="flex items-start justify-between mb-6">
+							<h1 className="text-4xl md:text-5xl font-black tracking-tight text-foreground">
+								{manga.title}
+							</h1>
+							<Button
+								variant="ghost"
+								size="icon"
+								className="text-primary hover:bg-primary/10 hover:text-primary"
+							>
+								<Bookmark className="h-8 w-8" />
+							</Button>
+						</div>
+
+						{/* Tabela de Metadados (A tradução perfeita do seu HTML) */}
+						<div className="grid grid-cols-[120px_1fr] gap-y-3 text-sm md:text-base mb-8">
+							<span className="text-muted-foreground font-medium">Gênero:</span>
+							<span className="text-primary font-medium">
+								{/* Verifica se é um array. Se for, usa o join. Se não for (string), apenas exibe o texto! */}
+								{manga.genres
+									? Array.isArray(manga.genres)
+										? manga.genres.join(', ')
+										: manga.genres
+									: 'Não informado'}
+							</span>
+
+							<span className="text-muted-foreground font-medium">Artista:</span>
+							<span className="text-primary font-medium">
+								{manga.author || 'Desconhecido'}
+							</span>
+
+							<span className="text-muted-foreground font-medium">Atualização:</span>
+							<span className="text-foreground">VOL. 26</span>
+
+							<span className="text-muted-foreground font-medium">Avaliação:</span>
+							<div className="flex items-center gap-1">
+								<div className="flex text-yellow-500">
+									<Star className="h-4 w-4 fill-current" />
+									<Star className="h-4 w-4 fill-current" />
+									<Star className="h-4 w-4 fill-current" />
+									<Star className="h-4 w-4 fill-current" />
+									<Star className="h-4 w-4 fill-current opacity-50" />
+								</div>
+								<span className="text-primary font-bold ml-2">(4.5)</span>
+							</div>
+						</div>
+
+						{/* Sinopse */}
+						<div className="text-muted-foreground leading-relaxed text-sm md:text-base">
+							<p className="line-clamp-4">
+								{manga.synopsis || 'Nenhuma sinopse disponível para esta obra.'}
+							</p>
+							<button className="text-primary font-semibold mt-2 hover:underline">
+								Ler mais
+							</button>
+						</div>
+					</div>
+				</div>
+
+				{/* 📑 LIST SECTION (Volumes / Capítulos) */}
+				<div className="mt-8 bg-card border border-border shadow-xl rounded-xl p-6">
+					<Tabs defaultValue="vol" className="w-full">
+						{/* Cabeçalho da Lista (Abas e Controles) */}
+						<div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-border pb-4 mb-4 gap-4">
+							<TabsList className="bg-transparent border-none p-0 gap-6">
+								<TabsTrigger
+									value="vol"
+									className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-2 text-base font-bold text-muted-foreground"
+								>
+									VOL.
+								</TabsTrigger>
+								<TabsTrigger
+									value="ch"
+									className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-2 text-base font-bold text-muted-foreground"
+								>
+									CH.
+								</TabsTrigger>
+								<TabsTrigger
+									value="side"
+									className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-2 text-base font-bold text-muted-foreground"
+								>
+									Histórias Extras
+								</TabsTrigger>
+							</TabsList>
+
+							{/* Controles de Visualização (Covers/List) e Filtro */}
+							<div className="flex items-center gap-4 text-muted-foreground">
+								<div className="flex items-center gap-2">
+									<button className="hover:text-primary transition-colors p-1">
+										<LayoutGrid className="h-5 w-5" />
+									</button>
+									<button className="text-primary transition-colors p-1">
+										<ListIcon className="h-6 w-6" />
+									</button>
+								</div>
+								<div className="h-6 w-px bg-border mx-2"></div>
+								<select className="bg-transparent border-b border-border text-sm font-medium focus:outline-none text-foreground pb-1">
+									<option value="latest">Mais Recentes</option>
+									<option value="oldest">Mais Antigos</option>
+								</select>
+							</div>
+						</div>
+
+						{/* Conteúdo da Aba de Volumes (Lista) */}
+						<TabsContent value="vol" className="mt-0">
+							<div className="flex flex-col">
+								{mockVolumes.map((vol, index) => (
+									<Link
+										key={vol.id}
+										href="#"
+										className={`flex items-center justify-between py-4 px-4 hover:bg-muted/50 transition-colors ${index % 2 === 0 ? 'bg-transparent' : 'bg-muted/20'}`}
+									>
+										<div className="flex items-center gap-4">
+											{/* Bolinha vermelha para itens novos */}
+											<div
+												className={`h-2 w-2 rounded-full ${vol.isNew ? 'bg-primary' : 'bg-transparent'}`}
+											></div>
+											<span className="font-semibold text-foreground">
+												VOL. {vol.vol}
+											</span>
+										</div>
+										<span className="text-xs text-muted-foreground font-medium tracking-wide">
+											{vol.date}
+										</span>
+									</Link>
+								))}
+							</div>
+						</TabsContent>
+
+						<TabsContent value="ch">
+							<div className="text-center py-12 text-muted-foreground">
+								A lista de capítulos soltos aparecerá aqui.
+							</div>
+						</TabsContent>
+					</Tabs>
+				</div>
+			</main>
+		</div>
+	)
+}

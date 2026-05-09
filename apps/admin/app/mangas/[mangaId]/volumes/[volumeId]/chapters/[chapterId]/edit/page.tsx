@@ -195,6 +195,7 @@ export default function EditChapterPage({
 														src={url}
 														className="w-full h-full object-cover"
 														alt={`Página ${i + 1}`}
+														loading="eager"
 													/>
 													<div className="absolute top-1 left-1 bg-black/70 text-[10px] text-white px-1 rounded">
 														{i + 1}

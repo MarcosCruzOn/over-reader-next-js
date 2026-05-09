@@ -55,7 +55,7 @@ export default function Hero({ mangas }: HeroProps) {
 
 	console.log('URL DA IMAGEM VINDA DO BANCO hero:', currentManga.coverUrl)
 	return (
-		<section className="relative w-full h-150 md:h-175 overflow-hidden bg-black">
+		<section className="relative w-full h-150 md:h-175 overflow-hidden bg-brand-black">
 			<AnimatePresence mode="wait">
 				<motion.div
 					key={currentSlide}
@@ -89,7 +89,7 @@ export default function Hero({ mangas }: HeroProps) {
 							transition={{ duration: 0.6, delay: 0.2 }}
 							className="max-w-2xl"
 						>
-							<div className="inline-block mb-4 px-4 py-1.5 bg-[#C41E3A] text-white text-sm font-semibold tracking-wider rounded">
+							<div className="inline-block mb-4 px-4 py-1.5 bg-brand-primary text-white text-sm font-semibold tracking-wider rounded">
 								DESTAQUE
 							</div>
 							<h1
@@ -106,7 +106,7 @@ export default function Hero({ mangas }: HeroProps) {
 							<Link href={`/mangas/${currentManga.id}`}>
 								<Button
 									size="lg"
-									className="bg-[#C41E3A] hover:bg-[#A01830] text-white font-semibold px-8 py-6 text-lg transition-all duration-200 active:scale-[0.98]"
+									className="bg-brand-primary hover:bg-brand-dark text-white font-semibold px-8 py-6 text-lg transition-all duration-200 active:scale-[0.98]"
 								>
 									Ler agora
 								</Button>
@@ -136,7 +136,7 @@ export default function Hero({ mangas }: HeroProps) {
 					<button
 						key={index}
 						onClick={() => goToSlide(index)}
-						className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentSlide ? 'bg-[#C41E3A] w-8' : 'bg-white/40 hover:bg-white/60'}`}
+						className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentSlide ? 'bg-brand-primary w-8' : 'bg-white/40 hover:bg-white/60'}`}
 					/>
 				))}
 			</div>

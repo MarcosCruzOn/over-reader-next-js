@@ -59,12 +59,12 @@ export default function LatestUpdatesSection({ mangas }: LatestUpdatesProps) {
 					onValueChange={setSelectedDay}
 					className="w-full sm:w-auto"
 				>
-					<TabsList className="bg-gray-900 border border-gray-800 grid grid-cols-7 w-full sm:w-auto">
+					<TabsList className="bg-brand-gray border border-gray-800 grid grid-cols-7 w-full sm:w-auto">
 						{days.map((day) => (
 							<TabsTrigger
 								key={day}
 								value={day}
-								className="data-[state=active]:bg-[#C41E3A] data-[state=active]:text-white text-gray-400 text-xs sm:text-sm font-medium px-2 sm:px-4"
+								className="text-gray-400 text-xs sm:text-sm font-medium px-2 sm:px-4"
 							>
 								{day}
 							</TabsTrigger>
@@ -77,7 +77,7 @@ export default function LatestUpdatesSection({ mangas }: LatestUpdatesProps) {
 			{filteredMangas.length > 0 ? (
 				<MangaGrid mangas={filteredMangas} />
 			) : (
-				<div className="py-12 text-center text-gray-500 border border-dashed border-gray-800 rounded-xl bg-gray-900/50">
+				<div className="py-12 text-center text-gray-500 border border-dashed border-gray-800 rounded-xl bg-brand-gray">
 					Nenhuma atualização encontrada para{' '}
 					<span className="font-bold">{selectedDay}</span>.
 				</div>

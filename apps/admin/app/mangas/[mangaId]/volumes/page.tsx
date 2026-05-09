@@ -107,6 +107,7 @@ export default function VolumesPage({ params }: { params: Promise<{ mangaId: str
 									src={manga.bannerUrl}
 									alt={manga.title}
 									className="w-full h-full object-cover"
+									loading="lazy"
 								/>
 								<div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-6">
 									<h1 className="text-3xl font-bold text-white">{manga.title}</h1>
@@ -163,6 +164,7 @@ export default function VolumesPage({ params }: { params: Promise<{ mangaId: str
 												<img
 													src={vol.coverUrl}
 													className="w-full h-full object-cover"
+													loading="eager"
 												/>
 											) : (
 												<div className="flex h-full items-center justify-center text-muted-foreground text-sm">

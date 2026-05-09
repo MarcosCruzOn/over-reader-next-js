@@ -207,6 +207,7 @@ export default function NewChapterPage({
 															src={URL.createObjectURL(file)}
 															alt={`Página ${index + 1}`}
 															className="object-cover w-full h-full"
+															loading="eager"
 														/>
 														{/* Overlay de numeração */}
 														<div className="absolute top-1 left-1 bg-background/80 backdrop-blur-sm px-2 py-0.5 rounded text-xs font-bold">
