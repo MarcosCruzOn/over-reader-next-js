@@ -1,6 +1,7 @@
-import { eq } from 'drizzle-orm'
+import { eq, and } from 'drizzle-orm'
 import { db } from '../db'
 import { chapters } from '../entities/chapters'
+import { volumes } from '../entities/volumes'
 
 export type CreateChapterDTO = typeof chapters.$inferInsert
 
@@ -35,6 +36,22 @@ export class ChapterRepository {
 
 	async findById(id: number) {
 		const result = await db.select().from(chapters).where(eq(chapters.id, id))
+		return result[0]
+	}
+
+	async findByMangaAndNumber(mangaId: number, chapterNumber: number) {
+		const result = await db
+			.select({
+				id: chapters.id,
+				chapterNumber: chapters.chapterNumber, // Ajuste para o nome exato do seu schema (camelCase)
+				title: chapters.title,
+				pages: chapters.pages,
+			})
+			.from(chapters)
+			.innerJoin(volumes, eq(chapters.volumeId, volumes.id))
+			.where(and(eq(volumes.mangaId, mangaId), eq(chapters.chapterNumber, chapterNumber)))
+			.limit(1)
+
 		return result[0]
 	}
 }

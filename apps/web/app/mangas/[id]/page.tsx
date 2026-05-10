@@ -87,12 +87,14 @@ export default async function MangaDetailPage({ params }: { params: Promise<{ id
 								26
 							</div>
 						</div>
-						<Button
-							size="lg"
-							className="w-full text-md font-bold h-12 bg-primary hover:bg-brand-dark text-white"
-						>
-							Começar a ler Vol. 1
-						</Button>
+						<Link href={`/mangas/${resolvedParams.id}/read/1`} className="w-full block">
+							<Button
+								size="lg"
+								className="w-full text-md font-bold h-12 bg-primary hover:bg-brand-dark text-white"
+							>
+								Começar a ler Vol. 1
+							</Button>
+						</Link>
 					</div>
 
 					{/* Lado Direito: Informações */}

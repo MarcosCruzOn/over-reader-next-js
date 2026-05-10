@@ -16,6 +16,9 @@ chapterRoutes.patch('/:id/pages', uploadConfig.array('pages', 100), (req, res) =
 	chapterController.uploadPages(req, res)
 )
 
+chapterRoutes.get('/manga/:mangaId/number/:chapterNumber', (req, res) =>
+	chapterController.getByMangaAndNumber(req, res)
+)
 chapterRoutes.get('/:id', (req, res) => chapterController.getById(req, res))
 chapterRoutes.put('/:id', (req, res) => chapterController.update(req, res))
 
