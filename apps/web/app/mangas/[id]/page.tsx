@@ -2,7 +2,7 @@ import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import Header from '../../components/Header'
-import { Bookmark, Star, LayoutGrid, List as ListIcon } from 'lucide-react'
+import { Bookmark, Star, LayoutGrid, List as ListIcon, ChevronDown } from 'lucide-react'
 import { Button } from '@workspace/ui/components/button'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@workspace/ui/components/tabs'
 import { Manga } from '@workspace/types'
@@ -40,6 +40,26 @@ export default async function MangaDetailPage({ params }: { params: Promise<{ id
 	const manga = await getManga(resolvedParams.id)
 	// 🔥 BUSCA OS CAPÍTULOS REAIS AQUI
 	const chapters = await getMangaChapters(resolvedParams.id)
+
+	const uniqueVolumes = Array.from(new Set(chapters.map((ch: any) => ch.volumeNumber))).sort(
+		(a: any, b: any) => b - a
+	) // Ordena do último volume para o primeiro
+
+	const groupedVolumes = Array.from(new Set(chapters.map((ch: any) => ch.volumeNumber)))
+		.sort((a: any, b: any) => b - a) // Ordena do volume mais novo para o mais velho
+		.map((volNum) => {
+			// Filtra todos os capítulos deste volume
+			const volChapters = chapters.filter((ch: any) => ch.volumeNumber === volNum)
+			// Como a lista global já vem do mais novo pro mais velho (DESC),
+			// o índice 0 sempre será o capítulo mais recente deste volume.
+			const latestDate = volChapters.length > 0 ? volChapters[0].createdAt : null
+
+			return {
+				number: volNum,
+				chapters: volChapters,
+				latestDate: latestDate,
+			}
+		})
 
 	{
 		/* ... erro ... */
@@ -169,8 +189,9 @@ export default async function MangaDetailPage({ params }: { params: Promise<{ id
 
 				{/* 📑 LIST SECTION (Volumes / Capítulos) */}
 				<div className="mt-8 bg-card border border-border shadow-xl rounded-xl p-6">
+					{/* 📑 LIST SECTION (Volumes / Capítulos) */}
 					<Tabs defaultValue="vol" className="w-full">
-						{/* Cabeçalho da Lista (Abas e Controles) */}
+						{/* Cabeçalho da Lista: Abas e Controles de Grid/List restaurados */}
 						<div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-border pb-4 mb-4 gap-4">
 							<TabsList className="bg-transparent border-none p-0 gap-6">
 								<TabsTrigger
@@ -185,34 +206,110 @@ export default async function MangaDetailPage({ params }: { params: Promise<{ id
 								>
 									CH.
 								</TabsTrigger>
+								{/* Nova Aba de Galeria */}
 								<TabsTrigger
-									value="side"
+									value="gallery"
 									className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-2 text-base font-bold text-muted-foreground"
 								>
-									Histórias Extras
+									Galeria
 								</TabsTrigger>
 							</TabsList>
 
-							{/* Controles de Visualização (Covers/List) e Filtro */}
+							{/* Controles de Visualização (Grid/List) restaurados */}
 							<div className="flex items-center gap-4 text-muted-foreground">
 								<div className="flex items-center gap-2">
-									<button className="hover:text-primary transition-colors p-1">
+									<button
+										className="hover:text-primary transition-colors p-1"
+										title="Visualização em Grid"
+									>
 										<LayoutGrid className="h-5 w-5" />
 									</button>
-									<button className="text-primary transition-colors p-1">
+									<button
+										className="text-primary transition-colors p-1"
+										title="Visualização em Lista"
+									>
 										<ListIcon className="h-6 w-6" />
 									</button>
 								</div>
 								<div className="h-6 w-px bg-border mx-2"></div>
-								<select className="bg-transparent border-b border-border text-sm font-medium focus:outline-none text-foreground pb-1">
-									<option value="latest">Mais Recentes</option>
-									<option value="oldest">Mais Antigos</option>
+								<select className="bg-transparent border-b border-border text-sm font-medium focus:outline-none text-foreground pb-1 cursor-pointer">
+									<option value="latest" className="bg-card">
+										Mais Recentes
+									</option>
+									<option value="oldest" className="bg-card">
+										Mais Antigos
+									</option>
 								</select>
 							</div>
 						</div>
 
-						{/* Conteúdo da Aba de Volumes (Lista) */}
+						{/* 📚 ABA DE VOLUMES (Com Accordion e Data) */}
 						<TabsContent value="vol" className="mt-0">
+							<div className="flex flex-col gap-3">
+								{groupedVolumes.length > 0 ? (
+									groupedVolumes.map((vol) => (
+										// Usamos a tag <details> nativa do HTML para criar um Accordion sem Javascript extra!
+										<details
+											key={vol.number}
+											className="group border border-border rounded-lg bg-background overflow-hidden transition-all duration-300"
+										>
+											<summary className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/50 transition-colors list-none">
+												<div className="flex items-center gap-4">
+													<span className="font-bold text-foreground text-lg uppercase">
+														Volume {vol.number}
+													</span>
+													<span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-1 rounded-full">
+														{vol.chapters.length} Capítulos
+													</span>
+												</div>
+												<div className="flex items-center gap-4">
+													<span className="text-xs text-muted-foreground font-medium uppercase hidden sm:block">
+														Atualizado em:{' '}
+														{vol.latestDate
+															? new Date(
+																	vol.latestDate
+																).toLocaleDateString('pt-BR')
+															: 'N/A'}
+													</span>
+													{/* A setinha gira quando o <details> é aberto */}
+													<ChevronDown className="h-5 w-5 text-muted-foreground transition-transform duration-300 group-open:rotate-180" />
+												</div>
+											</summary>
+
+											{/* Lista de Capítulos Dentro do Volume */}
+											<div className="border-t border-border bg-card">
+												{vol.chapters.map((ch: any, index: number) => (
+													<Link
+														key={ch.id}
+														href={`/mangas/${manga.id}/read/${ch.chapterNumber}`}
+														className={`flex items-center justify-between py-3 px-6 hover:bg-muted/50 transition-colors ${index % 2 === 0 ? 'bg-transparent' : 'bg-muted/20'}`}
+													>
+														<span className="font-semibold text-foreground text-sm uppercase">
+															Cap. {ch.chapterNumber}
+															<span className="text-muted-foreground font-normal ml-2 hidden md:inline">
+																— {ch.title}
+															</span>
+														</span>
+														<span className="text-xs text-muted-foreground">
+															{new Date(
+																ch.createdAt
+															).toLocaleDateString('pt-BR')}
+														</span>
+													</Link>
+												))}
+											</div>
+										</details>
+									))
+								) : (
+									<div className="text-center py-12 text-muted-foreground">
+										Nenhum volume encontrado.
+									</div>
+								)}
+							</div>
+						</TabsContent>
+
+						{/* 📖 ABA DE CAPÍTULOS (Lista Direta) */}
+						<TabsContent value="ch" className="mt-0">
 							<div className="flex flex-col">
 								{chapters.length > 0 ? (
 									chapters.map((ch: any, index: number) => (
@@ -222,15 +319,14 @@ export default async function MangaDetailPage({ params }: { params: Promise<{ id
 											className={`flex items-center justify-between py-4 px-4 hover:bg-muted/50 transition-colors ${index % 2 === 0 ? 'bg-transparent' : 'bg-muted/20'}`}
 										>
 											<div className="flex items-center gap-4">
-												{/* Indicador de novidade (se criado nas últimas 24h) */}
 												<div
-													className={`h-2 w-2 rounded-full ${new Date(ch.createdAt) > new Date(Date.now() - 86400000) ? 'bg-primary' : 'bg-transparent'}`}
+													className={`h-2 w-2 rounded-full ${new Date(ch.createdAt) > new Date(Date.now() - 172800000) ? 'bg-primary' : 'bg-transparent'}`}
 												></div>
-												<span className="font-semibold text-foreground">
-													CAPÍTULO {ch.chapterNumber}
+												<span className="font-semibold text-foreground uppercase">
+													Cap. {ch.chapterNumber}
 												</span>
 												<span className="text-muted-foreground text-sm font-normal hidden md:inline">
-													{ch.title}
+													— {ch.title || 'Sem título'}
 												</span>
 											</div>
 											<span className="text-xs text-muted-foreground font-medium tracking-wide uppercase">
@@ -246,9 +342,15 @@ export default async function MangaDetailPage({ params }: { params: Promise<{ id
 							</div>
 						</TabsContent>
 
-						<TabsContent value="ch">
-							<div className="text-center py-12 text-muted-foreground">
-								A lista de capítulos soltos aparecerá aqui.
+						{/* 🖼️ ABA DE GALERIA */}
+						<TabsContent value="gallery">
+							<div className="text-center py-20 text-muted-foreground border-2 border-dashed border-border rounded-xl mt-4">
+								<p className="mb-2 text-lg font-medium">
+									Galeria de Artes em Breve
+								</p>
+								<p className="text-sm opacity-60">
+									Aqui ficarão as artes oficiais, capas de volumes e ilustrações.
+								</p>
 							</div>
 						</TabsContent>
 					</Tabs>
