@@ -21,11 +21,29 @@ async function getManga(id: string): Promise<Manga | null> {
 	}
 }
 
-// Next.js 16 exige que os params sejam uma Promise
+// ⚡ Nova função para buscar os capítulos reais
+async function getMangaChapters(mangaId: string) {
+	try {
+		const res = await fetch(`http://localhost:3333/chapters/manga/${mangaId}`, {
+			cache: 'no-store',
+		})
+		if (!res.ok) return []
+		return res.json()
+	} catch (error) {
+		console.error('Erro ao buscar capítulos:', error)
+		return []
+	}
+}
+
 export default async function MangaDetailPage({ params }: { params: Promise<{ id: string }> }) {
 	const resolvedParams = await params
 	const manga = await getManga(resolvedParams.id)
+	// 🔥 BUSCA OS CAPÍTULOS REAIS AQUI
+	const chapters = await getMangaChapters(resolvedParams.id)
 
+	{
+		/* ... erro ... */
+	}
 	if (!manga) {
 		return (
 			<div className="dark min-h-screen bg-background text-foreground flex flex-col items-center justify-center">
@@ -41,14 +59,6 @@ export default async function MangaDetailPage({ params }: { params: Promise<{ id
 	const coverUrl = manga.coverUrl || 'https://placehold.co/300x400/1a1a1a/white.png?text=Sem+Capa'
 	const bannerUrl =
 		manga.bannerUrl || 'https://placehold.co/1920x800/1a1a1a/white.png?text=Sem+Banner'
-
-	// Mock de volumes (Como ainda não temos os capítulos no banco, criamos alguns para o visual)
-	const mockVolumes = Array.from({ length: 10 }, (_, i) => ({
-		id: i,
-		vol: 26 - i,
-		date: i === 0 ? '8 HORAS ATRÁS' : i === 1 ? '18 HORAS ATRÁS' : 'JULHO 26, 2026',
-		isNew: i === 0,
-	}))
 
 	return (
 		<div className="dark min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-primary-foreground pb-20">
@@ -204,26 +214,35 @@ export default async function MangaDetailPage({ params }: { params: Promise<{ id
 						{/* Conteúdo da Aba de Volumes (Lista) */}
 						<TabsContent value="vol" className="mt-0">
 							<div className="flex flex-col">
-								{mockVolumes.map((vol, index) => (
-									<Link
-										key={vol.id}
-										href="#"
-										className={`flex items-center justify-between py-4 px-4 hover:bg-muted/50 transition-colors ${index % 2 === 0 ? 'bg-transparent' : 'bg-muted/20'}`}
-									>
-										<div className="flex items-center gap-4">
-											{/* Bolinha vermelha para itens novos */}
-											<div
-												className={`h-2 w-2 rounded-full ${vol.isNew ? 'bg-primary' : 'bg-transparent'}`}
-											></div>
-											<span className="font-semibold text-foreground">
-												VOL. {vol.vol}
+								{chapters.length > 0 ? (
+									chapters.map((ch: any, index: number) => (
+										<Link
+											key={ch.id}
+											href={`/mangas/${manga.id}/read/${ch.chapterNumber}`}
+											className={`flex items-center justify-between py-4 px-4 hover:bg-muted/50 transition-colors ${index % 2 === 0 ? 'bg-transparent' : 'bg-muted/20'}`}
+										>
+											<div className="flex items-center gap-4">
+												{/* Indicador de novidade (se criado nas últimas 24h) */}
+												<div
+													className={`h-2 w-2 rounded-full ${new Date(ch.createdAt) > new Date(Date.now() - 86400000) ? 'bg-primary' : 'bg-transparent'}`}
+												></div>
+												<span className="font-semibold text-foreground">
+													CAPÍTULO {ch.chapterNumber}
+												</span>
+												<span className="text-muted-foreground text-sm font-normal hidden md:inline">
+													{ch.title}
+												</span>
+											</div>
+											<span className="text-xs text-muted-foreground font-medium tracking-wide uppercase">
+												{new Date(ch.createdAt).toLocaleDateString('pt-BR')}
 											</span>
-										</div>
-										<span className="text-xs text-muted-foreground font-medium tracking-wide">
-											{vol.date}
-										</span>
-									</Link>
-								))}
+										</Link>
+									))
+								) : (
+									<div className="text-center py-12 text-muted-foreground">
+										Nenhum capítulo disponível.
+									</div>
+								)}
 							</div>
 						</TabsContent>
 

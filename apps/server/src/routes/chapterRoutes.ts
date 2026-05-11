@@ -22,5 +22,7 @@ chapterRoutes.get('/manga/:mangaId/number/:chapterNumber', (req, res) =>
 chapterRoutes.get('/:id', (req, res) => chapterController.getById(req, res))
 chapterRoutes.put('/:id', (req, res) => chapterController.update(req, res))
 
+chapterRoutes.get('/manga/:mangaId', (req, res) => chapterController.listByManga(req, res))
+
 // 🔥 Nossa rota de exclusão LIMPA!
 chapterRoutes.delete('/:id', (req, res) => chapterController.delete(req, res))

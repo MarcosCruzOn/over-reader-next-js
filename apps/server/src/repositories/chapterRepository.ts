@@ -1,4 +1,4 @@
-import { eq, and } from 'drizzle-orm'
+import { eq, and, desc } from 'drizzle-orm'
 import { db } from '../db'
 import { chapters } from '../entities/chapters'
 import { volumes } from '../entities/volumes'
@@ -53,5 +53,20 @@ export class ChapterRepository {
 			.limit(1)
 
 		return result[0]
+	}
+
+	async findAllByManga(mangaId: number) {
+		return await db
+			.select({
+				id: chapters.id,
+				chapterNumber: chapters.chapterNumber,
+				title: chapters.title,
+				createdAt: chapters.createdAt,
+				volumeNumber: volumes.volumeNumber,
+			})
+			.from(chapters)
+			.innerJoin(volumes, eq(chapters.volumeId, volumes.id))
+			.where(eq(volumes.mangaId, mangaId))
+			.orderBy(desc(chapters.chapterNumber)) // Mais recentes primeiro
 	}
 }

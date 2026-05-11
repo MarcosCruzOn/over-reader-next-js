@@ -113,4 +113,15 @@ export class ChapterController {
 			return res.status(500).json({ error: 'Erro ao buscar o capítulo' })
 		}
 	}
+
+	async listByManga(req: Request, res: Response) {
+		try {
+			const mangaId = Number(req.params.mangaId)
+			const repository = new ChapterRepository()
+			const chapters = await repository.findAllByManga(mangaId)
+			res.json(chapters)
+		} catch (error: any) {
+			res.status(400).json({ error: error.message })
+		}
+	}
 }
