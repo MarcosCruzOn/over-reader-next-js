@@ -2,7 +2,9 @@ import { MangaRepository } from '../repositories/mangaRepository'
 
 export class ListMangasUseCase {
 	constructor(private mangaRepository: MangaRepository) {}
-	async execute() {
-		return await this.mangaRepository.findAll()
+
+	// Agora o execute recebe os filtros opcionais
+	async execute(filters?: { search?: string; genre?: string }) {
+		return await this.mangaRepository.findAll(filters)
 	}
 }

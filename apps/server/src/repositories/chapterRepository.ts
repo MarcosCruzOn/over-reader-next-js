@@ -63,6 +63,7 @@ export class ChapterRepository {
 				title: chapters.title,
 				createdAt: chapters.createdAt,
 				volumeNumber: volumes.volumeNumber,
+				volumeCover: volumes.coverUrl,
 			})
 			.from(chapters)
 			.innerJoin(volumes, eq(chapters.volumeId, volumes.id))

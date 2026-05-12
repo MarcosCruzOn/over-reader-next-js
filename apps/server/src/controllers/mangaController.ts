@@ -28,10 +28,23 @@ export class MangaController {
 	}
 
 	async list(req: Request, res: Response) {
-		const repository = new MangaRepository()
-		const useCase = new ListMangasUseCase(repository)
-		const mangas = await useCase.execute()
-		res.json(mangas)
+		try {
+			// 1. Pegamos os parâmetros da URL
+			const { search, genre } = req.query
+
+			const repository = new MangaRepository()
+			const useCase = new ListMangasUseCase(repository)
+
+			// 2. Passamos os parâmetros para o caso de uso
+			const mangas = await useCase.execute({
+				search: search as string,
+				genre: genre as string,
+			})
+
+			res.json(mangas)
+		} catch (error: any) {
+			res.status(400).json({ error: error.message })
+		}
 	}
 
 	async update(req: Request, res: Response) {

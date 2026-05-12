@@ -25,11 +25,9 @@ export default function MangaTabsSection({
 	chapters,
 	groupedVolumes,
 }: MangaTabsSectionProps) {
-	// Estados que controlam a interface
 	const [activeTab, setActiveTab] = useState('vol')
 	const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
 
-	// Função inteligente: se for para a aba CH, força a visualização em lista!
 	const handleTabChange = (value: string) => {
 		setActiveTab(value)
 		if (value === 'ch') {
@@ -100,7 +98,6 @@ export default function MangaTabsSection({
 			{/* 📚 ABA DE VOLUMES */}
 			<TabsContent value="vol" className="mt-0">
 				{viewMode === 'list' ? (
-					// VISUALIZAÇÃO EM LISTA (A Sanfona que criamos antes)
 					<div className="flex flex-col gap-3">
 						{groupedVolumes.map((vol) => (
 							<details
@@ -151,20 +148,23 @@ export default function MangaTabsSection({
 						))}
 					</div>
 				) : (
-					// 🔥 NOVA VISUALIZAÇÃO EM GRID (Com Modais)
 					<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-						{groupedVolumes.map((vol) => (
-							<Dialog key={vol.number}>
-								<DialogTrigger asChild>
-									<div className="group cursor-pointer rounded-xl border border-border bg-background overflow-hidden hover:border-primary transition-colors shadow-sm">
+						{groupedVolumes.map((vol) => {
+							// 🔥 DETERMINA A CAPA AQUI
+							const currentCover = vol.coverUrl || coverFallback
+
+							return (
+								<Dialog key={vol.number}>
+									{/* 🔥 CORREÇÃO: Sem asChild e usando as classes diretamente */}
+									<DialogTrigger className="group cursor-pointer rounded-xl border border-border bg-background overflow-hidden hover:border-primary transition-colors shadow-sm text-left w-full focus:outline-none">
 										<div className="aspect-[2/3] relative bg-muted">
 											<Image
-												src={coverFallback}
+												src={currentCover}
 												alt={`Volume ${vol.number}`}
 												fill
 												sizes="(max-width: 768px) 50vw, 20vw"
 												className="object-cover transition-transform duration-300 group-hover:scale-105"
-												unoptimized={coverFallback.includes('localhost')}
+												unoptimized={currentCover.includes('localhost')}
 											/>
 											<div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
 											<div className="absolute top-2 left-2 bg-black/80 backdrop-blur text-white font-black text-sm px-2 py-1 rounded">
@@ -179,42 +179,41 @@ export default function MangaTabsSection({
 												{vol.chapters.length} Capítulos
 											</p>
 										</div>
-									</div>
-								</DialogTrigger>
+									</DialogTrigger>
 
-								{/* O CONTEÚDO DO MODAL */}
-								<DialogContent className="max-w-md bg-card border-border text-foreground">
-									<DialogHeader>
-										<DialogTitle className="text-2xl font-black uppercase text-center border-b border-border pb-4">
-											Volume {vol.number}
-										</DialogTitle>
-									</DialogHeader>
-									<div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto pr-2 mt-4 custom-scrollbar">
-										{vol.chapters.map((ch: any) => (
-											<Link
-												key={ch.id}
-												href={`/mangas/${manga.id}/read/${ch.chapterNumber}`}
-												className="p-4 bg-background hover:bg-muted border border-border hover:border-primary rounded-xl flex items-center justify-between transition-all group"
-											>
-												<span className="font-bold text-foreground group-hover:text-primary transition-colors">
-													Cap. {ch.chapterNumber}
-												</span>
-												<span className="text-xs text-muted-foreground font-medium">
-													{new Date(ch.createdAt).toLocaleDateString(
-														'pt-BR'
-													)}
-												</span>
-											</Link>
-										))}
-									</div>
-								</DialogContent>
-							</Dialog>
-						))}
+									<DialogContent className="max-w-md bg-card border-border text-foreground">
+										<DialogHeader>
+											<DialogTitle className="text-2xl font-black uppercase text-center border-b border-border pb-4">
+												Volume {vol.number}
+											</DialogTitle>
+										</DialogHeader>
+										<div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto pr-2 mt-4 custom-scrollbar">
+											{vol.chapters.map((ch: any) => (
+												<Link
+													key={ch.id}
+													href={`/mangas/${manga.id}/read/${ch.chapterNumber}`}
+													className="p-4 bg-background hover:bg-muted border border-border hover:border-primary rounded-xl flex items-center justify-between transition-all group"
+												>
+													<span className="font-bold text-foreground group-hover:text-primary transition-colors">
+														Cap. {ch.chapterNumber}
+													</span>
+													<span className="text-xs text-muted-foreground font-medium">
+														{new Date(ch.createdAt).toLocaleDateString(
+															'pt-BR'
+														)}
+													</span>
+												</Link>
+											))}
+										</div>
+									</DialogContent>
+								</Dialog>
+							)
+						})}
 					</div>
 				)}
 			</TabsContent>
 
-			{/* 📖 ABA DE CAPÍTULOS (Sempre em Lista, o Grid foi desabilitado no header) */}
+			{/* 📖 ABA DE CAPÍTULOS */}
 			<TabsContent value="ch" className="mt-0">
 				<div className="flex flex-col">
 					{chapters.length > 0 ? (

@@ -3,9 +3,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import Header from '../../components/Header'
 import MangaTabsSection from '@/app/components/MangaTabsSection'
-import { Bookmark, Star, LayoutGrid, List as ListIcon, ChevronDown } from 'lucide-react'
+import { Bookmark, Star } from 'lucide-react'
 import { Button } from '@workspace/ui/components/button'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@workspace/ui/components/tabs'
 import { Manga } from '@workspace/types'
 
 // ⚡ Server Action: Busca o mangá específico pelo ID
@@ -39,32 +38,28 @@ async function getMangaChapters(mangaId: string) {
 export default async function MangaDetailPage({ params }: { params: Promise<{ id: string }> }) {
 	const resolvedParams = await params
 	const manga = await getManga(resolvedParams.id)
+
 	// 🔥 BUSCA OS CAPÍTULOS REAIS AQUI
 	const chapters = await getMangaChapters(resolvedParams.id)
 
-	const uniqueVolumes = Array.from(new Set(chapters.map((ch: any) => ch.volumeNumber))).sort(
-		(a: any, b: any) => b - a
-	) // Ordena do último volume para o primeiro
-
+	// 🔥 LÓGICA DE AGRUPAMENTO AVANÇADA (No Servidor)
 	const groupedVolumes = Array.from(new Set(chapters.map((ch: any) => ch.volumeNumber)))
-		.sort((a: any, b: any) => b - a) // Ordena do volume mais novo para o mais velho
+		.sort((a: any, b: any) => b - a)
 		.map((volNum) => {
-			// Filtra todos os capítulos deste volume
 			const volChapters = chapters.filter((ch: any) => ch.volumeNumber === volNum)
-			// Como a lista global já vem do mais novo pro mais velho (DESC),
-			// o índice 0 sempre será o capítulo mais recente deste volume.
 			const latestDate = volChapters.length > 0 ? volChapters[0].createdAt : null
+
+			// 🔥 Pegamos a capa específica deste volume (que veio do primeiro capítulo dele)
+			const volCover = volChapters.length > 0 ? volChapters[0].volumeCover : null
 
 			return {
 				number: volNum,
+				coverUrl: volCover, // Guardamos a capa do volume aqui!
 				chapters: volChapters,
 				latestDate: latestDate,
 			}
 		})
 
-	{
-		/* ... erro ... */
-	}
 	if (!manga) {
 		return (
 			<div className="dark min-h-screen bg-background text-foreground flex flex-col items-center justify-center">
@@ -95,7 +90,6 @@ export default async function MangaDetailPage({ params }: { params: Promise<{ id
 					className="object-cover opacity-60 blur-[2px]"
 					unoptimized={bannerUrl.includes('localhost')}
 				/>
-				{/* Gradiente para fundir o banner com o fundo preto do site */}
 				<div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/60 to-background" />
 			</section>
 
@@ -113,9 +107,8 @@ export default async function MangaDetailPage({ params }: { params: Promise<{ id
 								className="object-cover"
 								unoptimized={coverUrl.includes('localhost')}
 							/>
-							{/* Badge de Volume igual ao seu layout */}
 							<div className="absolute top-2 left-2 bg-black/80 backdrop-blur text-white font-black text-xl px-2 py-1 rounded">
-								26
+								{groupedVolumes.length > 0 ? groupedVolumes[0].number : 1}
 							</div>
 						</div>
 						<Link href={`/mangas/${resolvedParams.id}/read/1`} className="w-full block">
@@ -143,11 +136,10 @@ export default async function MangaDetailPage({ params }: { params: Promise<{ id
 							</Button>
 						</div>
 
-						{/* Tabela de Metadados (A tradução perfeita do seu HTML) */}
+						{/* Tabela de Metadados */}
 						<div className="grid grid-cols-[120px_1fr] gap-y-3 text-sm md:text-base mb-8">
 							<span className="text-muted-foreground font-medium">Gênero:</span>
 							<span className="text-primary font-medium">
-								{/* Verifica se é um array. Se for, usa o join. Se não for (string), apenas exibe o texto! */}
 								{manga.genres
 									? Array.isArray(manga.genres)
 										? manga.genres.join(', ')
@@ -161,7 +153,9 @@ export default async function MangaDetailPage({ params }: { params: Promise<{ id
 							</span>
 
 							<span className="text-muted-foreground font-medium">Atualização:</span>
-							<span className="text-foreground">VOL. 26</span>
+							<span className="text-foreground">
+								VOL. {groupedVolumes.length > 0 ? groupedVolumes[0].number : 1}
+							</span>
 
 							<span className="text-muted-foreground font-medium">Avaliação:</span>
 							<div className="flex items-center gap-1">

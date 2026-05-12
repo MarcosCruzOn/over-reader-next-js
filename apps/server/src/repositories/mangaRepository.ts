@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm'
+import { eq, and, ilike } from 'drizzle-orm'
 import { db } from '../db'
 import { mangas } from '../entities/mangas'
 
@@ -10,8 +10,33 @@ export class MangaRepository {
 		return result[0]
 	}
 
-	async findAll() {
-		return await db.select().from(mangas)
+	async findAll(filters?: { search?: string; genre?: string }) {
+		// Array para guardar as condições de busca
+		const conditions = []
+
+		// Se o usuário digitou algo na busca, procuramos no título
+		if (filters?.search) {
+			conditions.push(ilike(mangas.title, `%${filters.search}%`))
+		}
+
+		// Como você salvou os gêneros como texto (ex: "Ação, Fantasia"),
+		// usamos o ilike para ver se a palavra está no meio do texto
+		if (filters?.genre) {
+			conditions.push(ilike(mangas.genres, `%${filters.genre}%`))
+		}
+
+		// Montamos a query base
+		let query = db.select().from(mangas)
+
+		// Se tiver alguma condição (search ou genre), aplicamos o WHERE com AND
+		if (conditions.length > 0) {
+			query = query.where(and(...conditions)) as any
+		}
+
+		// Retorna os resultados mais recentes primeiro
+		// query = query.orderBy(desc(mangas.createdAt)) // (Opcional: Descomente se tiver a coluna createdAt)
+
+		return await query
 	}
 
 	async findById(id: number) {
