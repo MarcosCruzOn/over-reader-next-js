@@ -8,4 +8,11 @@ export class FavoriteRepository {
 		const result = await db.insert(favorites).values(data).returning()
 		return result[0]
 	}
+
+	// Novo: Busca os mangás salvos pelo usuário
+	async findByUser(userId: string) {
+		return await db.query.favorites.findMany({
+			where: (favorites, { eq }) => eq(favorites.userId, userId),
+		})
+	}
 }

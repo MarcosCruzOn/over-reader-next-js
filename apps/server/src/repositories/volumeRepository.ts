@@ -11,7 +11,11 @@ export class VolumeRepository {
 	}
 
 	async findByManga(mangaId: number) {
-		return await db.select().from(volumes).where(eq(volumes.mangaId, mangaId))
+		// 🔥 Sintaxe RQ
+		return await db.query.volumes.findMany({
+			where: (volumes, { eq }) => eq(volumes.mangaId, mangaId),
+			orderBy: (volumes, { asc }) => [asc(volumes.volumeNumber)],
+		})
 	}
 
 	async findByMangaId(mangaId: number) {

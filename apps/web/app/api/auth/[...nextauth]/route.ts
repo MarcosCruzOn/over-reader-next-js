@@ -23,6 +23,9 @@ const authOptions = {
 		// forçamos o uso de "jwt" (JSON Web Token) para facilitar a comunicação.
 		strategy: 'jwt' as const,
 	},
+	pages: {
+		signIn: '/login', // Redireciona para a nossa página customizada
+	},
 	callbacks: {
 		// Este callback permite que o ID do usuário fique disponível em todo o frontend
 		async session({ session, token }: any) {

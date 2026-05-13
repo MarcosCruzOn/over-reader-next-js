@@ -27,9 +27,8 @@ export class UserController {
 
 	async changeStatus(req: Request, res: Response) {
 		try {
-			// Pega o ID que vem na URL (ex: /users/1/status)
-			const id = Number(req.params.id)
-			// Pega o novo status que vem no corpo (JSON)
+			// 🔥 CORREÇÃO: ID agora é string pura! Sem Number()
+			const id = req.params.id
 			const { status } = req.body
 
 			const repository = new UserRepository()
@@ -42,13 +41,10 @@ export class UserController {
 		}
 	}
 
-	// Função para receber o upload e salvar no banco
 	async updateAvatar(req: Request, res: Response) {
 		try {
-			const id = Number(req.params.id)
-
-			// O multer-s3 anexa o arquivo processado dentro de req.file
-			// A propriedade "location" é a URL pública gerada pela AWS S3
+			// 🔥 CORREÇÃO: ID agora é string pura!
+			const id = req.params.id
 			const file = req.file as any
 
 			if (!file) {
@@ -56,12 +52,10 @@ export class UserController {
 			}
 
 			const avatarUrl = file.location
-
 			const repository = new UserRepository()
 			const useCase = new UpdateUserAvatarUseCase(repository)
 
 			const user = await useCase.execute(id, avatarUrl)
-
 			res.json(user)
 		} catch (error: any) {
 			res.status(400).json({ error: error.message })

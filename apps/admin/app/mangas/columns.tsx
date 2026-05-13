@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { ColumnDef } from '@tanstack/react-table'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { BookCopy, Edit, Trash2, Image as ImageIcon } from 'lucide-react'
 import { Button } from '@workspace/ui/components/button'
@@ -94,7 +95,7 @@ export const columns: ColumnDef<Manga>[] = [
 		cell: ({ row }) => {
 			const coverUrl = row.getValue('coverUrl') as string | null
 			return coverUrl ? (
-				<img
+				<Image
 					src={coverUrl}
 					alt="Capa"
 					className="h-12 w-8 object-cover rounded-sm border border-border"

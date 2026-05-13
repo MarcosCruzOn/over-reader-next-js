@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { Upload, Save, ArrowLeft, BookImage, Image as ImageIcon, Loader2 } from 'lucide-react'
 
 import { AppSidebar } from '@workspace/ui/components/app-sidebar'
@@ -193,15 +194,16 @@ export default function EditMangaPage({ params }: { params: Promise<{ mangaId: s
 											{/* Lógica de Preview: Mostra a nova se selecionada, senão mostra a antiga, senão mostra ícone */}
 											{bannerFile ? (
 												<div className="relative w-full aspect-[21/9] rounded-md overflow-hidden bg-muted">
-													<img
+													<Image
 														src={URL.createObjectURL(bannerFile)}
 														alt="Novo Banner"
 														className="object-cover w-full h-full"
+														loading="eager"
 													/>
 												</div>
 											) : existingBanner ? (
 												<div className="relative w-full aspect-[21/9] rounded-md overflow-hidden bg-muted opacity-80 hover:opacity-100 transition-opacity">
-													<img
+													<Image
 														src={existingBanner}
 														alt="Banner Atual"
 														className="object-cover w-full h-full"
@@ -380,18 +382,20 @@ export default function EditMangaPage({ params }: { params: Promise<{ mangaId: s
 										<div className="flex flex-col items-center justify-center gap-4 border-2 border-dashed border-border rounded-lg p-6 bg-muted/20">
 											{coverFile ? (
 												<div className="relative w-full aspect-[2/3] rounded-md overflow-hidden bg-muted">
-													<img
+													<Image
 														src={URL.createObjectURL(coverFile)}
 														alt="Nova Capa"
 														className="object-cover w-full h-full"
+														loading="lazy"
 													/>
 												</div>
 											) : existingCover ? (
 												<div className="relative w-full aspect-[2/3] rounded-md overflow-hidden bg-muted opacity-80 hover:opacity-100 transition-opacity">
-													<img
+													<Image
 														src={existingCover}
 														alt="Capa Atual"
 														className="object-cover w-full h-full"
+														loading="lazy"
 													/>
 													<div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
 														Imagem Atual

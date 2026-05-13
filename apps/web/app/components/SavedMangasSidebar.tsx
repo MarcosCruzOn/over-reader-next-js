@@ -33,6 +33,7 @@ export default function SavedMangasSidebar({ savedMangas }: SidebarProps) {
 											sizes="48px"
 											className="object-cover rounded-lg shadow-sm"
 											unoptimized={imageUrl.includes('localhost')}
+											loading="lazy"
 										/>
 									</div>
 									<div className="flex-1 min-w-0">

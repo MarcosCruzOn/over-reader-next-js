@@ -10,26 +10,26 @@ export class UserRepository {
 		return result[0]
 	}
 
-	// Busca todos os usuários
 	async findAll() {
-		return await db.select().from(users)
+		// 🔥 Nova sintaxe RQ! Muito mais limpa
+		return await db.query.users.findMany()
 	}
 
-	// Atualiza apenas o status de um usuário pelo ID
-	async updateStatus(id: number, status: string) {
+	// ⚠️ ATENÇÃO: id agora é STRING por causa do NextAuth/Google
+	async updateStatus(id: string, status: string) {
 		const result = await db.update(users).set({ status }).where(eq(users.id, id)).returning()
 		return result[0]
 	}
 
-	// Atualiza a foto de perfil
-	async updateAvatar(id: number, avatarUrl: string) {
+	async updateAvatar(id: string, avatarUrl: string) {
 		const result = await db.update(users).set({ avatarUrl }).where(eq(users.id, id)).returning()
 		return result[0]
 	}
 
-	// Busca um usuário pelo e-mail (Usado no Login)
 	async findByEmail(email: string) {
-		const result = await db.select().from(users).where(eq(users.email, email))
-		return result[0]
+		// 🔥 Nova sintaxe RQ
+		return await db.query.users.findFirst({
+			where: (users, { eq }) => eq(users.email, email),
+		})
 	}
 }

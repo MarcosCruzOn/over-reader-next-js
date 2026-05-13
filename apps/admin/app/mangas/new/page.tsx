@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { Upload, Save, ArrowLeft, BookImage, Image as ImageIcon } from 'lucide-react'
 
 import { AppSidebar } from '@workspace/ui/components/app-sidebar'
@@ -159,10 +160,11 @@ export default function NewMangaPage() {
 										<div className="flex flex-col items-center justify-center gap-4 border-2 border-dashed border-border rounded-lg p-6 bg-muted/20">
 											{bannerFile ? (
 												<div className="relative w-full aspect-[21/9] rounded-md overflow-hidden bg-muted">
-													<img
+													<Image
 														src={URL.createObjectURL(bannerFile)}
 														alt="Preview do Banner"
 														className="object-cover w-full h-full"
+														loading="eager"
 													/>
 												</div>
 											) : (
@@ -346,10 +348,11 @@ export default function NewMangaPage() {
 										<div className="flex flex-col items-center justify-center gap-4 border-2 border-dashed border-border rounded-lg p-6 bg-muted/20">
 											{coverFile ? (
 												<div className="relative w-full aspect-[2/3] rounded-md overflow-hidden bg-muted">
-													<img
+													<Image
 														src={URL.createObjectURL(coverFile)}
 														alt="Preview da Capa"
 														className="object-cover w-full h-full"
+														loading="lazy"
 													/>
 												</div>
 											) : (

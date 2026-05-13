@@ -8,4 +8,11 @@ export class CommentRepository {
 		const result = await db.insert(comments).values(data).returning()
 		return result[0]
 	}
+
+	// Novo: Busca os comentários feitos pelo usuário
+	async findByUser(userId: string) {
+		return await db.query.comments.findMany({
+			where: (comments, { eq }) => eq(comments.userId, userId),
+		})
+	}
 }

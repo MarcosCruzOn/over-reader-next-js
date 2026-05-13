@@ -89,6 +89,7 @@ export default async function MangaDetailPage({ params }: { params: Promise<{ id
 					priority
 					className="object-cover opacity-60 blur-[2px]"
 					unoptimized={bannerUrl.includes('localhost')}
+					loading="lazy"
 				/>
 				<div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/60 to-background" />
 			</section>
@@ -106,6 +107,7 @@ export default async function MangaDetailPage({ params }: { params: Promise<{ id
 								sizes="(max-width: 768px) 100vw, 260px"
 								className="object-cover"
 								unoptimized={coverUrl.includes('localhost')}
+								loading="lazy"
 							/>
 							<div className="absolute top-2 left-2 bg-black/80 backdrop-blur text-white font-black text-xl px-2 py-1 rounded">
 								{groupedVolumes.length > 0 ? groupedVolumes[0].number : 1}

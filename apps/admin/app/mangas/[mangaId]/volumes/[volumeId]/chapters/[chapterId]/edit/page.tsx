@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { useRouter, useParams } from 'next/navigation'
+import Image from 'next/image'
 import { Save, ArrowLeft, BookOpen, Upload, ImageIcon, Loader2, X } from 'lucide-react'
 
 import { AppSidebar } from '@workspace/ui/components/app-sidebar'
@@ -191,7 +192,7 @@ export default function EditChapterPage({
 													key={i}
 													className="aspect-[2/3] rounded border overflow-hidden bg-muted relative group"
 												>
-													<img
+													<Image
 														src={url}
 														className="w-full h-full object-cover"
 														alt={`Página ${i + 1}`}

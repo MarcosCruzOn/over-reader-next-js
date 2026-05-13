@@ -165,6 +165,7 @@ export default function MangaTabsSection({
 												sizes="(max-width: 768px) 50vw, 20vw"
 												className="object-cover transition-transform duration-300 group-hover:scale-105"
 												unoptimized={currentCover.includes('localhost')}
+												loading="lazy"
 											/>
 											<div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
 											<div className="absolute top-2 left-2 bg-black/80 backdrop-blur text-white font-black text-sm px-2 py-1 rounded">

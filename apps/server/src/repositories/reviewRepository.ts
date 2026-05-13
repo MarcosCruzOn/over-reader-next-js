@@ -8,4 +8,11 @@ export class ReviewRepository {
 		const result = await db.insert(reviews).values(data).returning()
 		return result[0]
 	}
+
+	// Novo: Busca as avaliações dadas pelo usuário
+	async findByUser(userId: string) {
+		return await db.query.reviews.findMany({
+			where: (reviews, { eq }) => eq(reviews.userId, userId),
+		})
+	}
 }

@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { ColumnDef } from '@tanstack/react-table'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Layers, Edit, Trash2, Image as ImageIcon } from 'lucide-react'
 import { Button } from '@workspace/ui/components/button'
@@ -96,10 +97,11 @@ export const columns: ColumnDef<Volume>[] = [
 		cell: ({ row }) => {
 			const coverUrl = row.original.coverUrl
 			return coverUrl ? (
-				<img
+				<Image
 					src={coverUrl}
 					alt={`Capa Volume ${row.original.volumeNumber}`}
 					className="h-16 w-11 object-cover rounded-sm border border-border"
+					loading="lazy"
 				/>
 			) : (
 				<div className="h-16 w-11 bg-muted rounded-sm flex items-center justify-center border border-border">

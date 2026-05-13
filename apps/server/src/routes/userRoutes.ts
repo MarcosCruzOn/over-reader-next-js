@@ -13,3 +13,6 @@ userRoutes.patch('/:id/status', (req, res) => userController.changeStatus(req, r
 userRoutes.patch('/:id/avatar', uploadConfig.single('avatar'), (req, res) =>
 	userController.updateAvatar(req, res)
 )
+
+// Exemplo de como deve ficar no seu userRoutes.ts
+userRoutes.patch('/:id/status', (req, res) => userController.changeStatus(req, res))

@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { useRouter, useParams } from 'next/navigation'
+import Image from 'next/image'
 import { Save, ArrowLeft, Layers, Upload, BookImage, Loader2 } from 'lucide-react'
 
 import { AppSidebar } from '@workspace/ui/components/app-sidebar'
@@ -181,15 +182,18 @@ export default function EditVolumePage() {
 											{/* Lógica de Preview de Imagem */}
 											{coverFile ? (
 												<div className="relative w-full aspect-[2/3] rounded-md overflow-hidden bg-muted">
-													<img
+													<Image
 														src={URL.createObjectURL(coverFile)}
 														className="object-cover w-full h-full"
+														alt="Capa do volume"
+														loading="lazy"
 													/>
 												</div>
 											) : existingCover ? (
 												<div className="relative w-full aspect-[2/3] rounded-md overflow-hidden bg-muted opacity-80 hover:opacity-100 transition-opacity">
-													<img
+													<Image
 														src={existingCover}
+														alt="Capa Atual"
 														className="object-cover w-full h-full"
 													/>
 													<div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">

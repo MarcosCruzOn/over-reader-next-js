@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { Save, ArrowLeft, Layers, Upload, BookImage } from 'lucide-react'
 
 import { AppSidebar } from '@workspace/ui/components/app-sidebar'
@@ -171,9 +172,11 @@ export default function NewVolumePage({ params }: { params: Promise<{ mangaId: s
 										<div className="flex flex-col items-center justify-center gap-4 border-2 border-dashed border-border rounded-lg p-6 bg-muted/20">
 											{coverFile ? (
 												<div className="relative w-full aspect-[2/3] rounded-md overflow-hidden bg-muted">
-													<img
+													<Image
+														alt="Preview da Capa"
 														src={URL.createObjectURL(coverFile)}
 														className="object-cover w-full h-full"
+														loading="lazy"
 													/>
 												</div>
 											) : (
