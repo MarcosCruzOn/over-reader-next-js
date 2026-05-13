@@ -30,7 +30,7 @@ export class MangaController {
 	async list(req: Request, res: Response) {
 		try {
 			// 1. Pegamos os parâmetros da URL
-			const { search, genre } = req.query
+			const { search, genre, sort } = req.query
 
 			const repository = new MangaRepository()
 			const useCase = new ListMangasUseCase(repository)
@@ -39,6 +39,7 @@ export class MangaController {
 			const mangas = await useCase.execute({
 				search: search as string,
 				genre: genre as string,
+				sort: sort as string,
 			})
 
 			res.json(mangas)

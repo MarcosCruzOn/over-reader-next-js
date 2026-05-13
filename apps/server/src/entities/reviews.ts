@@ -1,10 +1,10 @@
-import { pgTable, serial, integer, timestamp } from 'drizzle-orm/pg-core'
+import { pgTable, serial, integer, timestamp, text } from 'drizzle-orm/pg-core'
 import { users } from './users'
 import { mangas } from './mangas'
 
 export const reviews = pgTable('reviews', {
 	id: serial('id').primaryKey(),
-	userId: integer('user_id')
+	userId: text('user_id')
 		.references(() => users.id)
 		.notNull(),
 	mangaId: integer('manga_id')

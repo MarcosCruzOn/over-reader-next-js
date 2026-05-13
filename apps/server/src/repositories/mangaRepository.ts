@@ -1,4 +1,4 @@
-import { eq, and, ilike } from 'drizzle-orm'
+import { eq, and, ilike, desc } from 'drizzle-orm'
 import { db } from '../db'
 import { mangas } from '../entities/mangas'
 
@@ -10,31 +10,30 @@ export class MangaRepository {
 		return result[0]
 	}
 
-	async findAll(filters?: { search?: string; genre?: string }) {
-		// Array para guardar as condições de busca
+	// Adicionamos o 'sort' nos filtros
+	async findAll(filters?: { search?: string; genre?: string; sort?: string }) {
 		const conditions = []
 
-		// Se o usuário digitou algo na busca, procuramos no título
-		if (filters?.search) {
-			conditions.push(ilike(mangas.title, `%${filters.search}%`))
-		}
+		if (filters?.search) conditions.push(ilike(mangas.title, `%${filters.search}%`))
+		if (filters?.genre) conditions.push(ilike(mangas.genres, `%${filters.genre}%`))
 
-		// Como você salvou os gêneros como texto (ex: "Ação, Fantasia"),
-		// usamos o ilike para ver se a palavra está no meio do texto
-		if (filters?.genre) {
-			conditions.push(ilike(mangas.genres, `%${filters.genre}%`))
-		}
-
-		// Montamos a query base
 		let query = db.select().from(mangas)
 
-		// Se tiver alguma condição (search ou genre), aplicamos o WHERE com AND
 		if (conditions.length > 0) {
 			query = query.where(and(...conditions)) as any
 		}
 
-		// Retorna os resultados mais recentes primeiro
-		// query = query.orderBy(desc(mangas.createdAt)) // (Opcional: Descomente se tiver a coluna createdAt)
+		// 🔥 LÓGICA DE ORDENAÇÃO:
+		if (filters?.sort === 'newest') {
+			// Ordena pelos criados mais recentemente
+			query = query.orderBy(desc(mangas.createdAt)) as any
+		} else if (filters?.sort === 'popular') {
+			// Como ainda não temos sistema de visualizações, ordenamos pelo ID (ou rating, se tiver) temporariamente para simular
+			query = query.orderBy(desc(mangas.id)) as any
+		} else {
+			// Padrão: mais recentes primeiro
+			query = query.orderBy(desc(mangas.createdAt)) as any
+		}
 
 		return await query
 	}

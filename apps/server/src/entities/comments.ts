@@ -4,7 +4,7 @@ import { mangas } from './mangas'
 
 export const comments = pgTable('comments', {
 	id: serial('id').primaryKey(),
-	userId: integer('user_id')
+	userId: text('user_id')
 		.references(() => users.id)
 		.notNull(),
 	mangaId: integer('manga_id')

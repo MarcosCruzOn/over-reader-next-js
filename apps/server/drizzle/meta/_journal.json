@@ -50,6 +50,13 @@
       "when": 1778179701790,
       "tag": "0006_bumpy_ego",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1778684918680,
+      "tag": "0007_square_jackal",
+      "breakpoints": true
     }
   ]
 }
