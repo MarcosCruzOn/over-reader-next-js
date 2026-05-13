@@ -3,7 +3,7 @@ import { UserRepository } from '../repositories/userRepository'
 export class UpdateUserAvatarUseCase {
 	constructor(private userRepository: UserRepository) {}
 
-	async execute(id: number, avatarUrl: string) {
+	async execute(id: string, avatarUrl: string) {
 		if (!avatarUrl) {
 			throw new Error('A URL da imagem é obrigatória.')
 		}

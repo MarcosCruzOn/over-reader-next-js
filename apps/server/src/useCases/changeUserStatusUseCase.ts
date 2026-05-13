@@ -3,7 +3,7 @@ import { UserRepository } from '../repositories/userRepository'
 export class ChangeUserStatusUseCase {
 	constructor(private userRepository: UserRepository) {}
 
-	async execute(id: number, status: string) {
+	async execute(id: string, status: string) {
 		// Regra de negócio: garantir que não enviem status malucos como "abacaxi"
 		const validStatuses = ['ATIVO', 'BANIDO', 'SUSPENSO']
 		if (!validStatuses.includes(status)) {

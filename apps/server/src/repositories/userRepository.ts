@@ -22,7 +22,11 @@ export class UserRepository {
 	}
 
 	async updateAvatar(id: string, avatarUrl: string) {
-		const result = await db.update(users).set({ avatarUrl }).where(eq(users.id, id)).returning()
+		const result = await db
+			.update(users)
+			.set({ image: avatarUrl })
+			.where(eq(users.id, id))
+			.returning()
 		return result[0]
 	}
 

@@ -20,7 +20,7 @@ export class CommentController {
 	// 🔥 NOVO: Buscar comentários do usuário
 	async listByUser(req: Request, res: Response) {
 		try {
-			const userId = req.params.userId
+			const userId = req.params.userId as string
 			const repository = new CommentRepository()
 			const useCase = new ListUserCommentsUseCase(repository)
 

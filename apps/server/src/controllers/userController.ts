@@ -28,7 +28,7 @@ export class UserController {
 	async changeStatus(req: Request, res: Response) {
 		try {
 			// 🔥 CORREÇÃO: ID agora é string pura! Sem Number()
-			const id = req.params.id
+			const id = req.params.id as string
 			const { status } = req.body
 
 			const repository = new UserRepository()
@@ -44,7 +44,7 @@ export class UserController {
 	async updateAvatar(req: Request, res: Response) {
 		try {
 			// 🔥 CORREÇÃO: ID agora é string pura!
-			const id = req.params.id
+			const id = req.params.id as string
 			const file = req.file as any
 
 			if (!file) {

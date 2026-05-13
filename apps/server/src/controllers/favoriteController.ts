@@ -20,7 +20,7 @@ export class FavoriteController {
 	// 🔥 NOVO: Buscar favoritos do usuário
 	async listByUser(req: Request, res: Response) {
 		try {
-			const userId = req.params.userId // Lembre-se, é string!
+			const userId = req.params.userId as string // Lembre-se, é string!
 			const repository = new FavoriteRepository()
 			const useCase = new ListUserFavoritesUseCase(repository)
 

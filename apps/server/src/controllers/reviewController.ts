@@ -20,7 +20,7 @@ export class ReviewController {
 	// 🔥 NOVO: Buscar avaliações do usuário
 	async listByUser(req: Request, res: Response) {
 		try {
-			const userId = req.params.userId
+			const userId = req.params.userId as string
 			const repository = new ReviewRepository()
 			const useCase = new ListUserReviewsUseCase(repository)
 
