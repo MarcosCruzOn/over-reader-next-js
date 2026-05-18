@@ -1,43 +1,70 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
-import { signOut } from 'next-auth/react'
+import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Bookmark, MessageSquare, Star, Settings, Camera, LogOut } from 'lucide-react'
+import { Bookmark, MessageSquare, Star, Settings, Camera, LogOut, Loader2 } from 'lucide-react'
 import { Button } from '@workspace/ui/components/button'
 import { Input } from '@workspace/ui/components/input'
+
 import Image from 'next/image'
 
 export default function PerfilPage() {
-	const { data: session, status } = useSession()
+	// 🔥 Adicionamos o 'update' para podermos recarregar a sessão do NextAuth em tempo real
+	const { data: session, status, update } = useSession()
 	const router = useRouter()
 	const [activeTab, setActiveTab] = useState('favorites')
 
-	// Estados para guardar os dados vindos do backend
 	const [favorites, setFavorites] = useState([])
 	const [isLoading, setIsLoading] = useState(false)
+	const [isUploading, setIsUploading] = useState(false) // Estado para o loading do avatar
 
-	// Proteção de Rota: Se não estiver logado, chuta para o login!
 	useEffect(() => {
 		if (status === 'unauthenticated') {
 			router.push('/login')
 		}
 	}, [status, router])
 
-	// Exemplo de como vamos buscar os favoritos (Ligue isso quando o backend estiver a rodar!)
-	/*
-	useEffect(() => {
-		if (session?.user?.id && activeTab === 'favorites') {
-			setIsLoading(true)
-			// Lembre-se de ajustar a URL para a porta do seu backend (ex: 3333)
-			fetch(`http://localhost:3333/favorites/user/${session.user.id}`)
-				.then(res => res.json())
-				.then(data => setFavorites(data))
-				.finally(() => setIsLoading(false))
+	// 🔥 A MAGIA DO UPLOAD ACONTECE AQUI
+	const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0]
+		if (!file) return
+
+		// O DrizzleAdapter coloca o id dentro do session.user, mas o TypeScript do NextAuth não sabe disso por padrão.
+		// Fazemos um 'as any' rápido para contornar o aviso tipográfico.
+		const userId = (session?.user as any)?.id
+
+		if (!userId) {
+			alert('Erro de sessão: ID do usuário não encontrado.')
+			return
 		}
-	}, [session, activeTab])
-	*/
+
+		try {
+			setIsUploading(true)
+			const formData = new FormData()
+			formData.append('avatar', file) // Tem que ser 'avatar' para bater com o uploadConfig.single('avatar')
+
+			// Envia para o backend
+			const response = await fetch(`http://localhost:3333/users/${userId}/avatar`, {
+				method: 'PATCH',
+				body: formData,
+			})
+
+			if (!response.ok) {
+				throw new Error('Falha ao enviar a imagem para o servidor')
+			}
+
+			const updatedUser = await response.json()
+
+			// Avisa ao NextAuth: "Ei, atualize a sessão local com essa nova imagem!"
+			await update({ image: updatedUser.image })
+		} catch (error) {
+			console.error(error)
+			alert('Ocorreu um erro ao atualizar a foto de perfil.')
+		} finally {
+			setIsUploading(false)
+		}
+	}
 
 	if (status === 'loading') {
 		return (
@@ -47,28 +74,29 @@ export default function PerfilPage() {
 		)
 	}
 
-	if (!session?.user) return null // Evita piscar a tela antes do redirecionamento
+	if (!session?.user) return null
 
 	return (
 		<div className="min-h-screen bg-background text-foreground pb-20">
-			{/* HEADER DO PERFIL (Banner e Foto) */}
+			{/* HEADER DO PERFIL */}
 			<div className="relative h-64 bg-muted overflow-hidden">
-				{/* Banner Genérico (Poderíamos deixar o usuário trocar no futuro) */}
 				<div className="absolute inset-0 bg-gradient-to-r from-brand-primary/80 to-purple-900/80" />
-				<img
+				<Image
 					src="https://placehold.co/1920x400/1a1a1a/333333.png?text=+"
 					alt="Banner"
 					className="w-full h-full object-cover mix-blend-overlay opacity-50"
+					loading="eager"
+					fill
 				/>
 			</div>
 
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-10">
 				<div className="flex flex-col md:flex-row gap-8">
-					{/* SIDEBAR (Cartão do Usuário) */}
+					{/* SIDEBAR */}
 					<div className="w-full md:w-80 shrink-0">
 						<div className="bg-card border border-border rounded-xl p-6 shadow-2xl backdrop-blur-sm">
-							<div className="relative w-32 h-32 mx-auto -mt-16 mb-4 group cursor-pointer">
-								<img
+							<div className="relative w-32 h-32 mx-auto -mt-16 mb-4 group">
+								<Image
 									src={
 										session.user.image ||
 										'https://placehold.co/200x200/1a1a1a/white.png?text=U'
@@ -76,17 +104,32 @@ export default function PerfilPage() {
 									alt="Avatar"
 									className="w-full h-full rounded-full object-cover border-4 border-card shadow-lg"
 									referrerPolicy="no-referrer"
+									loading="eager"
+									fill
+									unoptimized={true}
 								/>
-								{/* Botão de trocar foto que aparece no Hover */}
-								<div className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-									<Camera className="w-8 h-8 text-white" />
-								</div>
-								{/* O Input de arquivo invisível (Vamos ligar a lógica de upload depois!) */}
-								<input
-									type="file"
-									className="absolute inset-0 opacity-0 cursor-pointer"
-									accept="image/*"
-								/>
+
+								{/* Camada escura que aparece ao passar o mouse */}
+								<label className="absolute inset-0 bg-black/60 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+									{isUploading ? (
+										<Loader2 className="w-8 h-8 text-white animate-spin" />
+									) : (
+										<>
+											<Camera className="w-8 h-8 text-white mb-1" />
+											<span className="text-white text-xs font-bold">
+												Mudar
+											</span>
+										</>
+									)}
+									{/* O Input de arquivo conectado à nossa função */}
+									<input
+										type="file"
+										className="hidden"
+										accept="image/*"
+										onChange={handleAvatarUpload}
+										disabled={isUploading}
+									/>
+								</label>
 							</div>
 
 							<div className="text-center mb-6">
@@ -142,42 +185,26 @@ export default function PerfilPage() {
 						</div>
 					</div>
 
-					{/* ÁREA DE CONTEÚDO (Onde a mágica acontece) */}
+					{/* ÁREA DE CONTEÚDO */}
 					<div className="flex-1 mt-8 md:mt-0">
-						{/* ABA: FAVORITOS */}
 						{activeTab === 'favorites' && (
 							<div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
 								<h2 className="text-3xl font-black uppercase tracking-tight mb-6">
 									Minha Biblioteca
 								</h2>
-
-								{/* Grid de placeholders (Para você ver como vai ficar) */}
 								<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-									{[1, 2, 3, 4].map((i) => (
-										<div
-											key={i}
-											className="group relative rounded-lg overflow-hidden border border-border bg-card aspect-[2/3] cursor-pointer"
-										>
-											<img
-												src={`https://placehold.co/400x600/1a1a1a/444.png?text=Manga+${i}`}
-												className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-												alt="Cover"
-											/>
-											<div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-4">
-												<h3 className="text-white font-bold truncate">
-													Título do Mangá {i}
-												</h3>
-												<p className="text-primary text-sm font-semibold mt-1">
-													Lendo Vol. 2
-												</p>
-											</div>
-										</div>
-									))}
+									{/* Temporariamente vazio até ligarmos o backend */}
+									<div className="col-span-full text-center py-12 text-muted-foreground border border-dashed border-border rounded-lg">
+										<Bookmark className="w-12 h-12 mx-auto mb-4 opacity-20" />
+										<p>Sua biblioteca está vazia.</p>
+										<p className="text-sm">
+											Encontre mangás incríveis e adicione-os aos favoritos!
+										</p>
+									</div>
 								</div>
 							</div>
 						)}
 
-						{/* ABA: AVALIAÇÕES */}
 						{activeTab === 'reviews' && (
 							<div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
 								<h2 className="text-3xl font-black uppercase tracking-tight mb-6">
@@ -190,7 +217,6 @@ export default function PerfilPage() {
 							</div>
 						)}
 
-						{/* ABA: CONFIGURAÇÕES */}
 						{activeTab === 'settings' && (
 							<div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-2xl">
 								<h2 className="text-3xl font-black uppercase tracking-tight mb-6">

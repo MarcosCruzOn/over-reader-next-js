@@ -53,7 +53,6 @@ export default function Hero({ mangas }: HeroProps) {
 		? currentManga.bannerUrl
 		: 'https://placehold.co/1920x800/1a1a1a/white.png?text=Sem+Imagem'
 
-	console.log('URL DA IMAGEM VINDA DO BANCO hero:', currentManga.coverUrl)
 	return (
 		<section className="relative w-full h-150 md:h-175 overflow-hidden bg-brand-black">
 			<AnimatePresence mode="wait">

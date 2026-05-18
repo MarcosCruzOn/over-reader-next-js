@@ -36,7 +36,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
 		return () => clearInterval(interval)
 	}, [])
 
-	// 🔥 A FUNÇÃO MÁGICA DE LOGIN
+	// A FUNÇÃO DE LOGIN
 	const handleLogin = async (e: React.FormEvent) => {
 		e.preventDefault()
 		setIsLoading(true)

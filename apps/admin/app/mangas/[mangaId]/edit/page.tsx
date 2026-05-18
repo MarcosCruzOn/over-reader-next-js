@@ -198,7 +198,8 @@ export default function EditMangaPage({ params }: { params: Promise<{ mangaId: s
 														src={URL.createObjectURL(bannerFile)}
 														alt="Novo Banner"
 														className="object-cover w-full h-full"
-														loading="eager"
+														loading="lazy"
+														fill
 													/>
 												</div>
 											) : existingBanner ? (
@@ -207,6 +208,8 @@ export default function EditMangaPage({ params }: { params: Promise<{ mangaId: s
 														src={existingBanner}
 														alt="Banner Atual"
 														className="object-cover w-full h-full"
+														loading="lazy"
+														fill
 													/>
 													<div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
 														Imagem Atual
@@ -387,6 +390,7 @@ export default function EditMangaPage({ params }: { params: Promise<{ mangaId: s
 														alt="Nova Capa"
 														className="object-cover w-full h-full"
 														loading="lazy"
+														fill
 													/>
 												</div>
 											) : existingCover ? (
@@ -396,6 +400,7 @@ export default function EditMangaPage({ params }: { params: Promise<{ mangaId: s
 														alt="Capa Atual"
 														className="object-cover w-full h-full"
 														loading="lazy"
+														fill
 													/>
 													<div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
 														Imagem Atual
