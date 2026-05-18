@@ -4,6 +4,7 @@ import { CreateUserUseCase } from '../useCases/createUserUseCase'
 import { ListUsersUseCase } from '../useCases/listUsersUseCase'
 import { ChangeUserStatusUseCase } from '../useCases/changeUserStatusUseCase'
 import { UpdateUserAvatarUseCase } from '../useCases/updateUserAvatarUseCase'
+import { UpdateUserBannerUseCase } from '../useCases/updateUserBannerUseCase'
 
 export class UserController {
 	async create(req: Request, res: Response) {
@@ -56,6 +57,26 @@ export class UserController {
 			const useCase = new UpdateUserAvatarUseCase(repository)
 
 			const user = await useCase.execute(id, avatarUrl)
+			res.json(user)
+		} catch (error: any) {
+			res.status(400).json({ error: error.message })
+		}
+	}
+
+	async updateBanner(req: Request, res: Response) {
+		try {
+			const id = req.params.id as string
+			const file = req.file as any
+
+			if (!file) {
+				return res.status(400).json({ error: 'Nenhum banner foi enviado.' })
+			}
+
+			const bannerUrl = file.location
+			const repository = new UserRepository()
+			const useCase = new UpdateUserBannerUseCase(repository)
+
+			const user = await useCase.execute(id, bannerUrl)
 			res.json(user)
 		} catch (error: any) {
 			res.status(400).json({ error: error.message })

@@ -14,5 +14,10 @@ userRoutes.patch('/:id/avatar', uploadConfig.single('avatar'), (req, res) =>
 	userController.updateAvatar(req, res)
 )
 
+// 🔥 NOVA ROTA PARA O BANNER
+userRoutes.patch('/:id/banner', uploadConfig.single('banner'), (req, res) =>
+	userController.updateBanner(req, res)
+)
+
 // Exemplo de como deve ficar no seu userRoutes.ts
 userRoutes.patch('/:id/status', (req, res) => userController.changeStatus(req, res))

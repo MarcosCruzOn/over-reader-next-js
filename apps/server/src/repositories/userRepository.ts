@@ -30,6 +30,11 @@ export class UserRepository {
 		return result[0]
 	}
 
+	async updateBanner(id: string, bannerUrl: string) {
+		const result = await db.update(users).set({ bannerUrl }).where(eq(users.id, id)).returning()
+		return result[0]
+	}
+
 	async findByEmail(email: string) {
 		// 🔥 Nova sintaxe RQ
 		return await db.query.users.findFirst({

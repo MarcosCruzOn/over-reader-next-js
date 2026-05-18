@@ -1,6 +1,6 @@
 import { pgTable, text, varchar, timestamp, primaryKey, integer } from 'drizzle-orm/pg-core'
 
-// 👤 1. Tabela Principal de Usuários (A SUA TABELA MESCLADA)
+// 👤 1. Tabela Principal de Usuários
 export const users = pgTable('user', {
 	// Usamos texto com UUID para ser compatível com as contas do Google/Facebook
 	id: text('id')
@@ -14,10 +14,9 @@ export const users = pgTable('user', {
 	// A password agora é opcional, pois quem logar com Google não terá password aqui
 	password: varchar('password', { length: 255 }),
 
-	// Mudei de 'avatarUrl' para 'image' para o NextAuth preencher automaticamente com a foto do Google
 	image: varchar('image', { length: 500 }),
+	bannerUrl: varchar('banner_url', { length: 500 }),
 
-	// 👇 SUAS COLUNAS ORIGINAIS MANTIDAS INTACTAS
 	role: varchar('role', { length: 50 }).default('USER'),
 	status: varchar('status', { length: 50 }).default('ATIVO'),
 	createdAt: timestamp('created_at').defaultNow(),

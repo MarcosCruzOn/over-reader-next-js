@@ -10,14 +10,14 @@ import { Input } from '@workspace/ui/components/input'
 import Image from 'next/image'
 
 export default function PerfilPage() {
-	// 🔥 Adicionamos o 'update' para podermos recarregar a sessão do NextAuth em tempo real
 	const { data: session, status, update } = useSession()
 	const router = useRouter()
 	const [activeTab, setActiveTab] = useState('favorites')
 
 	const [favorites, setFavorites] = useState([])
 	const [isLoading, setIsLoading] = useState(false)
-	const [isUploading, setIsUploading] = useState(false) // Estado para o loading do avatar
+	const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
+	const [isUploadingBanner, setIsUploadingBanner] = useState(false) // 🔥 Novo estado para o banner
 
 	useEffect(() => {
 		if (status === 'unauthenticated') {
@@ -25,44 +25,65 @@ export default function PerfilPage() {
 		}
 	}, [status, router])
 
-	// 🔥 A MAGIA DO UPLOAD ACONTECE AQUI
+	// --- FUNÇÃO DO AVATAR ---
 	const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0]
 		if (!file) return
 
-		// O DrizzleAdapter coloca o id dentro do session.user, mas o TypeScript do NextAuth não sabe disso por padrão.
-		// Fazemos um 'as any' rápido para contornar o aviso tipográfico.
 		const userId = (session?.user as any)?.id
-
-		if (!userId) {
-			alert('Erro de sessão: ID do usuário não encontrado.')
-			return
-		}
+		if (!userId) return alert('Erro: ID não encontrado.')
 
 		try {
-			setIsUploading(true)
+			setIsUploadingAvatar(true)
 			const formData = new FormData()
-			formData.append('avatar', file) // Tem que ser 'avatar' para bater com o uploadConfig.single('avatar')
+			formData.append('avatar', file)
 
-			// Envia para o backend
 			const response = await fetch(`http://localhost:3333/users/${userId}/avatar`, {
 				method: 'PATCH',
 				body: formData,
 			})
 
-			if (!response.ok) {
-				throw new Error('Falha ao enviar a imagem para o servidor')
-			}
+			if (!response.ok) throw new Error('Falha ao enviar a imagem')
 
 			const updatedUser = await response.json()
-
-			// Avisa ao NextAuth: "Ei, atualize a sessão local com essa nova imagem!"
 			await update({ image: updatedUser.image })
 		} catch (error) {
 			console.error(error)
-			alert('Ocorreu um erro ao atualizar a foto de perfil.')
+			alert('Erro ao atualizar a foto de perfil.')
 		} finally {
-			setIsUploading(false)
+			setIsUploadingAvatar(false)
+		}
+	}
+
+	// --- 🔥 NOVA FUNÇÃO DO BANNER ---
+	const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0]
+		if (!file) return
+
+		const userId = (session?.user as any)?.id
+		if (!userId) return alert('Erro: ID não encontrado.')
+
+		try {
+			setIsUploadingBanner(true)
+			const formData = new FormData()
+			formData.append('banner', file) // 'banner' para bater com o multer do backend
+
+			const response = await fetch(`http://localhost:3333/users/${userId}/banner`, {
+				method: 'PATCH',
+				body: formData,
+			})
+
+			if (!response.ok) throw new Error('Falha ao enviar o banner')
+
+			const updatedUser = await response.json()
+
+			// Avisa o NextAuth para atualizar o bannerUrl na sessão!
+			await update({ bannerUrl: updatedUser.bannerUrl })
+		} catch (error) {
+			console.error(error)
+			alert('Erro ao atualizar o banner.')
+		} finally {
+			setIsUploadingBanner(false)
 		}
 	}
 
@@ -76,25 +97,52 @@ export default function PerfilPage() {
 
 	if (!session?.user) return null
 
+	// Pegamos o bannerUrl da sessão (ou usamos o placeholder se não tiver)
+	const userBanner =
+		(session.user as any).bannerUrl || 'https://placehold.co/1920x400/1a1a1a/333333.png?text=+'
+
 	return (
 		<div className="min-h-screen bg-background text-foreground pb-20">
-			{/* HEADER DO PERFIL */}
-			<div className="relative h-64 bg-muted overflow-hidden">
-				<div className="absolute inset-0 bg-gradient-to-r from-brand-primary/80 to-purple-900/80" />
+			{/* 🔥 HEADER DO PERFIL (Agora é clicável para mudar o Banner!) */}
+			<div className="relative h-64 bg-muted overflow-hidden group">
+				<div className="absolute inset-0 bg-gradient-to-r from-brand-primary/80 to-purple-900/80 z-0" />
 				<Image
-					src="https://placehold.co/1920x400/1a1a1a/333333.png?text=+"
+					src={userBanner}
 					alt="Banner"
-					className="w-full h-full object-cover mix-blend-overlay opacity-50"
+					className="w-full h-full object-cover mix-blend-overlay opacity-50 relative z-0 transition-transform duration-700 group-hover:scale-105"
 					loading="eager"
 					fill
+					unoptimized={true}
 				/>
+
+				{/* Camada escura que aparece ao passar o rato no banner */}
+				<label className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer z-10">
+					{isUploadingBanner ? (
+						<Loader2 className="w-10 h-10 text-white animate-spin" />
+					) : (
+						<>
+							<Camera className="w-10 h-10 text-white mb-2 drop-shadow-md" />
+							<span className="text-white text-sm font-bold drop-shadow-md">
+								Alterar Banner
+							</span>
+						</>
+					)}
+					<input
+						type="file"
+						className="hidden"
+						accept="image/*"
+						onChange={handleBannerUpload}
+						disabled={isUploadingBanner}
+					/>
+				</label>
 			</div>
 
-			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-10">
+			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-20">
 				<div className="flex flex-col md:flex-row gap-8">
 					{/* SIDEBAR */}
 					<div className="w-full md:w-80 shrink-0">
 						<div className="bg-card border border-border rounded-xl p-6 shadow-2xl backdrop-blur-sm">
+							{/* ÁREA DO AVATAR */}
 							<div className="relative w-32 h-32 mx-auto -mt-16 mb-4 group">
 								<Image
 									src={
@@ -102,16 +150,15 @@ export default function PerfilPage() {
 										'https://placehold.co/200x200/1a1a1a/white.png?text=U'
 									}
 									alt="Avatar"
-									className="w-full h-full rounded-full object-cover border-4 border-card shadow-lg"
+									className="w-full h-full rounded-full object-cover border-4 border-card shadow-lg bg-card"
 									referrerPolicy="no-referrer"
 									loading="eager"
 									fill
 									unoptimized={true}
 								/>
 
-								{/* Camada escura que aparece ao passar o mouse */}
 								<label className="absolute inset-0 bg-black/60 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-									{isUploading ? (
+									{isUploadingAvatar ? (
 										<Loader2 className="w-8 h-8 text-white animate-spin" />
 									) : (
 										<>
@@ -121,13 +168,12 @@ export default function PerfilPage() {
 											</span>
 										</>
 									)}
-									{/* O Input de arquivo conectado à nossa função */}
 									<input
 										type="file"
 										className="hidden"
 										accept="image/*"
 										onChange={handleAvatarUpload}
-										disabled={isUploading}
+										disabled={isUploadingAvatar}
 									/>
 								</label>
 							</div>
@@ -193,10 +239,9 @@ export default function PerfilPage() {
 									Minha Biblioteca
 								</h2>
 								<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-									{/* Temporariamente vazio até ligarmos o backend */}
 									<div className="col-span-full text-center py-12 text-muted-foreground border border-dashed border-border rounded-lg">
 										<Bookmark className="w-12 h-12 mx-auto mb-4 opacity-20" />
-										<p>Sua biblioteca está vazia.</p>
+										<p>A sua biblioteca está vazia.</p>
 										<p className="text-sm">
 											Encontre mangás incríveis e adicione-os aos favoritos!
 										</p>
@@ -212,7 +257,7 @@ export default function PerfilPage() {
 								</h2>
 								<div className="bg-card border border-border rounded-lg p-8 text-center text-muted-foreground">
 									<Star className="w-12 h-12 mx-auto mb-4 opacity-20" />
-									<p>Você ainda não avaliou nenhum mangá.</p>
+									<p>Ainda não avaliou nenhum mangá.</p>
 								</div>
 							</div>
 						)}

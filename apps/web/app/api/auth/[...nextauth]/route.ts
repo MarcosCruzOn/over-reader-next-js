@@ -22,25 +22,45 @@ const authOptions = {
 		signIn: '/login',
 	},
 	callbacks: {
-		// 1. O JWT controla o que fica guardado no "crachá" do usuário no navegador
-		async jwt({ token, trigger, session }: any) {
-			// Quando o frontend chama update({ image: 'nova_url' }), o trigger vem como 'update'
-			if (trigger === 'update' && session?.image) {
-				// O NextAuth usa 'picture' por padrão no token para guardar a imagem
-				token.picture = session.image
+		// 1. O JWT pega os dados do Banco (user) e guarda no Cookie (token)
+		async jwt({ token, trigger, session, user }) {
+			// LOG DE DEBUG: Vamos ver o que o banco está a devolver no login!
+			if (user) {
+				console.log('DADOS DO USUÁRIO NO LOGIN:', user)
+
+				// Forçamos o token a guardar o que vem do banco
+				token.sub = user.id
+				token.picture = user.image
+				// O Drizzle pode retornar como bannerUrl (camelCase) ou banner_url (snake_case)
+				// Depende de como você configurou o schema. Vamos tentar pegar os dois para garantir!
+				token.bannerUrl = (user as any).bannerUrl || (user as any).banner_url
 			}
+
+			// Quando o frontend pede para atualizar via update()
+			if (trigger === 'update' && session) {
+				if (session.image) token.picture = session.image
+				if (session.bannerUrl) token.bannerUrl = session.bannerUrl
+			}
+
 			return token
 		},
 
-		// 2. A Session pega o que está no JWT e entrega para o frontend
-		async session({ session, token }: any) {
+		// 2. A Session pega os dados do Cookie (token) e manda para o Frontend
+		async session({ session, token }) {
 			if (session.user && token.sub) {
 				session.user.id = token.sub as string
 			}
-			// Garante que a imagem atualizada do token seja passada para a tela
 			if (session.user && token.picture) {
 				session.user.image = token.picture as string
 			}
+			// Injeta o banner na sessão do frontend
+			if (session.user && token.bannerUrl) {
+				;(session.user as any).bannerUrl = token.bannerUrl as string
+			}
+
+			// LOG DE DEBUG: Ver o que está a chegar no frontend
+			console.log('SESSÃO ENVIADA PARA O FRONTEND:', session.user)
+
 			return session
 		},
 	},
