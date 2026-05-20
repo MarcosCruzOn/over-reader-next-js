@@ -26,14 +26,32 @@ export default function PerfilPage() {
 
 	const [favorites, setFavorites] = useState([])
 	const [isLoading, setIsLoading] = useState(false)
+	const [isLoadingFavs, setIsLoadingFavs] = useState(false)
 	const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
 	const [isUploadingBanner, setIsUploadingBanner] = useState(false) // 🔥 Novo estado para o banner
 
 	useEffect(() => {
-		if (status === 'unauthenticated') {
-			router.push('/login')
+		const fetchFavorites = async () => {
+			if (session?.user && activeTab === 'favorites') {
+				setIsLoadingFavs(true)
+				try {
+					const userId = (session.user as any).id
+					const response = await fetch(`http://localhost:3333/favorites/user/${userId}`)
+
+					if (response.ok) {
+						const data = await response.json()
+						setFavorites(data)
+					}
+				} catch (error) {
+					console.error('Erro ao carregar favoritos:', error)
+				} finally {
+					setIsLoadingFavs(false)
+				}
+			}
 		}
-	}, [status, router])
+
+		fetchFavorites()
+	}, [session, activeTab])
 
 	// --- FUNÇÃO DO AVATAR ---
 	const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -255,20 +273,70 @@ export default function PerfilPage() {
 
 					{/* ÁREA DE CONTEÚDO */}
 					<div className="flex-1 mt-8 md:mt-0">
+						{/* ABA: FAVORITOS */}
 						{activeTab === 'favorites' && (
 							<div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
 								<h2 className="text-3xl font-black uppercase tracking-tight mb-6">
 									Minha Biblioteca
 								</h2>
-								<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-									<div className="col-span-full text-center py-12 text-muted-foreground border border-dashed border-border rounded-lg">
-										<Bookmark className="w-12 h-12 mx-auto mb-4 opacity-20" />
-										<p>A sua biblioteca está vazia.</p>
-										<p className="text-sm">
+
+								{isLoadingFavs ? (
+									<div className="flex justify-center py-20">
+										<Loader2 className="w-10 h-10 text-primary animate-spin" />
+									</div>
+								) : favorites.length > 0 ? (
+									<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+										{favorites.map((fav) => {
+											// Substitui a linha antiga por esta:
+											const coverUrl = fav.coverUrl
+												? fav.coverUrl.startsWith('http')
+													? fav.coverUrl
+													: `http://localhost:3333${fav.coverUrl}`
+												: 'https://placehold.co/400x600/1a1a1a/444.png?text=Sem+Capa'
+
+											return (
+												<Link
+													href={`/manga/${fav.mangaId}`}
+													key={fav.favoriteId}
+												>
+													<div className="group relative rounded-lg overflow-hidden border border-border bg-card aspect-[2/3] cursor-pointer shadow-lg hover:shadow-primary/20 transition-all">
+														<img
+															src={coverUrl}
+															className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+															alt={fav.title}
+														/>
+														<div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent flex flex-col justify-end p-4 opacity-90 group-hover:opacity-100 transition-opacity">
+															<h3 className="text-white font-bold truncate leading-tight mb-1">
+																{fav.title}
+															</h3>
+															<p className="text-primary text-[10px] font-bold uppercase tracking-wider">
+																Salvo em{' '}
+																{new Date(
+																	fav.savedAt
+																).toLocaleDateString('pt-BR')}
+															</p>
+														</div>
+													</div>
+												</Link>
+											)
+										})}
+									</div>
+								) : (
+									<div className="col-span-full text-center py-16 text-muted-foreground border border-dashed border-border rounded-xl bg-muted/20">
+										<Bookmark className="w-16 h-16 mx-auto mb-4 opacity-20" />
+										<p className="text-lg font-bold text-foreground">
+											A sua biblioteca está vazia.
+										</p>
+										<p className="text-sm mt-1">
 											Encontre mangás incríveis e adicione-os aos favoritos!
 										</p>
+										<Link href="/">
+											<Button className="mt-6 font-bold" variant="outline">
+												Explorar Catálogo
+											</Button>
+										</Link>
 									</div>
-								</div>
+								)}
 							</div>
 						)}
 

@@ -1,6 +1,7 @@
+import { and, eq, desc } from 'drizzle-orm'
 import { db } from '../db'
-import { and, eq } from 'drizzle-orm'
 import { favorites } from '../entities/favorites'
+import { mangas } from '../entities/mangas'
 
 export type CreateFavoriteDTO = typeof favorites.$inferInsert
 
@@ -9,31 +10,37 @@ export class FavoriteRepository {
 		const result = await db.insert(favorites).values(data).returning()
 		return result[0]
 	}
-	// NOVO: Verifica se o usuário já salvou aquele mangá específico
+
 	async checkIfExists(userId: string, mangaId: number) {
 		const result = await db
 			.select()
 			.from(favorites)
 			.where(and(eq(favorites.userId, userId), eq(favorites.mangaId, mangaId)))
 			.limit(1)
-
-		return result[0] // Retorna o favorito se existir, ou undefined
+		return result[0]
 	}
 
-	// NOVO: Remove o mangá dos favoritos
 	async delete(userId: string, mangaId: number) {
 		const result = await db
 			.delete(favorites)
 			.where(and(eq(favorites.userId, userId), eq(favorites.mangaId, mangaId)))
 			.returning()
-
 		return result[0]
 	}
 
-	// Novo: Busca os mangás salvos pelo usuário
+	// 🔥 ATUALIZADO: Agora faz um INNER JOIN com a tabela de mangás
 	async findByUser(userId: string) {
-		return await db.query.favorites.findMany({
-			where: (favorites, { eq }) => eq(favorites.userId, userId),
-		})
+		return await db
+			.select({
+				favoriteId: favorites.id,
+				mangaId: mangas.id,
+				title: mangas.title,
+				coverUrl: mangas.coverUrl,
+				savedAt: favorites.createdAt,
+			})
+			.from(favorites)
+			.innerJoin(mangas, eq(favorites.mangaId, mangas.id))
+			.where(eq(favorites.userId, userId))
+			.orderBy(desc(favorites.createdAt)) // Os mais recentemente salvos aparecem primeiro!
 	}
 }
