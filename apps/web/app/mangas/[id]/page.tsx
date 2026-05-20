@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import Header from '../../components/Header'
 import MangaTabsSection from '@/app/components/MangaTabsSection'
+import { FavoriteButton } from '@/app/components/FavoriteButton'
 import { Bookmark, Star } from 'lucide-react'
 import { Button } from '@workspace/ui/components/button'
 import { Manga } from '@workspace/types'
@@ -86,7 +87,6 @@ export default async function MangaDetailPage({ params }: { params: Promise<{ id
 					src={bannerUrl}
 					alt={`Banner de ${manga.title}`}
 					fill
-					priority
 					className="object-cover opacity-60 blur-[2px]"
 					unoptimized={bannerUrl.includes('localhost')}
 					loading="lazy"
@@ -109,9 +109,6 @@ export default async function MangaDetailPage({ params }: { params: Promise<{ id
 								unoptimized={coverUrl.includes('localhost')}
 								loading="lazy"
 							/>
-							<div className="absolute top-2 left-2 bg-black/80 backdrop-blur text-white font-black text-xl px-2 py-1 rounded">
-								{groupedVolumes.length > 0 ? groupedVolumes[0].number : 1}
-							</div>
 						</div>
 						<Link href={`/mangas/${resolvedParams.id}/read/1`} className="w-full block">
 							<Button
@@ -125,17 +122,16 @@ export default async function MangaDetailPage({ params }: { params: Promise<{ id
 
 					{/* Lado Direito: Informações */}
 					<div className="flex-1 flex flex-col">
-						<div className="flex items-start justify-between mb-6">
-							<h1 className="text-4xl md:text-5xl font-black tracking-tight text-foreground">
+						{/* 🔥 AQUI FOI AJUSTADO O ALINHAMENTO */}
+						<div className="flex justify-between items-center mb-6 gap-4">
+							<h1 className="text-4xl md:text-6xl font-black text-white tracking-tight leading-none">
 								{manga.title}
 							</h1>
-							<Button
-								variant="ghost"
-								size="icon"
-								className="text-primary hover:bg-primary/10 hover:text-primary"
-							>
-								<Bookmark className="h-8 w-8" />
-							</Button>
+
+							{/* 🔥 O NOSSO NOVO BOTÃO ENTRA AQUI! */}
+							<div className="shrink-0">
+								<FavoriteButton mangaId={manga.id} />
+							</div>
 						</div>
 
 						{/* Tabela de Metadados */}

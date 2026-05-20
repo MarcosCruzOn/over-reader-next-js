@@ -3,11 +3,21 @@
 import React, { useState, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Bookmark, MessageSquare, Star, Settings, Camera, LogOut, Loader2 } from 'lucide-react'
+import {
+	Bookmark,
+	MessageSquare,
+	Star,
+	Settings,
+	Camera,
+	LogOut,
+	Loader2,
+	ArrowLeft,
+} from 'lucide-react'
 import { Button } from '@workspace/ui/components/button'
 import { Input } from '@workspace/ui/components/input'
 
 import Image from 'next/image'
+import Link from 'next/link'
 
 export default function PerfilPage() {
 	const { data: session, status, update } = useSession()
@@ -103,6 +113,18 @@ export default function PerfilPage() {
 
 	return (
 		<div className="min-h-screen bg-background text-foreground pb-20">
+			{/* 🔥 BOTÃO DE VOLTAR FLUTUANTE */}
+			<div className="absolute top-6 left-6 sm:left-10 z-30">
+				<Link href="/">
+					<Button
+						variant="outline"
+						size="icon"
+						className="rounded-full bg-black/40 border-white/20 text-white hover:bg-black/70 backdrop-blur-md transition-all hover:scale-105"
+					>
+						<ArrowLeft className="w-5 h-5" />
+					</Button>
+				</Link>
+			</div>
 			{/* 🔥 HEADER DO PERFIL (Agora é clicável para mudar o Banner!) */}
 			<div className="relative h-64 bg-muted overflow-hidden group">
 				<div className="absolute inset-0 bg-gradient-to-r from-brand-primary/80 to-purple-900/80 z-0" />

@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
+
 import { useRouter } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { Search, Bookmark, User, Menu, X, ChevronDown } from 'lucide-react'
@@ -135,15 +137,23 @@ export default function Header() {
 								<div className="h-9 w-9 rounded-full bg-white/20 animate-pulse"></div>
 							) : session?.user ? (
 								<div className="flex items-center gap-3">
-									<img
-										src={
-											session.user.image ||
-											'https://placehold.co/100x100/1a1a1a/white.png?text=U'
-										}
-										alt="Avatar"
-										className="h-9 w-9 rounded-full border border-white/20 object-cover"
-										referrerPolicy="no-referrer"
-									/>
+									<Link
+										href="/perfil"
+										className="hover:opacity-80 transition-opacity"
+									>
+										<Image
+											src={
+												session.user.image ||
+												'https://placehold.co/100x100/1a1a1a/white.png?text=U'
+											}
+											alt="Avatar"
+											className="h-9 w-9 rounded-full border border-white/20 object-cover"
+											loading="eager"
+											width={36}
+											height={36}
+											unoptimized={true}
+										/>
+									</Link>
 									<Button
 										variant="ghost"
 										size="sm"
