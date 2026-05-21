@@ -165,6 +165,8 @@ export default function NewMangaPage() {
 														alt="Preview do Banner"
 														className="object-cover w-full h-full"
 														loading="eager"
+														fill
+														unoptimized={true}
 													/>
 												</div>
 											) : (
@@ -353,6 +355,8 @@ export default function NewMangaPage() {
 														alt="Preview da Capa"
 														className="object-cover w-full h-full"
 														loading="lazy"
+														fill
+														unoptimized={true}
 													/>
 												</div>
 											) : (

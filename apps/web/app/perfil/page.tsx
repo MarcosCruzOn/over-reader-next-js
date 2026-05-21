@@ -24,7 +24,7 @@ export default function PerfilPage() {
 	const router = useRouter()
 	const [activeTab, setActiveTab] = useState('favorites')
 
-	const [favorites, setFavorites] = useState([])
+	const [favorites, setFavorites] = useState<any[]>([])
 	const [isLoading, setIsLoading] = useState(false)
 	const [isLoadingFavs, setIsLoadingFavs] = useState(false)
 	const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
@@ -276,9 +276,9 @@ export default function PerfilPage() {
 						{/* ABA: FAVORITOS */}
 						{activeTab === 'favorites' && (
 							<div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-								<h2 className="text-3xl font-black uppercase tracking-tight mb-6">
+								{/* <h2 className="text-3xl font-black uppercase tracking-tight mb-6">
 									Minha Biblioteca
-								</h2>
+								</h2> */}
 
 								{isLoadingFavs ? (
 									<div className="flex justify-center py-20">
@@ -287,7 +287,6 @@ export default function PerfilPage() {
 								) : favorites.length > 0 ? (
 									<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
 										{favorites.map((fav) => {
-											// Substitui a linha antiga por esta:
 											const coverUrl = fav.coverUrl
 												? fav.coverUrl.startsWith('http')
 													? fav.coverUrl
@@ -300,10 +299,13 @@ export default function PerfilPage() {
 													key={fav.favoriteId}
 												>
 													<div className="group relative rounded-lg overflow-hidden border border-border bg-card aspect-[2/3] cursor-pointer shadow-lg hover:shadow-primary/20 transition-all">
-														<img
+														<Image
 															src={coverUrl}
 															className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
 															alt={fav.title}
+															loading="lazy"
+															fill
+															unoptimized={true}
 														/>
 														<div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent flex flex-col justify-end p-4 opacity-90 group-hover:opacity-100 transition-opacity">
 															<h3 className="text-white font-bold truncate leading-tight mb-1">
