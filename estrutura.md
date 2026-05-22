@@ -2,9 +2,38 @@
 └── 📁over-reader
     └── 📁.turbo
         └── 📁cache
+        └── 📁preferences
+            ├── tui.json
     └── 📁apps
         └── 📁admin
             └── 📁app
+                └── 📁login
+                    ├── page.tsx
+                └── 📁mangas
+                    └── 📁[mangaId]
+                        └── 📁edit
+                            ├── page.tsx
+                        └── 📁volumes
+                            └── 📁[volumeId]
+                                └── 📁chapters
+                                    └── 📁[chapterId]
+                                        └── 📁edit
+                                            ├── page.tsx
+                                    └── 📁new
+                                        ├── page.tsx
+                                    ├── columns.tsx
+                                    ├── page.tsx
+                                └── 📁edit
+                                    ├── page.tsx
+                            └── 📁new
+                                ├── page.tsx
+                            ├── columns.tsx
+                            ├── page.tsx
+                    └── 📁new
+                        ├── page.tsx
+                    ├── columns.tsx
+                    ├── page.tsx
+                ├── columns.tsx
                 ├── data.json
                 ├── favicon.ico
                 ├── layout.tsx
@@ -23,6 +52,7 @@
             ├── next.config.ts
             ├── package.json
             ├── postcss.config.mjs
+            ├── proxy.ts
             ├── README.md
             ├── tsconfig.json
         └── 📁server
@@ -34,17 +64,25 @@
                     ├── 0002_snapshot.json
                     ├── 0003_snapshot.json
                     ├── 0004_snapshot.json
+                    ├── 0005_snapshot.json
+                    ├── 0006_snapshot.json
+                    ├── 0007_snapshot.json
                 ├── 0000_premium_ultimo.sql
                 ├── 0001_low_havok.sql
                 ├── 0002_nice_rattler.sql
                 ├── 0003_swift_morlocks.sql
                 ├── 0004_lean_killraven.sql
+                ├── 0005_absent_human_torch.sql
+                ├── 0006_bumpy_ego.sql
+                ├── 0007_square_jackal.sql
             └── 📁src
                 └── 📁config
                     ├── upload.ts
                 └── 📁controllers
+                    ├── authController.ts
                     ├── chapterController.ts
                     ├── commentController.ts
+                    ├── favoriteChapterController.ts
                     ├── favoriteController.ts
                     ├── mangaController.ts
                     ├── reviewController.ts
@@ -55,6 +93,7 @@
                 └── 📁entities
                     ├── chapters.ts
                     ├── comments.ts
+                    ├── favorite_chapters.ts
                     ├── favorites.ts
                     ├── mangas.ts
                     ├── reviews.ts
@@ -63,32 +102,57 @@
                 └── 📁repositories
                     ├── chapterRepository.ts
                     ├── commentRepository.ts
+                    ├── favoriteChapterRepository.ts
                     ├── favoriteRepository.ts
                     ├── mangaRepository.ts
                     ├── reviewRepository.ts
                     ├── userRepository.ts
                     ├── volumeRepository.ts
                 └── 📁routes
+                    ├── authRoutes.ts
+                    ├── chapterRoutes.ts
                     ├── commentRoutes.ts
+                    ├── favoriteChapterRoutes.ts
                     ├── favoriteRoutes.ts
+                    ├── index.ts
                     ├── mangaRoutes.ts
                     ├── reviewRoutes.ts
                     ├── userRoutes.ts
+                    ├── volumeRoutes.ts
                 └── 📁useCases
+                    ├── addFavoriteChapterUseCase.ts
                     ├── addFavoriteUseCase.ts
                     ├── changeUserStatusUseCase.ts
+                    ├── checkFavoriteChapterUseCase.ts
+                    ├── checkFavoriteUseCase.ts
                     ├── createChapterUseCase.ts
                     ├── createCommentUseCase.ts
                     ├── createMangaUseCase.ts
                     ├── createReviewUseCase.ts
                     ├── createUserUseCase.ts
                     ├── createVolumeUseCase.ts
+                    ├── deleteChapterUseCase.ts
                     ├── deleteMangaUseCase.ts
+                    ├── deleteVolumeUseCase.ts
+                    ├── getMangaUseCase.ts
                     ├── listMangasUseCase.ts
+                    ├── listUserCommentsUseCase.ts
+                    ├── listUserFavoritesUseCase.ts
+                    ├── listUserReviewsUseCase.ts
                     ├── listUsersUseCase.ts
+                    ├── listVolumesUseCase.ts
+                    ├── loginUseCase.ts
+                    ├── removeFavoriteChapterUseCase.ts
+                    ├── removeFavoriteUseCase.ts
+                    ├── updateChapterPagesUseCase.ts
+                    ├── updateChapterUseCase.ts
+                    ├── updateMangaBannerUseCase.ts
                     ├── updateMangaCoverUseCase.ts
                     ├── updateMangaUseCase.ts
                     ├── updateUserAvatarUseCase.ts
+                    ├── updateUserBannerUseCase.ts
+                    ├── updateVolumeCoverUseCase.ts
+                    ├── UpdateVolumeUseCase.ts
                 ├── server.ts
             ├── .env
             ├── drizzle.config.ts
@@ -96,8 +160,35 @@
             ├── tsconfig.json
         └── 📁web
             └── 📁app
+                └── 📁api
+                    └── 📁auth
+                        └── 📁[...nextauth]
+                            ├── route.ts
+                └── 📁components
+                    ├── AuthProvider.tsx
+                    ├── FavoriteButton.tsx
+                    ├── Header.tsx
+                    ├── Hero.tsx
+                    ├── LatestUpdatesSection.tsx
+                    ├── MangaGrid.tsx
+                    ├── MangaTabsSection.tsx
+                    ├── SavedMangasSidebar.tsx
+                └── 📁login
+                    ├── page.tsx
+                └── 📁mangas
+                    └── 📁[id]
+                        └── 📁read
+                            └── 📁[chapterId]
+                                ├── page.tsx
+                        ├── page.tsx
+                    ├── page.tsx
+                └── 📁new-releases
+                    ├── page.tsx
+                └── 📁perfil
+                    ├── page.tsx
+                └── 📁popular
+                    ├── page.tsx
                 ├── favicon.ico
-                ├── globals.css
                 ├── layout.tsx
                 ├── page.tsx
             └── 📁public
@@ -106,12 +197,14 @@
                 ├── next.svg
                 ├── vercel.svg
                 ├── window.svg
+            ├── .env
             ├── .gitignore
             ├── AGENTS.md
             ├── CLAUDE.md
             ├── eslint.config.mjs
             ├── next-env.d.ts
             ├── next.config.ts
+            ├── package - web.json
             ├── package.json
             ├── postcss.config.mjs
             ├── README.md
@@ -123,6 +216,12 @@
             ├── package.json
             ├── react-internal.js
             ├── README.md
+        └── 📁types
+            └── 📁src
+                ├── Chapter.ts
+                ├── index.ts
+                ├── Manga.ts
+            ├── package.json
         └── 📁typescript-config
             ├── base.json
             ├── nextjs.json
@@ -147,10 +246,13 @@
                     ├── chart.tsx
                     ├── checkbox.tsx
                     ├── data-table.tsx
+                    ├── dialog.tsx
                     ├── drawer.tsx
                     ├── dropdown-menu.tsx
+                    ├── field.tsx
                     ├── input.tsx
                     ├── label.tsx
+                    ├── login-form.tsx
                     ├── nav-documents.tsx
                     ├── nav-main.tsx
                     ├── nav-secondary.tsx
@@ -178,6 +280,7 @@
                     ├── globals.css
             ├── components.json
             ├── eslint.config.js
+            ├── package - ui.json
             ├── package.json
             ├── postcss.config.mjs
             ├── tsconfig.json
@@ -185,10 +288,9 @@
     ├── .gitignore
     ├── api.http
     ├── docker-compose.yml
-    ├── NarutoVolume1.jpg
+    ├── package - raiz.json
     ├── package-lock.json
     ├── package.json
     ├── README.md
-    ├── teste.jpg
     └── turbo.json
 ```
