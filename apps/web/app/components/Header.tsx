@@ -137,14 +137,15 @@ export default function Header() {
 
 					{/* Ícones e Autenticação */}
 					<div className="hidden md:flex items-center space-x-4">
-						{/* 🔥 CAIXA DE FAVORITOS (DROPDOWN IDÊNTICO À FOTO) */}
+						{/* 🔥 CAIXA DE FAVORITOS (CORRIGIDO SEM BOTÃO ANINHADO) */}
 						{session?.user && (
 							<DropdownMenu>
+								{/* O asChild agora vai passar os poderes de gatilho diretamente para uma tag <button> nativa estilizada */}
 								<DropdownMenuTrigger asChild>
-									<Button
-										variant="ghost"
-										size="icon"
-										className="text-white hover:bg-black/20 hover:text-white transition-colors relative outline-none"
+									<button
+										type="button"
+										className="text-white hover:bg-black/20 transition-colors relative h-9 w-9 flex items-center justify-center rounded-md outline-none shrink-0"
+										title="Minha Biblioteca"
 									>
 										{/* Ícone preenchido se tiver favoritos */}
 										<Bookmark
@@ -153,13 +154,14 @@ export default function Header() {
 
 										{/* Pontinho vermelho avisando que tem itens */}
 										{totalFavorites > 0 && (
-											<span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
+											<span className="absolute top-1.5 right-1.5 flex h-2 w-2">
 												<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-												<span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600 border border-brand-primary"></span>
+												<span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
 											</span>
 										)}
-									</Button>
+									</button>
 								</DropdownMenuTrigger>
+
 								<DropdownMenuContent
 									align="end"
 									className="w-[320px] bg-white text-black p-0 border border-gray-200 shadow-2xl mt-4 rounded-xl overflow-hidden z-50"
