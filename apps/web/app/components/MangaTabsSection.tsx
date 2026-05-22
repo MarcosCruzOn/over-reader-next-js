@@ -12,6 +12,8 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from '@workspace/ui/components/dialog'
+// 🔥 IMPORTAÇÃO DO BOTÃO AQUI
+import { FavoriteChapterButton } from './FavoriteChapterButton'
 
 // Tipagens para receber os dados do servidor
 interface MangaTabsSectionProps {
@@ -127,21 +129,33 @@ export default function MangaTabsSection({
 								</summary>
 								<div className="border-t border-border bg-card">
 									{vol.chapters.map((ch: any, index: number) => (
-										<Link
+										// 🔥 BOTÃO DE FAVORITO SEPARADO DO LINK (VIEW LISTA VOLUMES)
+										<div
 											key={ch.id}
-											href={`/mangas/${manga.id}/read/${ch.chapterNumber}`}
 											className={`flex items-center justify-between py-3 px-6 hover:bg-muted/50 transition-colors ${index % 2 === 0 ? 'bg-transparent' : 'bg-muted/20'}`}
 										>
-											<span className="font-semibold text-foreground text-sm uppercase">
-												Cap. {ch.chapterNumber}{' '}
-												<span className="text-muted-foreground font-normal ml-2 hidden md:inline">
-													— {ch.title}
+											<Link
+												href={`/mangas/${manga.id}/read/${ch.chapterNumber}`}
+												className="flex-1 flex items-center justify-between pr-4"
+											>
+												<span className="font-semibold text-foreground text-sm uppercase">
+													Cap. {ch.chapterNumber}{' '}
+													<span className="text-muted-foreground font-normal ml-2 hidden md:inline">
+														— {ch.title}
+													</span>
 												</span>
-											</span>
-											<span className="text-xs text-muted-foreground">
-												{new Date(ch.createdAt).toLocaleDateString('pt-BR')}
-											</span>
-										</Link>
+												<span className="text-xs text-muted-foreground">
+													{new Date(ch.createdAt).toLocaleDateString(
+														'pt-BR'
+													)}
+												</span>
+											</Link>
+											{/* A Estrela de Favorito */}
+											<FavoriteChapterButton
+												chapterId={ch.id}
+												variant="icon"
+											/>
+										</div>
 									))}
 								</div>
 							</details>
@@ -150,12 +164,10 @@ export default function MangaTabsSection({
 				) : (
 					<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
 						{groupedVolumes.map((vol) => {
-							// 🔥 DETERMINA A CAPA AQUI
 							const currentCover = vol.coverUrl || coverFallback
 
 							return (
 								<Dialog key={vol.number}>
-									{/* 🔥 CORREÇÃO: Sem asChild e usando as classes diretamente */}
 									<DialogTrigger className="group cursor-pointer rounded-xl border border-border bg-background overflow-hidden hover:border-primary transition-colors shadow-sm text-left w-full focus:outline-none">
 										<div className="aspect-[2/3] relative bg-muted">
 											<Image
@@ -190,20 +202,30 @@ export default function MangaTabsSection({
 										</DialogHeader>
 										<div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto pr-2 mt-4 custom-scrollbar">
 											{vol.chapters.map((ch: any) => (
-												<Link
+												// 🔥 BOTÃO DE FAVORITO SEPARADO DO LINK (VIEW GRID)
+												<div
 													key={ch.id}
-													href={`/mangas/${manga.id}/read/${ch.chapterNumber}`}
-													className="p-4 bg-background hover:bg-muted border border-border hover:border-primary rounded-xl flex items-center justify-between transition-all group"
+													className="p-3 bg-background hover:bg-muted border border-border hover:border-primary rounded-xl flex items-center justify-between transition-all group"
 												>
-													<span className="font-bold text-foreground group-hover:text-primary transition-colors">
-														Cap. {ch.chapterNumber}
-													</span>
-													<span className="text-xs text-muted-foreground font-medium">
-														{new Date(ch.createdAt).toLocaleDateString(
-															'pt-BR'
-														)}
-													</span>
-												</Link>
+													<Link
+														href={`/mangas/${manga.id}/read/${ch.chapterNumber}`}
+														className="flex-1 flex items-center justify-between pr-4"
+													>
+														<span className="font-bold text-foreground group-hover:text-primary transition-colors">
+															Cap. {ch.chapterNumber}
+														</span>
+														<span className="text-xs text-muted-foreground font-medium">
+															{new Date(
+																ch.createdAt
+															).toLocaleDateString('pt-BR')}
+														</span>
+													</Link>
+													{/* A Estrela de Favorito */}
+													<FavoriteChapterButton
+														chapterId={ch.id}
+														variant="icon"
+													/>
+												</div>
 											))}
 										</div>
 									</DialogContent>
@@ -219,12 +241,15 @@ export default function MangaTabsSection({
 				<div className="flex flex-col">
 					{chapters.length > 0 ? (
 						chapters.map((ch: any, index: number) => (
-							<Link
+							// 🔥 BOTÃO DE FAVORITO SEPARADO DO LINK (ABA CH LIVRE)
+							<div
 								key={ch.id}
-								href={`/mangas/${manga.id}/read/${ch.chapterNumber}`}
 								className={`flex items-center justify-between py-4 px-4 hover:bg-muted/50 transition-colors ${index % 2 === 0 ? 'bg-transparent' : 'bg-muted/20'}`}
 							>
-								<div className="flex items-center gap-4">
+								<Link
+									href={`/mangas/${manga.id}/read/${ch.chapterNumber}`}
+									className="flex-1 flex items-center gap-4 pr-4"
+								>
 									<div
 										className={`h-2 w-2 rounded-full ${new Date(ch.createdAt) > new Date(Date.now() - 172800000) ? 'bg-primary' : 'bg-transparent'}`}
 									></div>
@@ -234,11 +259,15 @@ export default function MangaTabsSection({
 									<span className="text-muted-foreground text-sm font-normal hidden md:inline">
 										— {ch.title || 'Sem título'}
 									</span>
+								</Link>
+								<div className="flex items-center gap-4">
+									<span className="text-xs text-muted-foreground font-medium tracking-wide uppercase hidden sm:block">
+										{new Date(ch.createdAt).toLocaleDateString('pt-BR')}
+									</span>
+									{/* A Estrela de Favorito */}
+									<FavoriteChapterButton chapterId={ch.id} variant="icon" />
 								</div>
-								<span className="text-xs text-muted-foreground font-medium tracking-wide uppercase">
-									{new Date(ch.createdAt).toLocaleDateString('pt-BR')}
-								</span>
-							</Link>
+							</div>
 						))
 					) : (
 						<div className="text-center py-12 text-muted-foreground">
