@@ -1,46 +1,51 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Tabs, TabsList, TabsTrigger } from '@workspace/ui/components/tabs'
 import MangaGrid from './MangaGrid'
 import { Manga } from '@workspace/types'
+// 🔥 IMPORTAÇÃO DA SESSÃO PARA BUSCAR FAVORITOS
+import { useSession } from 'next-auth/react'
 
 interface LatestUpdatesProps {
 	mangas: Manga[]
 }
 
 export default function LatestUpdatesSection({ mangas }: LatestUpdatesProps) {
+	const { data: session } = useSession()
 	const [selectedDay, setSelectedDay] = useState('Hoje')
-	// Ajustei os dias para ter a semana completa se precisar
+	// 🔥 NOVO ESTADO: Guarda os IDs dos mangás favoritados
+	const [favoritedIds, setFavoritedIds] = useState<number[]>([])
+
 	const days = ['Hoje', 'Ontem', 'Dom', 'Sab', 'Sex', 'Qui', 'Qua']
 
-	// LÓGICA DE FILTRAGEM DE DATAS
+	// Busca os favoritos para pintar a fita vermelha nos cards
+	useEffect(() => {
+		if (session?.user) {
+			const userId = (session.user as any).id
+			fetch(`http://localhost:3333/favorites/user/${userId}`)
+				.then((res) => (res.ok ? res.json() : []))
+				.then((data) => {
+					// Extrai apenas os números (IDs) para facilitar a verificação nos cards
+					setFavoritedIds(data.map((fav: any) => fav.mangaId))
+				})
+				.catch(console.error)
+		}
+	}, [session])
+
 	const getFilteredMangas = () => {
 		const today = new Date()
 		const yesterday = new Date(today)
 		yesterday.setDate(yesterday.getDate() - 1)
 
 		return mangas.filter((manga) => {
-			// Usamos a data de atualização do mangá
 			const updatedDate = new Date(manga.updatedAt || manga.createdAt)
-
-			// Se a aba for "Hoje"
-			if (selectedDay === 'Hoje') {
-				return updatedDate.toDateString() === today.toDateString()
-			}
-
-			// Se a aba for "Ontem"
-			if (selectedDay === 'Ontem') {
+			if (selectedDay === 'Hoje') return updatedDate.toDateString() === today.toDateString()
+			if (selectedDay === 'Ontem')
 				return updatedDate.toDateString() === yesterday.toDateString()
-			}
 
-			// Se for um dia da semana (Dom, Seg, Ter...)
 			const daysOfWeek = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab']
 			const mangaDayStr = daysOfWeek[updatedDate.getDay()]
-
-			// Para evitar que obras de "Hoje" apareçam na aba do dia da semana correspondente
-			// (ex: Hoje é Sexta, a obra aparece em "Hoje" e em "Sex"), nós garantimos que
-			// a obra tem mais de 2 dias se for filtrada pela sigla do dia.
 			const isOlderThanYesterday = updatedDate < yesterday
 
 			return selectedDay === mangaDayStr && isOlderThanYesterday
@@ -73,9 +78,9 @@ export default function LatestUpdatesSection({ mangas }: LatestUpdatesProps) {
 				</Tabs>
 			</div>
 
-			{/* Renderiza o Grid, ou uma mensagem se o filtro ficar vazio */}
 			{filteredMangas.length > 0 ? (
-				<MangaGrid mangas={filteredMangas} />
+				// 🔥 AGORA PASSAMOS OS FAVORITOS PARA O GRID
+				<MangaGrid mangas={filteredMangas} favoritedIds={favoritedIds} />
 			) : (
 				<div className="py-12 text-center text-gray-500 border border-dashed border-gray-800 rounded-xl bg-brand-gray">
 					Nenhuma atualização encontrada para{' '}

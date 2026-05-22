@@ -9,9 +9,10 @@ import { Manga } from '@workspace/types'
 
 interface MangaGridProps {
 	mangas: Manga[]
+	favoritedIds?: number[]
 }
 
-export default function MangaGrid({ mangas }: MangaGridProps) {
+export default function MangaGrid({ mangas, favoritedIds = [] }: MangaGridProps) {
 	return (
 		<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
 			{mangas.map((manga, index) => {
@@ -30,6 +31,22 @@ export default function MangaGrid({ mangas }: MangaGridProps) {
 						<Link href={`/mangas/${manga.id}`}>
 							<div className="relative overflow-hidden rounded-xl bg-gray-900 transition-all duration-300 hover:scale-105 hover:shadow-2xl border border-gray-800 hover:border-brand-primary">
 								<div className="aspect-3/4 relative bg-gray-950">
+									{/* 🔥 A FITINHA VERMELHA ENTRA AQUI (O layout é SVG para ficar com o recorte em V embaixo) */}
+									{favoritedIds?.includes(manga.id) && (
+										<svg
+											width="24"
+											height="36"
+											viewBox="0 0 24 36"
+											fill="none"
+											xmlns="http://www.w3.org/2000/svg"
+											className="absolute top-0 right-3 z-10 text-[#C41E3A] drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)]"
+										>
+											<path
+												d="M0 0H24V36L12 28L0 36V0Z"
+												fill="currentColor"
+											/>
+										</svg>
+									)}
 									<Image
 										src={imageUrl}
 										alt={manga.title}

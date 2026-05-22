@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 
@@ -24,7 +24,25 @@ export default function Header() {
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 	const [searchTerm, setSearchTerm] = useState('')
 
-	// Traduzi as categorias para combinar com o resto do nosso site em português
+	// 🔥 ESTADOS PARA O DROPDOWN DE FAVORITOS
+	const [recentFavorites, setRecentFavorites] = useState<any[]>([])
+	const [totalFavorites, setTotalFavorites] = useState(0)
+
+	// 🔥 BUSCA OS FAVORITOS ASSIM QUE O USUÁRIO LOGA
+	useEffect(() => {
+		if (session?.user) {
+			const userId = (session.user as any).id
+			fetch(`http://localhost:3333/favorites/user/${userId}`)
+				.then((res) => (res.ok ? res.json() : []))
+				.then((data) => {
+					setTotalFavorites(data.length)
+					// Pega apenas os 4 primeiros para exibir na caixinha
+					setRecentFavorites(data.slice(0, 4))
+				})
+				.catch(console.error)
+		}
+	}, [session])
+
 	const categories = [
 		'Ação',
 		'Aventura',
@@ -38,12 +56,11 @@ export default function Header() {
 		'Mistério',
 	]
 
-	// Função que roda quando dá ENTER na busca
 	const handleSearch = (e: React.FormEvent) => {
 		e.preventDefault()
 		if (searchTerm.trim()) {
 			router.push(`/mangas?q=${encodeURIComponent(searchTerm)}`)
-			setSearchTerm('') // Limpa a barra depois de buscar
+			setSearchTerm('')
 		}
 	}
 
@@ -79,7 +96,6 @@ export default function Header() {
 							Populares
 						</Link>
 
-						{/* Shadcn DropdownMenu */}
 						<DropdownMenu>
 							<DropdownMenuTrigger className="flex items-center space-x-1 text-white hover:text-white/80 transition-colors font-medium focus:outline-none">
 								<span>Navegar</span>
@@ -100,7 +116,7 @@ export default function Header() {
 						</DropdownMenu>
 					</nav>
 
-					{/* Barra de Busca com Shadcn Input */}
+					{/* Barra de Busca */}
 					<div className="hidden md:flex items-center flex-1 max-w-md mx-8">
 						<form onSubmit={handleSearch} className="relative w-full text-gray-900">
 							<Input
@@ -121,15 +137,90 @@ export default function Header() {
 
 					{/* Ícones e Autenticação */}
 					<div className="hidden md:flex items-center space-x-4">
-						<Link href="/bookmarks">
-							<Button
-								variant="ghost"
-								size="icon"
-								className="text-white hover:bg-black/20 hover:text-white transition-colors"
-							>
-								<Bookmark className="h-5 w-5" />
-							</Button>
-						</Link>
+						{/* 🔥 CAIXA DE FAVORITOS (DROPDOWN IDÊNTICO À FOTO) */}
+						{session?.user && (
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button
+										variant="ghost"
+										size="icon"
+										className="text-white hover:bg-black/20 hover:text-white transition-colors relative outline-none"
+									>
+										{/* Ícone preenchido se tiver favoritos */}
+										<Bookmark
+											className={`h-5 w-5 ${totalFavorites > 0 ? 'fill-current' : ''}`}
+										/>
+
+										{/* Pontinho vermelho avisando que tem itens */}
+										{totalFavorites > 0 && (
+											<span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
+												<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+												<span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600 border border-brand-primary"></span>
+											</span>
+										)}
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent
+									align="end"
+									className="w-[320px] bg-white text-black p-0 border border-gray-200 shadow-2xl mt-4 rounded-xl overflow-hidden z-50"
+								>
+									<div className="flex flex-col">
+										{recentFavorites.length > 0 ? (
+											recentFavorites.map((fav) => {
+												const coverUrl = fav.coverUrl?.startsWith('http')
+													? fav.coverUrl
+													: `http://localhost:3333${fav.coverUrl}`
+												return (
+													<Link
+														href={`/perfil/obra/${fav.mangaId}`}
+														key={fav.favoriteId}
+														className="flex items-center gap-4 p-4 hover:bg-gray-50 border-b border-gray-100 transition-colors group"
+													>
+														{/* Pontinho Vermelho à esquerda */}
+														<div className="w-2 h-2 rounded-full bg-[#C41E3A] shrink-0 group-hover:scale-125 transition-transform"></div>
+
+														{/* Capa Miniatura */}
+														<div className="w-12 h-16 relative shrink-0 rounded overflow-hidden shadow-sm border border-gray-200">
+															<Image
+																src={coverUrl}
+																alt={fav.title}
+																fill
+																className="object-cover"
+																unoptimized={true}
+															/>
+														</div>
+
+														{/* Título e Info */}
+														<div className="flex flex-col flex-1 overflow-hidden">
+															<span className="font-bold text-[13px] text-gray-900 truncate uppercase tracking-tight">
+																{fav.title}
+															</span>
+															<span className="text-[10px] font-bold text-gray-500 uppercase mt-1">
+																Salvo em{' '}
+																{new Date(
+																	fav.savedAt
+																).toLocaleDateString('pt-BR')}
+															</span>
+														</div>
+													</Link>
+												)
+											})
+										) : (
+											<div className="p-8 text-sm font-medium text-gray-500 text-center flex flex-col items-center gap-2">
+												<Bookmark className="w-8 h-8 text-gray-300" />
+												Nenhum mangá na biblioteca.
+											</div>
+										)}
+										<Link
+											href="/perfil"
+											className="block w-full text-center p-4 text-[13px] font-bold text-[#C41E3A] hover:bg-gray-50 transition-colors"
+										>
+											Ver todos os mangás salvos ({totalFavorites})
+										</Link>
+									</div>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						)}
 
 						{/* Lógica de Login/Perfil */}
 						<div className="flex items-center pl-4 border-l border-white/20">
@@ -173,7 +264,6 @@ export default function Header() {
 						</div>
 					</div>
 
-					{/* Botão Menu Mobile */}
 					<Button
 						variant="ghost"
 						size="icon"

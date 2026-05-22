@@ -295,7 +295,7 @@ export default function PerfilPage() {
 
 											return (
 												<Link
-													href={`/manga/${fav.mangaId}`}
+													href={`/perfil/obra/${fav.mangaId}`}
 													key={fav.favoriteId}
 												>
 													<div className="group relative rounded-lg overflow-hidden border border-border bg-card aspect-[2/3] cursor-pointer shadow-lg hover:shadow-primary/20 transition-all">
