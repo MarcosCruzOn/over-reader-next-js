@@ -14,7 +14,7 @@ export class CreateReviewUseCase {
 			throw new Error('A avaliação deve ser entre 1 e 5 estrelas.')
 		}
 
-		const newReview = await this.reviewRepository.create(data)
+		const newReview = await this.reviewRepository.upsert(data)
 		return newReview
 	}
 }

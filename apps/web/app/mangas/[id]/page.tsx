@@ -7,6 +7,7 @@ import { FavoriteButton } from '@/app/components/FavoriteButton'
 import { Bookmark, Star } from 'lucide-react'
 import { Button } from '@workspace/ui/components/button'
 import { Manga } from '@workspace/types'
+import { MangaRating } from '@/app/components/MangaRating'
 
 // ⚡ Server Action: Busca o mangá específico pelo ID
 async function getManga(id: string): Promise<Manga | null> {
@@ -150,22 +151,8 @@ export default async function MangaDetailPage({ params }: { params: Promise<{ id
 								{manga.author || 'Desconhecido'}
 							</span>
 
-							<span className="text-muted-foreground font-medium">Atualização:</span>
-							<span className="text-foreground">
-								VOL. {groupedVolumes.length > 0 ? groupedVolumes[0].number : 1}
-							</span>
-
 							<span className="text-muted-foreground font-medium">Avaliação:</span>
-							<div className="flex items-center gap-1">
-								<div className="flex text-yellow-500">
-									<Star className="h-4 w-4 fill-current" />
-									<Star className="h-4 w-4 fill-current" />
-									<Star className="h-4 w-4 fill-current" />
-									<Star className="h-4 w-4 fill-current" />
-									<Star className="h-4 w-4 fill-current opacity-50" />
-								</div>
-								<span className="text-primary font-bold ml-2">(4.5)</span>
-							</div>
+							<MangaRating mangaId={Number(manga.id)} />
 						</div>
 
 						{/* Sinopse */}

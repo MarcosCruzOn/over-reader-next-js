@@ -24,7 +24,7 @@ export class FavoriteChapterController {
 			const repository = new FavoriteChapterRepository()
 			const useCase = new RemoveFavoriteChapterUseCase(repository)
 
-			await useCase.execute(userId, Number(chapterId))
+			await useCase.execute(userId as string, Number(chapterId))
 			res.status(204).send()
 		} catch (error: any) {
 			res.status(400).json({ error: error.message })
@@ -37,7 +37,7 @@ export class FavoriteChapterController {
 			const repository = new FavoriteChapterRepository()
 			const useCase = new CheckFavoriteChapterUseCase(repository)
 
-			const result = await useCase.execute(userId, Number(chapterId))
+			const result = await useCase.execute(userId as string, Number(chapterId))
 			res.json(result)
 		} catch (error: any) {
 			res.status(400).json({ error: error.message })
@@ -50,7 +50,7 @@ export class FavoriteChapterController {
 			const repository = new FavoriteChapterRepository()
 
 			// Chamando o repositório direto aqui para listagem
-			const favorites = await repository.findByUser(userId)
+			const favorites = await repository.findByUser(userId as string)
 			res.json(favorites)
 		} catch (error: any) {
 			res.status(400).json({ error: error.message })

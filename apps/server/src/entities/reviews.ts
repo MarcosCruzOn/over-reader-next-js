@@ -15,6 +15,7 @@ export const reviews = pgTable(
 		rating: integer('rating').notNull(), // Ex: de 1 a 5
 		comment: text('comment'), // Opinião escrita (Opcional)
 		createdAt: timestamp('created_at').defaultNow(),
+		updatedAt: timestamp('updated_at').defaultNow(),
 	},
 	(table) => {
 		return {

@@ -96,8 +96,9 @@ export default function Header() {
 							Populares
 						</Link>
 
+						{/* GATILHO NAVEGAR CORRIGIDO SEM BOTÃO INTERNO ANINHADO */}
 						<DropdownMenu>
-							<DropdownMenuTrigger className="flex items-center space-x-1 text-white hover:text-white/80 transition-colors font-medium focus:outline-none">
+							<DropdownMenuTrigger className="flex items-center space-x-1 text-white hover:text-white/80 transition-colors font-medium focus:outline-none select-none">
 								<span>Navegar</span>
 								<ChevronDown className="h-4 w-4" />
 							</DropdownMenuTrigger>
@@ -137,29 +138,26 @@ export default function Header() {
 
 					{/* Ícones e Autenticação */}
 					<div className="hidden md:flex items-center space-x-4">
-						{/* 🔥 CAIXA DE FAVORITOS (CORRIGIDO SEM BOTÃO ANINHADO) */}
+						{/* 🔥 CAIXA DE FAVORITOS CORRIGIDA DEFINITIVAMENTE (SEM ASCHILD / SEM CONFLITO DE TAGS) */}
 						{session?.user && (
 							<DropdownMenu>
-								{/* O asChild agora vai passar os poderes de gatilho diretamente para uma tag <button> nativa estilizada */}
-								<DropdownMenuTrigger asChild>
-									<button
-										type="button"
-										className="text-white hover:bg-black/20 transition-colors relative h-9 w-9 flex items-center justify-center rounded-md outline-none shrink-0"
-										title="Minha Biblioteca"
-									>
-										{/* Ícone preenchido se tiver favoritos */}
-										<Bookmark
-											className={`h-5 w-5 ${totalFavorites > 0 ? 'fill-current' : ''}`}
-										/>
+								{/* Removido o asChild e a tag <button> interna. Passamos as classes direto no gatilho que por padrão já gera o botão perfeitamente! */}
+								<DropdownMenuTrigger
+									className="text-white hover:bg-black/20 transition-colors relative h-9 w-9 flex items-center justify-center rounded-md outline-none shrink-0"
+									title="Minha Biblioteca"
+								>
+									{/* Ícone preenchido se tiver favoritos */}
+									<Bookmark
+										className={`h-5 w-5 ${totalFavorites > 0 ? 'fill-current' : ''}`}
+									/>
 
-										{/* Pontinho vermelho avisando que tem itens */}
-										{totalFavorites > 0 && (
-											<span className="absolute top-1.5 right-1.5 flex h-2 w-2">
-												<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-												<span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
-											</span>
-										)}
-									</button>
+									{/* Pontinho vermelho avisando que tem itens */}
+									{totalFavorites > 0 && (
+										<span className="absolute top-1.5 right-1.5 flex h-2 w-2">
+											<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+											<span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
+										</span>
+									)}
 								</DropdownMenuTrigger>
 
 								<DropdownMenuContent
