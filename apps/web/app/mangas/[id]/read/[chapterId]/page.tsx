@@ -2,7 +2,7 @@ import React from 'react'
 import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
 import { Button } from '@workspace/ui/components/button'
-import { ReaderClient } from './ReaderClient' // 🔥 Importamos o motor interativo!
+import { ReaderClient } from './ReaderClient'
 
 async function getChapterData(mangaId: string, chapterNumber: string) {
 	try {
@@ -18,13 +18,32 @@ async function getChapterData(mangaId: string, chapterNumber: string) {
 	}
 }
 
+// 🔥 Nova função para buscar todos os capítulos da obra para a gaveta lateral
+async function getMangaChapters(mangaId: string) {
+	try {
+		const res = await fetch(`http://localhost:3333/chapters/manga/${mangaId}`, {
+			cache: 'no-store',
+		})
+		if (!res.ok) return []
+		return res.json()
+	} catch (error) {
+		console.error('Erro ao buscar lista de capítulos:', error)
+		return []
+	}
+}
+
 export default async function MangaReaderPage({
 	params,
 }: {
 	params: Promise<{ id: string; chapterId: string }>
 }) {
 	const resolvedParams = await params
-	const responseData = await getChapterData(resolvedParams.id, resolvedParams.chapterId)
+
+	// 🔥 Buscamos o capítulo atual e a lista completa em paralelo no servidor
+	const [responseData, chaptersData] = await Promise.all([
+		getChapterData(resolvedParams.id, resolvedParams.chapterId),
+		getMangaChapters(resolvedParams.id),
+	])
 
 	let pages: string[] = []
 
@@ -33,6 +52,9 @@ export default async function MangaReaderPage({
 	} else if (responseData && Array.isArray(responseData.pages)) {
 		pages = responseData.pages
 	}
+
+	// Blindagem para garantir que a lista seja sempre um array válido
+	const chaptersList = Array.isArray(chaptersData) ? chaptersData : chaptersData?.chapters || []
 
 	if (pages.length === 0) {
 		return (
@@ -53,12 +75,12 @@ export default async function MangaReaderPage({
 	const prevChapter = currentChapter > 1 ? currentChapter - 1 : null
 	const nextChapter = currentChapter + 1
 
-	// Renderiza o nosso Motor de Leitura!
 	return (
 		<ReaderClient
 			mangaId={resolvedParams.id}
 			chapterId={resolvedParams.chapterId}
 			pages={pages}
+			chaptersList={chaptersList} // 🔥 Passando a lista para o client component
 			prevChapter={prevChapter}
 			nextChapter={nextChapter}
 		/>
