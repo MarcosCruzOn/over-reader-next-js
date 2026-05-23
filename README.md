@@ -81,3 +81,24 @@ O painel de controle do **Over Reader** foi construído com foco em produtividad
 - **Proteção de Borda (Edge):** Utilização do `proxy.ts` (novo padrão Next.js) para interceptar requisições e garantir que apenas usuários com tokens válidos acessem o painel.
 - **Criptografia:** Senhas protegidas no banco de dados (PostgreSQL) com `bcryptjs`.
 - **Sessão:** Autenticação baseada em Tokens JWT (JSON Web Tokens) com validade configurável.
+
+## ⭐️ Sistema de Avaliação e Ranking de Obras
+
+Funcionalidade implementada para permitir que os leitores avaliem os mangás com notas de 1 a 5 estrelas. O sistema utiliza uma estratégia de consolidação de dados de "Nível de Obra", garantindo que a pontuação geral (média) reflita o engajamento coletivo em tempo real e de forma performática.
+
+### 🗄️ Arquitetura do Banco de Dados (`Drizzle ORM`)
+
+- **Tabela `reviews`:** Armazena o ID do usuário, ID do mangá, nota inteira e o comentário descritivo (opcional).
+- **Índice Único (`user_manga_review_idx`):** Implementado para assegurar que cada usuário possua apenas uma avaliação por obra. Tentativas posteriores de avaliação acionam o fluxo inteligente de `UPSERT` (atualização da nota antiga).
+
+### 🛣️ Endpoints do Backend (`Express API`)
+
+- `POST /reviews` -> Executa o fluxo de criação ou re-avaliação do mangá, calculando as regras de negócio de notas válidas (entre 1 e 5).
+- `GET /reviews/user/:userId/:mangaId` -> Resgata a nota específica que o leitor autenticado atribuiu à obra no passado.
+- `GET /reviews/manga/:mangaId/stats` -> Utiliza agregadores SQL (`avg` e `count`) para calcular em tempo real a média de estrelas formatada (com uma casa decimal) e o volume total de votos do mangá.
+- `GET /reviews/user/:userId` -> Coleta o histórico completo de obras avaliadas por um leitor para exibição no painel privado.
+
+### 🎨 Componentes do Frontend (`Next.js / Tailwind CSS`)
+
+- **`MangaRating.tsx`:** Componente interativo que renderiza o conjunto de estrelas na página pública do mangá. Apresenta estados reativos de _hover_ visual (as estrelas acendem antes do clique) e atualiza a média global imediatamente após o voto sem necessidade de recarregamento de página.
+- **`PerfilPage (Aba Avaliações)`:** Painel que mapeia os dados do usuário e renderiza uma grelha contendo os cards dos mangás que o leitor avaliou, exibindo a respectiva nota e a miniatura da capa correspondente.

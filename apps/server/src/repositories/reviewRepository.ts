@@ -1,6 +1,7 @@
 import { db } from '../db'
 import { and, eq, count, avg } from 'drizzle-orm'
 import { reviews } from '../entities/reviews'
+import { mangas } from '../entities/mangas'
 
 export type CreateReviewDTO = typeof reviews.$inferInsert
 
@@ -12,9 +13,22 @@ export class ReviewRepository {
 
 	// Novo: Busca as avaliações dadas pelo usuário
 	async findByUser(userId: string) {
-		return await db.query.reviews.findMany({
-			where: (reviews, { eq }) => eq(reviews.userId, userId),
-		})
+		return await db
+			.select({
+				id: reviews.id,
+				rating: reviews.rating,
+				comment: reviews.comment,
+				createdAt: reviews.createdAt,
+				mangaId: reviews.mangaId,
+				manga: {
+					id: mangas.id,
+					title: mangas.title,
+					coverUrl: mangas.coverUrl,
+				},
+			})
+			.from(reviews)
+			.innerJoin(mangas, eq(reviews.mangaId, mangas.id))
+			.where(eq(reviews.userId, userId))
 	}
 
 	// Salva ou atualiza a nota do usuário

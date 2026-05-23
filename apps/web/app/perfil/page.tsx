@@ -25,11 +25,13 @@ export default function PerfilPage() {
 	const [activeTab, setActiveTab] = useState('favorites')
 
 	const [favorites, setFavorites] = useState<any[]>([])
-	const [isLoading, setIsLoading] = useState(false)
+	const [reviews, setReviews] = useState<any[]>([]) // 🔥 Estado para avaliações
 	const [isLoadingFavs, setIsLoadingFavs] = useState(false)
+	const [isLoadingReviews, setIsLoadingReviews] = useState(false)
 	const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
-	const [isUploadingBanner, setIsUploadingBanner] = useState(false) // 🔥 Novo estado para o banner
+	const [isUploadingBanner, setIsUploadingBanner] = useState(false)
 
+	// 🔄 Busca Favoritos
 	useEffect(() => {
 		const fetchFavorites = async () => {
 			if (session?.user && activeTab === 'favorites') {
@@ -37,7 +39,6 @@ export default function PerfilPage() {
 				try {
 					const userId = (session.user as any).id
 					const response = await fetch(`http://localhost:3333/favorites/user/${userId}`)
-
 					if (response.ok) {
 						const data = await response.json()
 						setFavorites(data)
@@ -49,15 +50,35 @@ export default function PerfilPage() {
 				}
 			}
 		}
-
 		fetchFavorites()
 	}, [session, activeTab])
 
-	// --- FUNÇÃO DO AVATAR ---
+	// 🔄 Busca Avaliações
+	useEffect(() => {
+		const fetchReviews = async () => {
+			if (session?.user && activeTab === 'reviews') {
+				setIsLoadingReviews(true)
+				try {
+					const userId = (session.user as any).id
+					const response = await fetch(`http://localhost:3333/reviews/user/${userId}`)
+					if (response.ok) {
+						const data = await response.json()
+						setReviews(data)
+					}
+				} catch (error) {
+					console.error('Erro ao buscar avaliações:', error)
+				} finally {
+					setIsLoadingReviews(false)
+				}
+			}
+		}
+		fetchReviews()
+	}, [session, activeTab])
+
+	// --- FUNÇÕES DE UPLOAD (MANTIDAS) ---
 	const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0]
 		if (!file) return
-
 		const userId = (session?.user as any)?.id
 		if (!userId) return alert('Erro: ID não encontrado.')
 
@@ -65,14 +86,11 @@ export default function PerfilPage() {
 			setIsUploadingAvatar(true)
 			const formData = new FormData()
 			formData.append('avatar', file)
-
 			const response = await fetch(`http://localhost:3333/users/${userId}/avatar`, {
 				method: 'PATCH',
 				body: formData,
 			})
-
 			if (!response.ok) throw new Error('Falha ao enviar a imagem')
-
 			const updatedUser = await response.json()
 			await update({ image: updatedUser.image })
 		} catch (error) {
@@ -83,29 +101,22 @@ export default function PerfilPage() {
 		}
 	}
 
-	// --- 🔥 NOVA FUNÇÃO DO BANNER ---
 	const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0]
 		if (!file) return
-
 		const userId = (session?.user as any)?.id
 		if (!userId) return alert('Erro: ID não encontrado.')
 
 		try {
 			setIsUploadingBanner(true)
 			const formData = new FormData()
-			formData.append('banner', file) // 'banner' para bater com o multer do backend
-
+			formData.append('banner', file)
 			const response = await fetch(`http://localhost:3333/users/${userId}/banner`, {
 				method: 'PATCH',
 				body: formData,
 			})
-
 			if (!response.ok) throw new Error('Falha ao enviar o banner')
-
 			const updatedUser = await response.json()
-
-			// Avisa o NextAuth para atualizar o bannerUrl na sessão!
 			await update({ bannerUrl: updatedUser.bannerUrl })
 		} catch (error) {
 			console.error(error)
@@ -118,20 +129,19 @@ export default function PerfilPage() {
 	if (status === 'loading') {
 		return (
 			<div className="min-h-screen flex items-center justify-center text-white">
-				Carregando o seu universo...
+				<Loader2 className="w-10 h-10 animate-spin text-primary" />
 			</div>
 		)
 	}
 
 	if (!session?.user) return null
 
-	// Pegamos o bannerUrl da sessão (ou usamos o placeholder se não tiver)
 	const userBanner =
 		(session.user as any).bannerUrl || 'https://placehold.co/1920x400/1a1a1a/333333.png?text=+'
 
 	return (
 		<div className="min-h-screen bg-background text-foreground pb-20">
-			{/* 🔥 BOTÃO DE VOLTAR FLUTUANTE */}
+			{/* BOTÃO DE VOLTAR */}
 			<div className="absolute top-6 left-6 sm:left-10 z-30">
 				<Link href="/">
 					<Button
@@ -143,20 +153,18 @@ export default function PerfilPage() {
 					</Button>
 				</Link>
 			</div>
-			{/* 🔥 HEADER DO PERFIL (Agora é clicável para mudar o Banner!) */}
-			<div className="relative h-64 bg-muted overflow-hidden group">
-				<div className="absolute inset-0 bg-gradient-to-r from-brand-primary/80 to-purple-900/80 z-0" />
+
+			{/* 🔥 HEADER DO PERFIL (GRADIENTE REMOVIDO) */}
+			<div className="relative h-[300px] bg-muted overflow-hidden group border-b border-border">
 				<Image
 					src={userBanner}
 					alt="Banner"
-					className="w-full h-full object-cover mix-blend-overlay opacity-50 relative z-0 transition-transform duration-700 group-hover:scale-105"
+					className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
 					loading="eager"
 					fill
 					unoptimized={true}
 				/>
-
-				{/* Camada escura que aparece ao passar o rato no banner */}
-				<label className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer z-10">
+				<label className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer z-10 backdrop-blur-sm">
 					{isUploadingBanner ? (
 						<Loader2 className="w-10 h-10 text-white animate-spin" />
 					) : (
@@ -177,14 +185,15 @@ export default function PerfilPage() {
 				</label>
 			</div>
 
-			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-20">
-				<div className="flex flex-col md:flex-row gap-8">
-					{/* SIDEBAR */}
-					<div className="w-full md:w-80 shrink-0">
+			{/* 🔥 ESTRUTURA DO LAYOUT CORRIGIDA */}
+			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
+				<div className="flex flex-col md:flex-row gap-8 items-start">
+					{/* SIDEBAR (É a única que sobe e sobrepõe o banner agora!) */}
+					<div className="w-full md:w-80 shrink-0 -mt-24">
 						<div className="bg-card border border-border rounded-xl p-6 shadow-2xl backdrop-blur-sm">
-							{/* ÁREA DO AVATAR */}
-							<div className="relative w-32 h-32 mx-auto -mt-16 mb-4 group">
-								<Image
+							<div className="relative w-36 h-36 mx-auto -mt-16 mb-4 group">
+								{/* Tag img nativa para evitar erros de domínio do Next.js com fotos do Google */}
+								<img
 									src={
 										session.user.image ||
 										'https://placehold.co/200x200/1a1a1a/white.png?text=U'
@@ -192,11 +201,7 @@ export default function PerfilPage() {
 									alt="Avatar"
 									className="w-full h-full rounded-full object-cover border-4 border-card shadow-lg bg-card"
 									referrerPolicy="no-referrer"
-									loading="eager"
-									fill
-									unoptimized={true}
 								/>
-
 								<label className="absolute inset-0 bg-black/60 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
 									{isUploadingAvatar ? (
 										<Loader2 className="w-8 h-8 text-white animate-spin" />
@@ -218,14 +223,14 @@ export default function PerfilPage() {
 								</label>
 							</div>
 
-							<div className="text-center mb-6">
-								<h1 className="text-2xl font-bold text-foreground">
+							<div className="text-center mb-8">
+								<h1 className="text-2xl font-black text-foreground uppercase tracking-tight">
 									{session.user.name}
 								</h1>
-								<p className="text-muted-foreground text-sm">
+								<p className="text-muted-foreground text-sm mb-3">
 									{session.user.email}
 								</p>
-								<div className="inline-flex items-center mt-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
+								<div className="inline-flex items-center px-4 py-1.5 rounded-md bg-primary/10 text-primary text-xs font-black uppercase tracking-widest border border-primary/20">
 									Leitor Nvl. 1
 								</div>
 							</div>
@@ -233,36 +238,36 @@ export default function PerfilPage() {
 							<div className="space-y-2">
 								<Button
 									variant={activeTab === 'favorites' ? 'default' : 'ghost'}
-									className="w-full justify-start font-semibold"
+									className="w-full justify-start font-bold"
 									onClick={() => setActiveTab('favorites')}
 								>
 									<Bookmark className="w-5 h-5 mr-3" /> Favoritos
 								</Button>
 								<Button
 									variant={activeTab === 'reviews' ? 'default' : 'ghost'}
-									className="w-full justify-start font-semibold"
+									className="w-full justify-start font-bold"
 									onClick={() => setActiveTab('reviews')}
 								>
 									<Star className="w-5 h-5 mr-3" /> Minhas Avaliações
 								</Button>
 								<Button
 									variant={activeTab === 'comments' ? 'default' : 'ghost'}
-									className="w-full justify-start font-semibold"
+									className="w-full justify-start font-bold"
 									onClick={() => setActiveTab('comments')}
 								>
 									<MessageSquare className="w-5 h-5 mr-3" /> Comentários
 								</Button>
-								<div className="my-4 border-t border-border" />
+								<div className="my-6 border-t border-border" />
 								<Button
 									variant={activeTab === 'settings' ? 'default' : 'ghost'}
-									className="w-full justify-start font-semibold text-muted-foreground"
+									className="w-full justify-start font-bold text-muted-foreground"
 									onClick={() => setActiveTab('settings')}
 								>
 									<Settings className="w-5 h-5 mr-3" /> Configurações
 								</Button>
 								<Button
 									variant="ghost"
-									className="w-full justify-start font-semibold text-red-500 hover:text-red-400 hover:bg-red-500/10"
+									className="w-full justify-start font-bold text-red-500 hover:text-red-400 hover:bg-red-500/10"
 									onClick={() => signOut({ callbackUrl: '/' })}
 								>
 									<LogOut className="w-5 h-5 mr-3" /> Sair da conta
@@ -271,14 +276,18 @@ export default function PerfilPage() {
 						</div>
 					</div>
 
-					{/* ÁREA DE CONTEÚDO */}
-					<div className="flex-1 mt-8 md:mt-0">
+					{/* ÁREA DE CONTEÚDO (Agora fica naturalmente na direita, abaixo da linha do banner) */}
+					<div className="flex-1 mt-8 md:mt-12 w-full pb-12">
 						{/* ABA: FAVORITOS */}
 						{activeTab === 'favorites' && (
 							<div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-								{/* <h2 className="text-3xl font-black uppercase tracking-tight mb-6">
-									Minha Biblioteca
-								</h2> */}
+								{/* 🔥 TÍTULO MANEIRO */}
+								<div className="flex items-center gap-4 mb-8">
+									<div className="w-2 h-10 bg-primary rounded-full shadow-[0_0_15px_rgba(var(--primary),0.6)]"></div>
+									<h2 className="text-3xl md:text-4xl font-black uppercase tracking-tighter text-foreground">
+										Minha Biblioteca
+									</h2>
+								</div>
 
 								{isLoadingFavs ? (
 									<div className="flex justify-center py-20">
@@ -292,13 +301,12 @@ export default function PerfilPage() {
 													? fav.coverUrl
 													: `http://localhost:3333${fav.coverUrl}`
 												: 'https://placehold.co/400x600/1a1a1a/444.png?text=Sem+Capa'
-
 											return (
 												<Link
-													href={`/perfil/obra/${fav.mangaId}`}
+													href={`/mangas/${fav.mangaId}`}
 													key={fav.favoriteId}
 												>
-													<div className="group relative rounded-lg overflow-hidden border border-border bg-card aspect-[2/3] cursor-pointer shadow-lg hover:shadow-primary/20 transition-all">
+													<div className="group relative rounded-xl overflow-hidden border border-border bg-card aspect-[2/3] cursor-pointer shadow-lg hover:border-primary/50 transition-all">
 														<Image
 															src={coverUrl}
 															className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -324,13 +332,10 @@ export default function PerfilPage() {
 										})}
 									</div>
 								) : (
-									<div className="col-span-full text-center py-16 text-muted-foreground border border-dashed border-border rounded-xl bg-muted/20">
+									<div className="text-center py-16 text-muted-foreground border border-dashed border-border rounded-xl bg-muted/20">
 										<Bookmark className="w-16 h-16 mx-auto mb-4 opacity-20" />
 										<p className="text-lg font-bold text-foreground">
 											A sua biblioteca está vazia.
-										</p>
-										<p className="text-sm mt-1">
-											Encontre mangás incríveis e adicione-os aos favoritos!
 										</p>
 										<Link href="/">
 											<Button className="mt-6 font-bold" variant="outline">
@@ -342,46 +347,137 @@ export default function PerfilPage() {
 							</div>
 						)}
 
+						{/* ABA: AVALIAÇÕES */}
 						{activeTab === 'reviews' && (
 							<div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-								<h2 className="text-3xl font-black uppercase tracking-tight mb-6">
-									Minhas Avaliações
-								</h2>
-								<div className="bg-card border border-border rounded-lg p-8 text-center text-muted-foreground">
-									<Star className="w-12 h-12 mx-auto mb-4 opacity-20" />
-									<p>Ainda não avaliou nenhum mangá.</p>
+								{/* 🔥 TÍTULO MANEIRO */}
+								<div className="flex items-center gap-4 mb-8">
+									<div className="w-2 h-10 bg-yellow-500 rounded-full shadow-[0_0_15px_rgba(234,179,8,0.6)]"></div>
+									<h2 className="text-3xl md:text-4xl font-black uppercase tracking-tighter text-foreground">
+										Minhas Avaliações
+									</h2>
 								</div>
+
+								{isLoadingReviews ? (
+									<div className="flex justify-center py-20">
+										<Loader2 className="w-10 h-10 text-primary animate-spin" />
+									</div>
+								) : reviews.length > 0 ? (
+									<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+										{reviews.map((rev) => {
+											// Corrige a URL da imagem com o Join que fizemos no backend
+											const coverUrl = rev.manga?.coverUrl
+												? rev.manga.coverUrl.startsWith('http')
+													? rev.manga.coverUrl
+													: `http://localhost:3333${rev.manga.coverUrl}`
+												: 'https://placehold.co/150x200/1a1a1a/white.png?text=Sem+Capa'
+
+											return (
+												<div
+													key={rev.id}
+													className="bg-card border border-border rounded-xl p-4 flex gap-5 hover:border-yellow-500/40 transition-colors shadow-sm group"
+												>
+													<div className="relative w-20 h-28 bg-muted rounded-md overflow-hidden shrink-0 border border-border/50">
+														<Image
+															src={coverUrl}
+															alt={rev.manga?.title || 'Mangá'}
+															fill
+															className="object-cover group-hover:scale-105 transition-transform duration-300"
+															unoptimized={true}
+														/>
+													</div>
+													<div className="flex flex-col justify-center py-1">
+														<Link
+															href={`/mangas/${rev.mangaId}`}
+															className="font-black text-lg uppercase tracking-tight hover:text-yellow-500 transition-colors line-clamp-1"
+														>
+															{rev.manga?.title ||
+																`Mangá #${rev.mangaId}`}
+														</Link>
+														<div className="flex items-center gap-1 mt-2 mb-1 text-yellow-400">
+															{Array.from({ length: 5 }).map(
+																(_, i) => (
+																	<Star
+																		key={i}
+																		className={`w-4 h-4 ${i < rev.rating ? 'fill-current drop-shadow-[0_0_2px_rgba(234,179,8,0.5)]' : 'text-gray-600'}`}
+																	/>
+																)
+															)}
+														</div>
+														<p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">
+															{new Date(
+																rev.createdAt
+															).toLocaleDateString('pt-BR')}
+														</p>
+													</div>
+												</div>
+											)
+										})}
+									</div>
+								) : (
+									<div className="text-center py-16 text-muted-foreground border border-dashed border-border rounded-xl bg-muted/20">
+										<Star className="w-16 h-16 mx-auto mb-4 opacity-20" />
+										<p className="text-lg font-bold text-foreground">
+											Ainda não avaliou nenhum mangá.
+										</p>
+										<p className="text-sm mt-1">
+											Dê estrelas às suas obras favoritas para vê-las aqui.
+										</p>
+									</div>
+								)}
 							</div>
 						)}
 
+						{/* ABA: CONFIGURAÇÕES */}
 						{activeTab === 'settings' && (
 							<div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-2xl">
-								<h2 className="text-3xl font-black uppercase tracking-tight mb-6">
-									Configurações
-								</h2>
-								<div className="bg-card border border-border rounded-xl p-6 space-y-6">
+								{/* 🔥 TÍTULO MANEIRO */}
+								<div className="flex items-center gap-4 mb-8">
+									<div className="w-2 h-10 bg-gray-400 rounded-full"></div>
+									<h2 className="text-3xl md:text-4xl font-black uppercase tracking-tighter text-foreground">
+										Configurações
+									</h2>
+								</div>
+
+								<div className="bg-card border border-border rounded-xl p-6 space-y-6 shadow-sm">
 									<div className="space-y-2">
-										<label className="text-sm font-bold text-muted-foreground uppercase">
+										<label className="text-sm font-black text-muted-foreground uppercase tracking-wider">
 											Nome de Exibição
 										</label>
 										<Input
 											defaultValue={session.user.name || ''}
-											className="bg-background border-border"
+											className="bg-background border-border h-12 font-medium"
 										/>
 									</div>
 									<div className="space-y-2">
-										<label className="text-sm font-bold text-muted-foreground uppercase">
-											E-mail (Vinculado ao Google)
+										<label className="text-sm font-black text-muted-foreground uppercase tracking-wider">
+											E-mail (Google)
 										</label>
 										<Input
 											defaultValue={session.user.email || ''}
 											disabled
-											className="bg-muted/50 cursor-not-allowed text-muted-foreground border-border"
+											className="bg-muted/50 cursor-not-allowed text-muted-foreground border-border h-12 font-medium"
 										/>
 									</div>
-									<Button className="bg-primary text-white font-bold hover:bg-brand-dark">
+									<Button className="font-bold uppercase tracking-wider h-12 px-8">
 										Salvar Alterações
 									</Button>
+								</div>
+							</div>
+						)}
+
+						{/* ABA: COMENTÁRIOS */}
+						{activeTab === 'comments' && (
+							<div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+								<div className="flex items-center gap-4 mb-8">
+									<div className="w-2 h-10 bg-blue-500 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.6)]"></div>
+									<h2 className="text-3xl md:text-4xl font-black uppercase tracking-tighter text-foreground">
+										Meus Comentários
+									</h2>
+								</div>
+								<div className="text-center py-16 text-muted-foreground border border-dashed border-border rounded-xl bg-muted/20">
+									<MessageSquare className="w-16 h-16 mx-auto mb-4 opacity-20" />
+									<p className="text-lg font-bold text-foreground">Em breve!</p>
 								</div>
 							</div>
 						)}

@@ -17,6 +17,18 @@ const nextConfig = {
 				// Colocamos este também com o .s3. para garantir 100% de cobertura
 				hostname: 's3-over-reader.s3.us-east-1.amazonaws.com',
 			},
+			{
+				protocol: 'https',
+				hostname: 'lh3.googleusercontent.com',
+				port: '',
+				pathname: '/**',
+			},
+			{
+				protocol: 'https',
+				hostname: 's3-over-reader.s3.us-east-1.amazonaws.com', // Aproveite e garanta o seu S3 aqui também!
+				port: '',
+				pathname: '/**',
+			},
 		],
 	},
 }
