@@ -12,6 +12,7 @@ import {
 	LogOut,
 	Loader2,
 	ArrowLeft,
+	Heart,
 } from 'lucide-react'
 import { Button } from '@workspace/ui/components/button'
 import { Input } from '@workspace/ui/components/input'
@@ -30,6 +31,9 @@ export default function PerfilPage() {
 	const [isLoadingReviews, setIsLoadingReviews] = useState(false)
 	const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
 	const [isUploadingBanner, setIsUploadingBanner] = useState(false)
+
+	const [userComments, setUserComments] = useState<any[]>([])
+	const [isLoadingUserComments, setIsLoadingUserComments] = useState(false)
 
 	// 🔄 Busca Favoritos
 	useEffect(() => {
@@ -73,6 +77,28 @@ export default function PerfilPage() {
 			}
 		}
 		fetchReviews()
+	}, [session, activeTab])
+
+	// 🔄 Busca Comentários do Usuário
+	useEffect(() => {
+		const fetchUserComments = async () => {
+			if (session?.user && activeTab === 'comments') {
+				setIsLoadingUserComments(true)
+				try {
+					const userId = (session.user as any).id
+					const response = await fetch(`http://localhost:3333/comments/user/${userId}`)
+					if (response.ok) {
+						const data = await response.json()
+						setUserComments(data)
+					}
+				} catch (error) {
+					console.error('Erro ao buscar comentários do usuário:', error)
+				} finally {
+					setIsLoadingUserComments(false)
+				}
+			}
+		}
+		fetchUserComments()
 	}, [session, activeTab])
 
 	// --- FUNÇÕES DE UPLOAD (MANTIDAS) ---
@@ -475,10 +501,53 @@ export default function PerfilPage() {
 										Meus Comentários
 									</h2>
 								</div>
-								<div className="text-center py-16 text-muted-foreground border border-dashed border-border rounded-xl bg-muted/20">
-									<MessageSquare className="w-16 h-16 mx-auto mb-4 opacity-20" />
-									<p className="text-lg font-bold text-foreground">Em breve!</p>
-								</div>
+
+								{isLoadingUserComments ? (
+									<div className="flex justify-center py-20">
+										<Loader2 className="w-10 h-10 text-primary animate-spin" />
+									</div>
+								) : userComments.length > 0 ? (
+									<div className="grid grid-cols-1 gap-4">
+										{userComments.map((comment) => (
+											<div
+												key={comment.id}
+												className="bg-card border border-border rounded-xl p-5 flex flex-col gap-3 shadow-sm hover:border-blue-500/40 transition-colors"
+											>
+												<div className="flex justify-between items-start">
+													<div className="flex flex-col">
+														<span className="text-xs font-bold text-primary uppercase tracking-wider">
+															Capítulo{' '}
+															{comment.chapter?.chapterNumber ||
+																'Desconhecido'}
+														</span>
+														<span className="text-xs text-muted-foreground mt-0.5">
+															{new Date(
+																comment.createdAt
+															).toLocaleDateString('pt-BR')}
+														</span>
+													</div>
+													<div className="flex items-center gap-1.5 text-xs font-bold text-gray-500">
+														<Heart className="w-4 h-4" />{' '}
+														{comment.likesCount}
+													</div>
+												</div>
+												<p className="text-sm text-foreground bg-white/5 p-3 rounded-lg border border-white/5">
+													{comment.text}
+												</p>
+											</div>
+										))}
+									</div>
+								) : (
+									<div className="text-center py-16 text-muted-foreground border border-dashed border-border rounded-xl bg-muted/20">
+										<MessageSquare className="w-16 h-16 mx-auto mb-4 opacity-20" />
+										<p className="text-lg font-bold text-foreground">
+											Nenhum comentário ainda.
+										</p>
+										<p className="text-sm mt-1">
+											Vá até o leitor e participe da comunidade!
+										</p>
+									</div>
+								)}
 							</div>
 						)}
 					</div>

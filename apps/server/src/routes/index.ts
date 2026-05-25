@@ -9,6 +9,7 @@ import { commentRoutes } from './commentRoutes'
 import { volumeRoutes } from './volumeRoutes'
 import { chapterRoutes } from './chapterRoutes'
 import { authRoutes } from './authRoutes'
+import { notificationRoutes } from './notificationRoutes'
 
 export const routes = Router()
 
@@ -21,3 +22,4 @@ routes.use('/favorite-chapters', favoriteChapterRoutes)
 routes.use('/comments', commentRoutes)
 routes.use('/volumes', volumeRoutes)
 routes.use('/chapters', chapterRoutes)
+routes.use('/notifications', notificationRoutes)

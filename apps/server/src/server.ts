@@ -1,6 +1,8 @@
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
+import { createServer } from 'http' // 🔥 Adicione o import nativo
+import { initSocket } from './utils/socket' // 🔥 Importe o inicializador
 
 // Agora nós importamos apenas UM arquivo que contém todas as rotas!
 import { routes } from './routes'
@@ -9,6 +11,9 @@ dotenv.config()
 
 const app = express()
 const PORT = process.env.PORT || 3333
+
+const server = createServer(app) // Envolve o Express no servidor HTTP
+initSocket(server)
 
 // Middlewares globais
 app.use(cors())
