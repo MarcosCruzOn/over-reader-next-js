@@ -3,7 +3,7 @@
 import * as React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { BookOpen, Library, LayoutDashboard, Settings, Users, LogOut } from 'lucide-react'
+import { BookOpen, Library, LayoutDashboard, Settings, Users, LogOut, Flag } from 'lucide-react'
 
 import {
 	Sidebar,
@@ -24,6 +24,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 		{ name: 'Catálogo (Mangás)', href: '/mangas', icon: BookOpen },
 		{ name: 'Usuários', href: '/users', icon: Users },
 		{ name: 'Configurações', href: '/settings', icon: Settings },
+		{ name: 'Denúncias', href: '/denuncias', icon: Flag },
 	]
 
 	return (

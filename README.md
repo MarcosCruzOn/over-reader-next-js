@@ -102,3 +102,13 @@ Funcionalidade implementada para permitir que os leitores avaliem os mangás com
 
 - **`MangaRating.tsx`:** Componente interativo que renderiza o conjunto de estrelas na página pública do mangá. Apresenta estados reativos de _hover_ visual (as estrelas acendem antes do clique) e atualiza a média global imediatamente após o voto sem necessidade de recarregamento de página.
 - **`PerfilPage (Aba Avaliações)`:** Painel que mapeia os dados do usuário e renderiza uma grelha contendo os cards dos mangás que o leitor avaliou, exibindo a respectiva nota e a miniatura da capa correspondente.
+
+## 💬 Ecossistema Social e Interação (Comunidade)
+
+O Over-Reader possui um sistema de comunidade robusto e em tempo real, focado no engajamento dos leitores durante o consumo das obras.
+
+- **Comentários Aninhados (Mini-chats):** Sistema de comentários por capítulo com suporte a respostas em múltiplos níveis. A interface "achata" a visualização (estilo YouTube), garantindo que a área de comentários permaneça limpa, legível e ancorada ao comentário raiz, mesmo com centenas de respostas.
+- **Notificações em Tempo Real (WebSockets):** Integração com `socket.io` no backend e frontend. Os usuários recebem notificações instantâneas (sem necessidade de recarregar a página) sempre que alguém curte ou responde aos seus comentários, refletindo na interface com um alerta visual (sino).
+- **Modo Leitura Premium:** Interface de comunidade unificada na barra superior (Reading Bar), com esquema de cores `Dark Mode` adaptado para conforto visual durante a leitura, inputs de tamanho fixo e hierarquia clara de tipografia.
+- **Centro de Moderação (Painel Admin):** Sistema integrado de denúncias contra conteúdos inapropriados. Os administradores possuem uma tela dedicada no painel (`/denuncias`) para julgar reportes da comunidade, com poder de exclusão de comentários em cascata (apagando respostas e curtidas associadas) ou anistia (ignorar denúncia), mantendo a plataforma segura.
+- **Arquitetura DRY no Painel Admin:** Uso inteligente do `layout.tsx` do Next.js App Router para envolver todas as rotas administrativas no esqueleto do _Sidebar_ do Shadcn UI, garantindo rotas limpas e escaláveis sem repetição de código.

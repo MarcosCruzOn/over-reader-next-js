@@ -20,3 +20,7 @@ commentRoutes.post('/report', (req, res) => commentController.reportComment(req,
 
 // Rota para o histórico de comentários do usuário (Perfil)
 commentRoutes.get('/user/:userId', (req, res) => commentController.getUserComments(req, res))
+
+// Rotas de Moderação (Admin)
+commentRoutes.get('/reports/pending', (req, res) => commentController.getReports(req, res))
+commentRoutes.patch('/reports/:id/resolve', (req, res) => commentController.resolveReport(req, res))

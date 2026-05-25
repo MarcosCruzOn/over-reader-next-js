@@ -5,7 +5,8 @@ export class CommentController {
 	// Envia um comentário ou resposta
 	async createComment(req: Request, res: Response) {
 		try {
-			const { userId, chapterId, text, parentId } = req.body
+			// 🔥 Pegando o targetCommentId
+			const { userId, chapterId, text, parentId, targetCommentId } = req.body
 			const repository = new CommentRepository()
 
 			if (!text || text.trim() === '') {
@@ -14,12 +15,15 @@ export class CommentController {
 					.json({ error: 'O texto do comentário não pode estar vazio.' })
 			}
 
-			const comment = await repository.create({
-				userId: userId as string,
-				chapterId: Number(chapterId),
-				text: text as string,
-				parentId: parentId ? Number(parentId) : null,
-			})
+			const comment = await repository.create(
+				{
+					userId: userId as string,
+					chapterId: Number(chapterId),
+					text: text as string,
+					parentId: parentId ? Number(parentId) : null,
+				},
+				targetCommentId ? Number(targetCommentId) : undefined
+			) // 🔥 Passando para a frente
 
 			res.status(201).json(comment)
 		} catch (error: any) {
@@ -91,6 +95,31 @@ export class CommentController {
 
 			const commentsList = await repository.getCommentsByUser(userId as string)
 			res.json(commentsList)
+		} catch (error: any) {
+			res.status(400).json({ error: error.message })
+		}
+	}
+
+	// Traz todas as denúncias para o painel admin
+	async getReports(req: Request, res: Response) {
+		try {
+			const repository = new CommentRepository()
+			const reports = await repository.getPendingReports()
+			res.json(reports)
+		} catch (error: any) {
+			res.status(400).json({ error: error.message })
+		}
+	}
+
+	// Resolve uma denúncia (Apagar comentário ou Ignorar)
+	async resolveReport(req: Request, res: Response) {
+		try {
+			const { id } = req.params
+			const { action } = req.body // 'dismiss' ou 'delete'
+			const repository = new CommentRepository()
+
+			const result = await repository.resolveReport(Number(id), action)
+			res.json(result)
 		} catch (error: any) {
 			res.status(400).json({ error: error.message })
 		}

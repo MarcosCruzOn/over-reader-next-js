@@ -1,5 +1,5 @@
 import { db } from '../db'
-import { and, eq, sql } from 'drizzle-orm'
+import { and, eq, sql, desc } from 'drizzle-orm'
 
 import { comments, commentLikes, commentReports } from '../entities/comments'
 import { users } from '../entities/users'
@@ -14,22 +14,24 @@ export type CreateReportDTO = typeof commentReports.$inferInsert
 
 export class CommentRepository {
 	// 💬 CRIA COMENTÁRIO OU RESPOSTA
-	async create(data: CreateCommentDTO) {
+	async create(data: CreateCommentDTO, targetCommentId?: number) {
 		const result = await db.insert(comments).values(data).returning()
 		const newComment = result[0]
 
-		// 🔥 AUTOMAÇÃO: Se for uma resposta (tem parentId), gera notificação!
-		if (data.parentId) {
-			const parentComment = await db
+		// 🔥 AUTOMAÇÃO: Descobre quem realmente deve receber a notificação
+		const notifyCommentId = targetCommentId || data.parentId
+
+		if (notifyCommentId) {
+			const targetQuery = await db
 				.select({ userId: comments.userId })
 				.from(comments)
-				.where(eq(comments.id, data.parentId))
+				.where(eq(comments.id, notifyCommentId))
 				.limit(1)
 
-			const parent = parentComment[0]
+			const target = targetQuery[0]
 
-			if (parent) {
-				const receiverId = parent.userId
+			if (target) {
+				const receiverId = target.userId
 
 				if (receiverId !== data.userId) {
 					const insertedNotif = await db
@@ -38,12 +40,11 @@ export class CommentRepository {
 							userId: receiverId,
 							actorId: data.userId as string,
 							type: 'REPLY',
-							commentId: data.parentId,
+							commentId: data.parentId || notifyCommentId,
 							chapterId: data.chapterId as number,
 						})
 						.returning()
 
-					// 🔥 GATILHO EM TEMPO REAL
 					const notifId = insertedNotif[0]?.id
 					if (notifId) {
 						const notifRepo = new NotificationRepository()
@@ -183,5 +184,49 @@ export class CommentRepository {
 	async createReport(data: CreateReportDTO) {
 		const result = await db.insert(commentReports).values(data).returning()
 		return result[0]
+	}
+
+	// 🚨 LISTAGEM DE DENÚNCIAS (ADMIN)
+	async getPendingReports() {
+		return await db
+			.select({
+				id: commentReports.id,
+				reason: commentReports.reason,
+				createdAt: commentReports.createdAt,
+				reporter: {
+					id: users.id,
+					name: users.name,
+				},
+				comment: {
+					id: comments.id,
+					text: comments.text,
+				},
+			})
+			.from(commentReports)
+			.innerJoin(users, eq(commentReports.userId, users.id))
+			.innerJoin(comments, eq(commentReports.commentId, comments.id))
+			.orderBy(desc(commentReports.createdAt))
+	}
+
+	// ⚖️ JULGAMENTO DA DENÚNCIA (ADMIN)
+	async resolveReport(reportId: number, action: 'dismiss' | 'delete') {
+		const report = await db
+			.select()
+			.from(commentReports)
+			.where(eq(commentReports.id, reportId))
+			.limit(1)
+
+		if (!report[0]) throw new Error('Denúncia não encontrada.')
+
+		if (action === 'delete') {
+			// Se a decisão for "apagar", apagamos o comentário.
+			// O Postgres apagará automaticamente as respostas, likes e a denúncia associada (em cascata)
+			await db.delete(comments).where(eq(comments.id, report[0].commentId))
+			return { message: 'Comentário apagado e denúncia resolvida.' }
+		} else {
+			// Se a decisão for "ignorar", apagamos apenas a denúncia para limpar o painel
+			await db.delete(commentReports).where(eq(commentReports.id, reportId))
+			return { message: 'Denúncia ignorada com sucesso.' }
+		}
 	}
 }

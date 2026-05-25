@@ -162,7 +162,7 @@ export function ReaderClient({
 					</div>
 				</div>
 
-				<div className="flex items-center gap-1 sm:gap-4 shrink-0">
+				<div className="bg- flex items-center gap-1 sm:gap-4 shrink-0">
 					{/* GAVETA DE COMENTÁRIOS */}
 					<Sheet>
 						<SheetTrigger
@@ -175,9 +175,9 @@ export function ReaderClient({
 							</span>
 							<span className="absolute top-0 right-1 h-2 w-2 rounded-full bg-primary border border-card"></span>
 						</SheetTrigger>
-						<SheetContent className="bg-card border-border text-foreground w-full sm:w-[450px] flex flex-col h-full pb-6 shadow-2xl">
-							<SheetHeader className="mb-6 shrink-0 border-b border-border pb-4">
-								<SheetTitle className="text-foreground font-black uppercase flex items-center gap-2">
+						<SheetContent className="bg-[#0a0a0a] border-zinc-800 text-white w-full sm:w-[450px] flex flex-col h-full pb-0 px-0 shadow-2xl [&>button]:text-white [&>button]:hover:text-primary">
+							<SheetHeader className="px-6 pt-6 pb-4 shrink-0 border-b border-zinc-800">
+								<SheetTitle className="text-white font-black uppercase flex items-center gap-2">
 									<MessageSquare className="w-5 h-5 text-primary" /> Comunidade
 								</SheetTitle>
 							</SheetHeader>
@@ -185,7 +185,7 @@ export function ReaderClient({
 								{realDatabaseChapterId ? (
 									<ChapterComments chapterId={realDatabaseChapterId} />
 								) : (
-									<div className="flex items-center justify-center h-full text-muted-foreground">
+									<div className="flex items-center justify-center h-full text-zinc-500">
 										A carregar comunidade...
 									</div>
 								)}
