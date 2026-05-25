@@ -4,6 +4,8 @@ import { and, eq, sql, desc } from 'drizzle-orm'
 import { comments, commentLikes, commentReports } from '../entities/comments'
 import { users } from '../entities/users'
 import { chapters } from '../entities/chapters'
+import { volumes } from '../entities/volumes'
+import { mangas } from '../entities/mangas'
 import { notifications } from '../entities/notifications'
 
 import { sendNotificationToUser } from '../utils/socket'
@@ -107,6 +109,9 @@ export class CommentRepository {
 				chapter: {
 					chapterNumber: chapters.chapterNumber,
 				},
+				manga: {
+					title: mangas.title,
+				},
 				likesCount: sql<number>`(
 					SELECT count(*) 
 					FROM ${commentLikes} 
@@ -115,6 +120,8 @@ export class CommentRepository {
 			})
 			.from(comments)
 			.innerJoin(chapters, eq(comments.chapterId, chapters.id))
+			.innerJoin(volumes, eq(chapters.volumeId, volumes.id))
+			.innerJoin(mangas, eq(volumes.mangaId, mangas.id))
 			.where(eq(comments.userId, userId))
 			.orderBy(sql`${comments.createdAt} DESC`)
 

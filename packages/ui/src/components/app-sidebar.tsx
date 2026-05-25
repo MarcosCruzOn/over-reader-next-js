@@ -22,7 +22,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	const navigation = [
 		{ name: 'Dashboard', href: '/', icon: LayoutDashboard },
 		{ name: 'Catálogo (Mangás)', href: '/mangas', icon: BookOpen },
-		{ name: 'Usuários', href: '/users', icon: Users },
+		{ name: 'Usuários', href: '/usuarios', icon: Users },
 		{ name: 'Configurações', href: '/settings', icon: Settings },
 		{ name: 'Denúncias', href: '/denuncias', icon: Flag },
 	]

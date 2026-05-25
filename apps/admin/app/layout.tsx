@@ -1,34 +1,31 @@
 import '@workspace/ui/styles/globals.css'
-import { AppSidebar } from '@workspace/ui/components/app-sidebar'
-import { SiteHeader } from '@workspace/ui/components/site-header'
-import { SidebarInset, SidebarProvider } from '@workspace/ui/components/sidebar'
+import { TooltipProvider } from '@workspace/ui/components/tooltip'
+import { Geist, Geist_Mono } from 'next/font/google'
 import React from 'react'
+
+const geistSans = Geist({
+	variable: '--font-geist-sans',
+	subsets: ['latin'],
+})
+
+const geistMono = Geist_Mono({
+	variable: '--font-geist-mono',
+	subsets: ['latin'],
+})
 
 export const metadata = {
 	title: 'OverReader - Admin',
-	description: 'Painel Administrativo do Over-Reader',
+	description: 'Painel Administrativo',
 }
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
 	return (
-		<html lang="pt-BR" className="dark">
-			<body className="min-h-screen bg-background text-foreground flex flex-col">
-				{/* Movemos o Sidebar do Shadcn para o Layout Global! */}
-				<SidebarProvider
-					style={
-						{
-							'--sidebar-width': 'calc(var(--spacing) * 72)',
-							'--header-height': 'calc(var(--spacing) * 12)',
-						} as React.CSSProperties
-					}
-				>
-					<AppSidebar variant="inset" />
-					<SidebarInset>
-						<SiteHeader />
-						{/* Todo o conteúdo das páginas será injetado aqui dentro */}
-						<main className="flex flex-1 flex-col">{children}</main>
-					</SidebarInset>
-				</SidebarProvider>
+		<html
+			lang="pt-BR"
+			className={`dark ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+		>
+			<body className="min-h-full bg-background text-foreground flex flex-col">
+				<TooltipProvider>{children}</TooltipProvider>
 			</body>
 		</html>
 	)

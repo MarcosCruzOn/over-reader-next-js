@@ -7,37 +7,43 @@
     └── 📁apps
         └── 📁admin
             └── 📁app
-                └── 📁login
-                    ├── page.tsx
-                └── 📁mangas
-                    └── 📁[mangaId]
-                        └── 📁edit
-                            ├── page.tsx
-                        └── 📁volumes
-                            └── 📁[volumeId]
-                                └── 📁chapters
-                                    └── 📁[chapterId]
-                                        └── 📁edit
-                                            ├── page.tsx
-                                    └── 📁new
-                                        ├── page.tsx
-                                    ├── columns.tsx
-                                    ├── page.tsx
-                                └── 📁edit
-                                    ├── page.tsx
-                            └── 📁new
+                └── 📁(dashboard)
+                    └── 📁denuncias
+                        ├── page.tsx
+                    └── 📁mangas
+                        └── 📁[mangaId]
+                            └── 📁edit
                                 ├── page.tsx
-                            ├── columns.tsx
+                            └── 📁volumes
+                                └── 📁[volumeId]
+                                    └── 📁chapters
+                                        └── 📁[chapterId]
+                                            └── 📁edit
+                                                ├── page.tsx
+                                        └── 📁new
+                                            ├── page.tsx
+                                        ├── columns.tsx
+                                        ├── page.tsx
+                                    └── 📁edit
+                                        ├── page.tsx
+                                └── 📁new
+                                    ├── page.tsx
+                                ├── columns.tsx
+                                ├── page.tsx
+                        └── 📁new
                             ├── page.tsx
-                    └── 📁new
+                        ├── columns.tsx
+                        ├── page.tsx
+                    └── 📁usuarios
                         ├── page.tsx
                     ├── columns.tsx
+                    ├── layout.tsx
                     ├── page.tsx
-                ├── columns.tsx
+                └── 📁login
+                    ├── page.tsx
                 ├── data.json
                 ├── favicon.ico
                 ├── layout.tsx
-                ├── page.tsx
             └── 📁public
                 ├── file.svg
                 ├── globe.svg
@@ -85,6 +91,7 @@
                     ├── favoriteChapterController.ts
                     ├── favoriteController.ts
                     ├── mangaController.ts
+                    ├── notificationController.ts
                     ├── reviewController.ts
                     ├── userController.ts
                     ├── volumeController.ts
@@ -96,6 +103,7 @@
                     ├── favorite_chapters.ts
                     ├── favorites.ts
                     ├── mangas.ts
+                    ├── notifications.ts
                     ├── reviews.ts
                     ├── users.ts
                     ├── volumes.ts
@@ -105,6 +113,7 @@
                     ├── favoriteChapterRepository.ts
                     ├── favoriteRepository.ts
                     ├── mangaRepository.ts
+                    ├── notificationRepository.ts
                     ├── reviewRepository.ts
                     ├── userRepository.ts
                     ├── volumeRepository.ts
@@ -116,6 +125,7 @@
                     ├── favoriteRoutes.ts
                     ├── index.ts
                     ├── mangaRoutes.ts
+                    ├── notificationRoutes.ts
                     ├── reviewRoutes.ts
                     ├── userRoutes.ts
                     ├── volumeRoutes.ts
@@ -153,6 +163,8 @@
                     ├── updateUserBannerUseCase.ts
                     ├── updateVolumeCoverUseCase.ts
                     ├── UpdateVolumeUseCase.ts
+                └── 📁utils
+                    ├── socket.ts
                 ├── server.ts
             ├── .env
             ├── drizzle.config.ts
@@ -166,11 +178,14 @@
                             ├── route.ts
                 └── 📁components
                     ├── AuthProvider.tsx
+                    ├── ChapterComments.tsx
                     ├── FavoriteButton.tsx
+                    ├── FavoriteChapterButton.tsx
                     ├── Header.tsx
                     ├── Hero.tsx
                     ├── LatestUpdatesSection.tsx
                     ├── MangaGrid.tsx
+                    ├── MangaRating.tsx
                     ├── MangaTabsSection.tsx
                     ├── SavedMangasSidebar.tsx
                 └── 📁login
@@ -180,11 +195,15 @@
                         └── 📁read
                             └── 📁[chapterId]
                                 ├── page.tsx
+                                ├── ReaderClient.tsx
                         ├── page.tsx
                     ├── page.tsx
                 └── 📁new-releases
                     ├── page.tsx
                 └── 📁perfil
+                    └── 📁obra
+                        └── 📁[id]
+                            ├── page.tsx
                     ├── page.tsx
                 └── 📁popular
                     ├── page.tsx

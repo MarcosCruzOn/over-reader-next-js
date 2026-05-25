@@ -35,6 +35,8 @@ export default function PerfilPage() {
 	const [userComments, setUserComments] = useState<any[]>([])
 	const [isLoadingUserComments, setIsLoadingUserComments] = useState(false)
 
+	const [unreadCount, setUnreadCount] = useState(0)
+
 	// 🔄 Busca Favoritos
 	useEffect(() => {
 		const fetchFavorites = async () => {
@@ -100,6 +102,19 @@ export default function PerfilPage() {
 		}
 		fetchUserComments()
 	}, [session, activeTab])
+
+	// 🔥 🔄 Busca Notificações Não Lidas
+	useEffect(() => {
+		if (session?.user) {
+			const userId = (session.user as any).id
+			fetch(`http://localhost:3333/notifications/user/${userId}`)
+				.then((res) => (res.ok ? res.json() : []))
+				.then((data) => {
+					setUnreadCount(data.filter((n: any) => !n.isRead).length)
+				})
+				.catch(console.error)
+		}
+	}, [session])
 
 	// --- FUNÇÕES DE UPLOAD (MANTIDAS) ---
 	const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -278,10 +293,20 @@ export default function PerfilPage() {
 								</Button>
 								<Button
 									variant={activeTab === 'comments' ? 'default' : 'ghost'}
-									className="w-full justify-start font-bold"
-									onClick={() => setActiveTab('comments')}
+									className="w-full justify-start font-bold relative"
+									onClick={() => {
+										setActiveTab('comments')
+										// Opcional: Se quiser zerar a bolinha ao clicar na aba, descomente a linha abaixo
+										// setUnreadCount(0)
+									}}
 								>
 									<MessageSquare className="w-5 h-5 mr-3" /> Comentários
+									{unreadCount > 0 && (
+										<span className="absolute right-4 top-1/2 -translate-y-1/2 flex h-2.5 w-2.5">
+											<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+											<span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600 border border-card shadow-sm"></span>
+										</span>
+									)}
 								</Button>
 								<div className="my-6 border-t border-border" />
 								<Button
@@ -307,7 +332,6 @@ export default function PerfilPage() {
 						{/* ABA: FAVORITOS */}
 						{activeTab === 'favorites' && (
 							<div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-								{/* 🔥 TÍTULO MANEIRO */}
 								<div className="flex items-center gap-4 mb-8">
 									<div className="w-2 h-10 bg-primary rounded-full shadow-[0_0_15px_rgba(var(--primary),0.6)]"></div>
 									<h2 className="text-3xl md:text-4xl font-black uppercase tracking-tighter text-foreground">
@@ -376,7 +400,6 @@ export default function PerfilPage() {
 						{/* ABA: AVALIAÇÕES */}
 						{activeTab === 'reviews' && (
 							<div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-								{/* 🔥 TÍTULO MANEIRO */}
 								<div className="flex items-center gap-4 mb-8">
 									<div className="w-2 h-10 bg-yellow-500 rounded-full shadow-[0_0_15px_rgba(234,179,8,0.6)]"></div>
 									<h2 className="text-3xl md:text-4xl font-black uppercase tracking-tighter text-foreground">
@@ -454,10 +477,74 @@ export default function PerfilPage() {
 							</div>
 						)}
 
+						{/* ABA: COMENTÁRIOS */}
+						{activeTab === 'comments' && (
+							<div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+								<div className="flex items-center gap-4 mb-8">
+									<div className="w-2 h-10 bg-blue-500 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.6)]"></div>
+									<h2 className="text-3xl md:text-4xl font-black uppercase tracking-tighter text-foreground">
+										Meus Comentários
+									</h2>
+								</div>
+
+								{isLoadingUserComments ? (
+									<div className="flex justify-center py-20">
+										<Loader2 className="w-10 h-10 text-primary animate-spin" />
+									</div>
+								) : userComments.length > 0 ? (
+									<div className="grid grid-cols-1 gap-4">
+										{userComments.map((comment) => (
+											<div
+												key={comment.id}
+												className="bg-card border border-border rounded-xl p-5 flex flex-col gap-3 shadow-sm hover:border-blue-500/40 transition-colors"
+											>
+												<div className="flex justify-between items-start">
+													<div className="flex flex-col">
+														<div>
+															<span className="text-xs font-bold text-primary uppercase tracking-wider">
+																{comment.manga?.title ||
+																	'Obra Desconhecido'}
+															</span>
+															<span className="text-xs font-bold text-primary uppercase tracking-wider ml-2">
+																Capítulo{' '}
+																{comment.chapter?.chapterNumber ||
+																	'Desconhecido'}
+															</span>
+														</div>
+														<span className="text-xs text-muted-foreground mt-0.5">
+															{new Date(
+																comment.createdAt
+															).toLocaleDateString('pt-BR')}
+														</span>
+													</div>
+													<div className="flex items-center gap-1.5 text-xs font-bold text-gray-500">
+														<Heart className="w-4 h-4" />{' '}
+														{comment.likesCount}
+													</div>
+												</div>
+												<p className="text-sm text-foreground bg-white/5 p-3 rounded-lg border border-white/5">
+													{comment.text}
+												</p>
+											</div>
+										))}
+									</div>
+								) : (
+									<div className="text-center py-16 text-muted-foreground border border-dashed border-border rounded-xl bg-muted/20">
+										<MessageSquare className="w-16 h-16 mx-auto mb-4 opacity-20" />
+										<p className="text-lg font-bold text-foreground">
+											Nenhum comentário ainda.
+										</p>
+										<p className="text-sm mt-1">
+											Vá até o leitor e participe da comunidade!
+										</p>
+									</div>
+								)}
+							</div>
+						)}
+
 						{/* ABA: CONFIGURAÇÕES */}
 						{activeTab === 'settings' && (
 							<div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-2xl">
-								{/* 🔥 TÍTULO MANEIRO */}
 								<div className="flex items-center gap-4 mb-8">
 									<div className="w-2 h-10 bg-gray-400 rounded-full"></div>
 									<h2 className="text-3xl md:text-4xl font-black uppercase tracking-tighter text-foreground">
@@ -489,65 +576,6 @@ export default function PerfilPage() {
 										Salvar Alterações
 									</Button>
 								</div>
-							</div>
-						)}
-
-						{/* ABA: COMENTÁRIOS */}
-						{activeTab === 'comments' && (
-							<div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-								<div className="flex items-center gap-4 mb-8">
-									<div className="w-2 h-10 bg-blue-500 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.6)]"></div>
-									<h2 className="text-3xl md:text-4xl font-black uppercase tracking-tighter text-foreground">
-										Meus Comentários
-									</h2>
-								</div>
-
-								{isLoadingUserComments ? (
-									<div className="flex justify-center py-20">
-										<Loader2 className="w-10 h-10 text-primary animate-spin" />
-									</div>
-								) : userComments.length > 0 ? (
-									<div className="grid grid-cols-1 gap-4">
-										{userComments.map((comment) => (
-											<div
-												key={comment.id}
-												className="bg-card border border-border rounded-xl p-5 flex flex-col gap-3 shadow-sm hover:border-blue-500/40 transition-colors"
-											>
-												<div className="flex justify-between items-start">
-													<div className="flex flex-col">
-														<span className="text-xs font-bold text-primary uppercase tracking-wider">
-															Capítulo{' '}
-															{comment.chapter?.chapterNumber ||
-																'Desconhecido'}
-														</span>
-														<span className="text-xs text-muted-foreground mt-0.5">
-															{new Date(
-																comment.createdAt
-															).toLocaleDateString('pt-BR')}
-														</span>
-													</div>
-													<div className="flex items-center gap-1.5 text-xs font-bold text-gray-500">
-														<Heart className="w-4 h-4" />{' '}
-														{comment.likesCount}
-													</div>
-												</div>
-												<p className="text-sm text-foreground bg-white/5 p-3 rounded-lg border border-white/5">
-													{comment.text}
-												</p>
-											</div>
-										))}
-									</div>
-								) : (
-									<div className="text-center py-16 text-muted-foreground border border-dashed border-border rounded-xl bg-muted/20">
-										<MessageSquare className="w-16 h-16 mx-auto mb-4 opacity-20" />
-										<p className="text-lg font-bold text-foreground">
-											Nenhum comentário ainda.
-										</p>
-										<p className="text-sm mt-1">
-											Vá até o leitor e participe da comunidade!
-										</p>
-									</div>
-								)}
 							</div>
 						)}
 					</div>
