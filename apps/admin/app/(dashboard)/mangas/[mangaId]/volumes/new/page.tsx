@@ -2,12 +2,8 @@
 
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
-import Image from 'next/image'
 import { Save, ArrowLeft, Layers, Upload, BookImage } from 'lucide-react'
 
-import { AppSidebar } from '@workspace/ui/components/app-sidebar'
-import { SiteHeader } from '@workspace/ui/components/site-header'
-import { SidebarInset, SidebarProvider } from '@workspace/ui/components/sidebar'
 import {
 	Card,
 	CardContent,
@@ -33,18 +29,18 @@ export default function NewVolumePage({ params }: { params: Promise<{ mangaId: s
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
 
-		console.log('🚀 Iniciando a criação do volume...') // Rastreador no Console
+		console.log('🚀 A iniciar a criação do volume...') // Rastreador no Console
 
 		if (!coverFile) {
-			alert('A Capa do volume é OBRIGATÓRIA para o grid funcionar!')
-			console.error('Erro: Tentou salvar sem imagem de capa.')
+			alert('A Capa do volume é OBRIGATÓRIA para o layout em grelha funcionar!')
+			console.error('Erro: Tentativa de guardar sem imagem de capa.')
 			return
 		}
 
 		setIsLoading(true)
 
 		try {
-			console.log('Step 1: Criando dados no banco de dados...')
+			console.log('Passo 1: A criar dados na base de dados...')
 			const res = await fetch('http://localhost:3333/volumes', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
@@ -63,7 +59,7 @@ export default function NewVolumePage({ params }: { params: Promise<{ mangaId: s
 			const newVolume = await res.json()
 			console.log('Volume criado com sucesso! ID:', newVolume.id)
 
-			console.log('Step 2: Enviando a Capa para a AWS S3...')
+			console.log('Passo 2: A enviar a Capa para a AWS S3...')
 			if (newVolume.id && coverFile) {
 				const formData = new FormData()
 				formData.append('cover', coverFile)
@@ -82,7 +78,7 @@ export default function NewVolumePage({ params }: { params: Promise<{ mangaId: s
 				}
 			}
 
-			console.log('✅ Tudo finalizado! Redirecionando...')
+			console.log('✅ Tudo finalizado! A redirecionar...')
 			router.push(`/mangas/${mangaId}/volumes`)
 			router.refresh()
 		} catch (error) {
@@ -94,144 +90,124 @@ export default function NewVolumePage({ params }: { params: Promise<{ mangaId: s
 	}
 
 	return (
-		<div className="dark min-h-screen bg-background text-foreground">
-			<SidebarProvider
-				style={
-					{
-						'--sidebar-width': 'calc(var(--spacing) * 72)',
-						'--header-height': 'calc(var(--spacing) * 12)',
-					} as React.CSSProperties
-				}
-			>
-				<AppSidebar variant="inset" />
-				<SidebarInset>
-					<SiteHeader />
-					<div className="flex flex-1 flex-col gap-4 p-4 lg:p-8">
-						<div className="flex items-center gap-4 mb-4">
-							<Button variant="outline" size="icon" onClick={() => router.back()}>
-								<ArrowLeft className="h-4 w-4" />
-							</Button>
-							<div className="flex-1">
-								<h1 className="text-2xl font-bold tracking-tight">Novo Volume</h1>
-								<p className="text-muted-foreground text-sm">
-									Adicionando uma nova edição ao mangá.
-								</p>
+		<>
+			<div className="flex items-center gap-4 mb-4">
+				<Button variant="outline" size="icon" onClick={() => router.back()}>
+					<ArrowLeft className="h-4 w-4" />
+				</Button>
+				<div className="flex-1">
+					<h1 className="text-2xl font-bold tracking-tight">Novo Volume</h1>
+					<p className="text-muted-foreground text-sm">
+						A adicionar uma nova edição ao mangá.
+					</p>
+				</div>
+			</div>
+
+			{/* 🔥 O <form> agora abraça todo o grid sem elementos de layout extra! */}
+			<form onSubmit={handleSubmit} className="grid gap-6 lg:grid-cols-[1fr_400px]">
+				{/* Informações do Volume */}
+				<Card>
+					<CardHeader>
+						<CardTitle className="flex items-center gap-2">
+							<Layers className="h-5 w-5 text-primary" />
+							Detalhes do Volume
+						</CardTitle>
+					</CardHeader>
+					<CardContent className="space-y-6">
+						<div className="grid grid-cols-2 gap-4">
+							<div className="space-y-2">
+								<Label htmlFor="volumeNumber">Número do Volume</Label>
+								<Input
+									id="volumeNumber"
+									type="number"
+									placeholder="Ex: 1"
+									required
+									min="1"
+									value={volumeNumber}
+									onChange={(e) => setVolumeNumber(e.target.value)}
+								/>
+							</div>
+							<div className="space-y-2">
+								<Label htmlFor="title">Título do Volume (Opcional)</Label>
+								<Input
+									id="title"
+									placeholder="Ex: O Despertar"
+									value={title}
+									onChange={(e) => setTitle(e.target.value)}
+								/>
 							</div>
 						</div>
+					</CardContent>
+				</Card>
 
-						{/* 🔥 MUDANÇA AQUI: O <form> agora abraça todo o grid! */}
-						<form
-							onSubmit={handleSubmit}
-							className="grid gap-6 lg:grid-cols-[1fr_400px]"
-						>
-							{/* Informações do Volume */}
-							<Card>
-								<CardHeader>
-									<CardTitle className="flex items-center gap-2">
-										<Layers className="h-5 w-5 text-primary" />
-										Detalhes do Volume
-									</CardTitle>
-								</CardHeader>
-								<CardContent className="space-y-6">
-									<div className="grid grid-cols-2 gap-4">
-										<div className="space-y-2">
-											<Label htmlFor="volumeNumber">Número do Volume</Label>
-											<Input
-												id="volumeNumber"
-												type="number"
-												placeholder="Ex: 1"
-												required
-												min="1"
-												value={volumeNumber}
-												onChange={(e) => setVolumeNumber(e.target.value)}
-											/>
-										</div>
-										<div className="space-y-2">
-											<Label htmlFor="title">
-												Título do Volume (Opcional)
-											</Label>
-											<Input
-												id="title"
-												placeholder="Ex: O Despertar"
-												value={title}
-												onChange={(e) => setTitle(e.target.value)}
-											/>
-										</div>
+				{/* Upload da Capa do Volume e Botão */}
+				<div className="space-y-6">
+					<Card>
+						<CardHeader>
+							<CardTitle>Capa do Volume</CardTitle>
+							<CardDescription>Para o layout em grelha.</CardDescription>
+						</CardHeader>
+						<CardContent>
+							<div className="flex flex-col items-center justify-center gap-4 border-2 border-dashed border-border rounded-lg p-6 bg-muted/20">
+								{coverFile ? (
+									<div className="relative w-full aspect-[2/3] rounded-md overflow-hidden bg-muted">
+										{/* Nota de otimização: A usar tag img nativa para URLs do tipo blob para evitar erros do Next/Image */}
+										<img
+											alt="Pré-visualização da Capa"
+											src={URL.createObjectURL(coverFile)}
+											className="object-cover w-full h-full"
+											loading="lazy"
+										/>
 									</div>
-								</CardContent>
-							</Card>
+								) : (
+									<div className="flex flex-col items-center justify-center text-muted-foreground space-y-2 py-8">
+										<BookImage className="h-12 w-12 opacity-50" />
+										<span className="text-sm font-medium text-center">
+											Nenhuma capa
+											<br />
+											selecionada
+										</span>
+									</div>
+								)}
 
-							{/* Upload da Capa do Volume e Botão */}
-							<div className="space-y-6">
-								<Card>
-									<CardHeader>
-										<CardTitle>Capa do Volume</CardTitle>
-										<CardDescription>Para o layout em Grid.</CardDescription>
-									</CardHeader>
-									<CardContent>
-										<div className="flex flex-col items-center justify-center gap-4 border-2 border-dashed border-border rounded-lg p-6 bg-muted/20">
-											{coverFile ? (
-												<div className="relative w-full aspect-[2/3] rounded-md overflow-hidden bg-muted">
-													<Image
-														alt="Preview da Capa"
-														src={URL.createObjectURL(coverFile)}
-														className="object-cover w-full h-full"
-														loading="lazy"
-													/>
-												</div>
-											) : (
-												<div className="flex flex-col items-center justify-center text-muted-foreground space-y-2 py-8">
-													<BookImage className="h-12 w-12 opacity-50" />
-													<span className="text-sm font-medium text-center">
-														Nenhuma capa
-														<br />
-														selecionada
-													</span>
-												</div>
-											)}
-
-											<Label
-												htmlFor="cover-upload"
-												className="cursor-pointer flex items-center justify-center w-full gap-2 bg-secondary text-secondary-foreground hover:bg-secondary/80 h-10 px-4 py-2 rounded-md font-medium transition-colors"
-											>
-												<Upload className="h-4 w-4" />
-												{coverFile ? 'Trocar Capa' : 'Selecionar Capa'}
-											</Label>
-
-											<input
-												id="cover-upload"
-												type="file"
-												accept="image/*"
-												className="hidden"
-												onChange={(e) => {
-													if (e.target.files && e.target.files[0]) {
-														setCoverFile(e.target.files[0])
-													}
-												}}
-											/>
-										</div>
-									</CardContent>
-								</Card>
-
-								{/* Como o botão está dentro do <form>, retiramos o atributo form="volume-form" */}
-								<Button
-									type="submit"
-									className="w-full h-12 text-md font-bold"
-									disabled={isLoading}
+								<Label
+									htmlFor="cover-upload"
+									className="cursor-pointer flex items-center justify-center w-full gap-2 bg-secondary text-secondary-foreground hover:bg-secondary/80 h-10 px-4 py-2 rounded-md font-medium transition-colors"
 								>
-									{isLoading ? (
-										'Salvando...'
-									) : (
-										<>
-											<Save className="mr-2 h-5 w-5" /> Cadastrar Volume
-										</>
-									)}
-								</Button>
+									<Upload className="h-4 w-4" />
+									{coverFile ? 'Trocar Capa' : 'Selecionar Capa'}
+								</Label>
+
+								<input
+									id="cover-upload"
+									type="file"
+									accept="image/*"
+									className="hidden"
+									onChange={(e) => {
+										if (e.target.files && e.target.files[0]) {
+											setCoverFile(e.target.files[0])
+										}
+									}}
+								/>
 							</div>
-						</form>
-					</div>
-				</SidebarInset>
-			</SidebarProvider>
-		</div>
+						</CardContent>
+					</Card>
+
+					<Button
+						type="submit"
+						className="w-full h-12 text-md font-bold"
+						disabled={isLoading}
+					>
+						{isLoading ? (
+							'A guardar...'
+						) : (
+							<>
+								<Save className="mr-2 h-5 w-5" /> Registar Volume
+							</>
+						)}
+					</Button>
+				</div>
+			</form>
+		</>
 	)
 }

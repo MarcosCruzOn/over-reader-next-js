@@ -7,6 +7,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Layers, Edit, Trash2, Image as ImageIcon } from 'lucide-react'
 import { Button } from '@workspace/ui/components/button'
+import { truncate } from 'fs'
 
 // Atualizamos o tipo do Volume para incluir a capa e suportar a contagem de capítulos
 export type Volume = {
@@ -102,6 +103,9 @@ export const columns: ColumnDef<Volume>[] = [
 					alt={`Capa Volume ${row.original.volumeNumber}`}
 					className="h-16 w-11 object-cover rounded-sm border border-border"
 					loading="lazy"
+					width={44}
+					height={64}
+					unoptimized={true}
 				/>
 			) : (
 				<div className="h-16 w-11 bg-muted rounded-sm flex items-center justify-center border border-border">
