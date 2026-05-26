@@ -23,8 +23,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 		{ name: 'Dashboard', href: '/', icon: LayoutDashboard },
 		{ name: 'Catálogo (Mangás)', href: '/mangas', icon: BookOpen },
 		{ name: 'Usuários', href: '/usuarios', icon: Users },
-		{ name: 'Configurações', href: '/settings', icon: Settings },
 		{ name: 'Denúncias', href: '/denuncias', icon: Flag },
+		// { name: 'Configurações', href: '/settings', icon: Settings },
 	]
 
 	return (
