@@ -12,10 +12,10 @@ export type User = {
 }
 
 export const columns: ColumnDef<User>[] = [
-	{
-		accessorKey: 'id',
-		header: 'ID',
-	},
+	// {
+	// 	accessorKey: 'id',
+	// 	header: 'ID',
+	// },
 	{
 		accessorKey: 'name',
 		header: 'Nome',
@@ -32,7 +32,7 @@ export const columns: ColumnDef<User>[] = [
 			const role = row.getValue('role') as string
 			return (
 				<span
-					className={`px-2 py-1 rounded-full text-xs font-semibold ${role === 'admin' ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'}`}
+					className={`px-2 py-1 rounded-full text-xs font-semibold ${role === 'ADMIN' ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'}`}
 				>
 					{role.toUpperCase()}
 				</span>
@@ -46,7 +46,7 @@ export const columns: ColumnDef<User>[] = [
 			const status = row.getValue('status') as string
 			return (
 				<span
-					className={`px-2 py-1 rounded-full text-xs font-semibold ${status === 'ativo' ? 'bg-green-500/20 text-green-500' : 'bg-destructive/20 text-destructive'}`}
+					className={`px-2 py-1 rounded-full text-xs font-semibold ${status === 'ATIVO' ? 'bg-green-500/20 text-green-500' : 'bg-destructive/20 text-destructive'}`}
 				>
 					{status.toUpperCase()}
 				</span>

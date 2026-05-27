@@ -5,6 +5,8 @@ import { uploadConfig } from '../config/upload'
 export const chapterRoutes = Router()
 const chapterController = new ChapterController()
 
+chapterRoutes.get('/feed/latest', (req, res) => chapterController.getLatestFeed(req, res))
+
 // Criar capítulo
 chapterRoutes.post('/', (req, res) => chapterController.create(req, res))
 
@@ -24,5 +26,4 @@ chapterRoutes.put('/:id', (req, res) => chapterController.update(req, res))
 
 chapterRoutes.get('/manga/:mangaId', (req, res) => chapterController.listByManga(req, res))
 
-// 🔥 Nossa rota de exclusão LIMPA!
 chapterRoutes.delete('/:id', (req, res) => chapterController.delete(req, res))

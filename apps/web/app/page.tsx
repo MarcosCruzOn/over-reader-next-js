@@ -31,10 +31,6 @@ export default async function WebHomePage({ manga }: MangaHero) {
 	// Separa os 5 primeiros mangás para o Banner Principal (Hero)
 	const heroMangas = mangas.slice(0, 5)
 
-	// Como ainda não temos o sistema de "Favoritos/Salvos" no backend ligado ao usuário,
-	// vamos pegar 3 mangás aleatórios (ou os últimos) para simular a Sidebar por enquanto.
-	const simulatedSavedMangas = mangas.slice(0, 3)
-
 	return (
 		<div className="dark min-h-screen bg-brand-black text-white font-sans selection:bg-brand-primary selection:text-white">
 			{/* 🧭 Navbar Premium */}
@@ -47,12 +43,12 @@ export default async function WebHomePage({ manga }: MangaHero) {
 			<main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex gap-8">
 				{/* Lado Esquerdo: Abas e Grid de Atualizações (Ocupa o maior espaço) */}
 				<div className="flex-1 min-w-0">
-					<LatestUpdatesSection mangas={mangas} />
+					<LatestUpdatesSection />
 				</div>
 
 				{/* Lado Direito: Sidebar de Mangás Salvos (Esconde em telas de celular) */}
 				<div className="w-80 shrink-0 hidden lg:block">
-					<SavedMangasSidebar savedMangas={simulatedSavedMangas} />
+					<SavedMangasSidebar />
 				</div>
 			</main>
 

@@ -3,43 +3,47 @@
 import React, { useState, useEffect } from 'react'
 import { Tabs, TabsList, TabsTrigger } from '@workspace/ui/components/tabs'
 import MangaGrid from './MangaGrid'
-import { Manga } from '@workspace/types'
-// 🔥 IMPORTAÇÃO DA SESSÃO PARA BUSCAR FAVORITOS
 import { useSession } from 'next-auth/react'
 
-interface LatestUpdatesProps {
-	mangas: Manga[]
-}
-
-export default function LatestUpdatesSection({ mangas }: LatestUpdatesProps) {
+export default function LatestUpdatesSection() {
 	const { data: session } = useSession()
 	const [selectedDay, setSelectedDay] = useState('Hoje')
-	// 🔥 NOVO ESTADO: Guarda os IDs dos mangás favoritados
 	const [favoritedIds, setFavoritedIds] = useState<number[]>([])
+
+	// 🔥 NOVO ESTADO: Guarda os lançamentos reais vindos da nova API
+	const [feed, setFeed] = useState<any[]>([])
 
 	const days = ['Hoje', 'Ontem', 'Dom', 'Sab', 'Sex', 'Qui', 'Qua']
 
-	// Busca os favoritos para pintar a fita vermelha nos cards
+	// 🔄 Busca o Feed de Lançamentos
+	useEffect(() => {
+		fetch('http://localhost:3333/chapters/feed/latest?limit=50')
+			.then((res) => (res.ok ? res.json() : []))
+			.then((data) => setFeed(data))
+			.catch(console.error)
+	}, [])
+
+	// 🔄 Busca os favoritos para pintar a fita vermelha
 	useEffect(() => {
 		if (session?.user) {
 			const userId = (session.user as any).id
 			fetch(`http://localhost:3333/favorites/user/${userId}`)
 				.then((res) => (res.ok ? res.json() : []))
 				.then((data) => {
-					// Extrai apenas os números (IDs) para facilitar a verificação nos cards
 					setFavoritedIds(data.map((fav: any) => fav.mangaId))
 				})
 				.catch(console.error)
 		}
 	}, [session])
 
-	const getFilteredMangas = () => {
+	// Filtra os lançamentos com base no dia da semana escolhido
+	const getFilteredFeed = () => {
 		const today = new Date()
 		const yesterday = new Date(today)
 		yesterday.setDate(yesterday.getDate() - 1)
 
-		return mangas.filter((manga) => {
-			const updatedDate = new Date(manga.updatedAt || manga.createdAt)
+		return feed.filter((item) => {
+			const updatedDate = new Date(item.createdAt) // Usa a data real de criação do capítulo
 			if (selectedDay === 'Hoje') return updatedDate.toDateString() === today.toDateString()
 			if (selectedDay === 'Ontem')
 				return updatedDate.toDateString() === yesterday.toDateString()
@@ -52,7 +56,16 @@ export default function LatestUpdatesSection({ mangas }: LatestUpdatesProps) {
 		})
 	}
 
-	const filteredMangas = getFilteredMangas()
+	const filteredFeed = getFilteredFeed()
+
+	// 🔥 A MÁGICA: Transformamos o item do Feed num formato que o MangaGrid entenda,
+	// mas passando a CAPA DO VOLUME como se fosse a capa principal!
+	const adaptedMangas = filteredFeed.map((item) => ({
+		id: item.mangaId,
+		title: item.mangaTitle,
+		coverUrl: item.volumeCover, // Substitui a capa do mangá pela capa do volume
+		updatedAt: item.createdAt,
+	}))
 
 	return (
 		<div>
@@ -78,9 +91,8 @@ export default function LatestUpdatesSection({ mangas }: LatestUpdatesProps) {
 				</Tabs>
 			</div>
 
-			{filteredMangas.length > 0 ? (
-				// 🔥 AGORA PASSAMOS OS FAVORITOS PARA O GRID
-				<MangaGrid mangas={filteredMangas} favoritedIds={favoritedIds} />
+			{adaptedMangas.length > 0 ? (
+				<MangaGrid mangas={adaptedMangas as any} favoritedIds={favoritedIds} />
 			) : (
 				<div className="py-12 text-center text-gray-500 border border-dashed border-gray-800 rounded-xl bg-brand-gray">
 					Nenhuma atualização encontrada para{' '}

@@ -90,7 +90,6 @@ export class ChapterController {
 		}
 	}
 
-	// No seu ChapterController.ts
 	async getByMangaAndNumber(req: Request, res: Response) {
 		try {
 			// Convertendo para número de forma segura
@@ -122,6 +121,22 @@ export class ChapterController {
 			res.json(chapters)
 		} catch (error: any) {
 			res.status(400).json({ error: error.message })
+		}
+	}
+
+	async getLatestFeed(req: Request, res: Response) {
+		try {
+			// 1. Instanciamos o repositório aqui dentro
+			const chapterRepository = new ChapterRepository()
+			// Permite que o Frontend defina quantos itens quer (padrão: 20)
+			const limit = req.query.limit ? Number(req.query.limit) : 20
+
+			const feed = await chapterRepository.getLatestFeed(limit)
+
+			return res.json(feed)
+		} catch (error) {
+			console.error('Erro ao buscar o feed de capítulos:', error)
+			return res.status(500).json({ error: 'Erro interno ao carregar os lançamentos.' })
 		}
 	}
 }

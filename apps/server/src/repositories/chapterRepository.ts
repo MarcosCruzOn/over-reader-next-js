@@ -2,6 +2,7 @@ import { eq, and, desc } from 'drizzle-orm'
 import { db } from '../db'
 import { chapters } from '../entities/chapters'
 import { volumes } from '../entities/volumes'
+import { mangas } from '../entities/mangas'
 
 export type CreateChapterDTO = typeof chapters.$inferInsert
 
@@ -69,5 +70,43 @@ export class ChapterRepository {
 			.innerJoin(volumes, eq(chapters.volumeId, volumes.id))
 			.where(eq(volumes.mangaId, mangaId))
 			.orderBy(desc(chapters.chapterNumber)) // Mais recentes primeiro
+	}
+
+	// 🔥 NOVA FUNÇÃO: Busca os lançamentos mais recentes (Sem mangás repetidos!)
+	async getLatestFeed(limitCount: number = 20) {
+		// 1. Buscamos um lote maior do banco (ex: limitCount * 5) para garantir que,
+		// após remover os capítulos repetidos do mesmo mangá, ainda teremos a quantidade desejada.
+		const rawFeed = await db
+			.select({
+				chapterId: chapters.id,
+				chapterNumber: chapters.chapterNumber,
+				createdAt: chapters.createdAt,
+				volumeId: volumes.id,
+				volumeCover: volumes.coverUrl, // Traz a CAPA DO VOLUME
+				mangaId: mangas.id,
+				mangaTitle: mangas.title,
+			})
+			.from(chapters)
+			.innerJoin(volumes, eq(chapters.volumeId, volumes.id))
+			.innerJoin(mangas, eq(volumes.mangaId, mangas.id))
+			.orderBy(desc(chapters.createdAt))
+			.limit(limitCount * 5) // Margem de segurança para o filtro funcionar bem
+
+		// 2. Filtramos no JavaScript para manter apenas o capítulo MAIS RECENTE de cada Mangá
+		const uniqueFeed = []
+		const seenMangaIds = new Set() // O "Set" é perfeito porque procura IDs instantaneamente
+
+		for (const item of rawFeed) {
+			// Se o ID deste mangá ainda não foi visto no nosso laço de repetição...
+			if (!seenMangaIds.has(item.mangaId)) {
+				uniqueFeed.push(item) // Adicionamos à lista final
+				seenMangaIds.add(item.mangaId) // Marcamos este mangá como "já processado"
+			}
+
+			// Se já atingimos a quantidade que o Frontend pediu (ex: 20), paramos de processar!
+			if (uniqueFeed.length === limitCount) break
+		}
+
+		return uniqueFeed
 	}
 }

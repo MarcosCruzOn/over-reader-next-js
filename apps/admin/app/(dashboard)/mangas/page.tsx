@@ -29,7 +29,7 @@ export default async function MangasPage() {
 					</p>
 				</div>
 
-				<Link href="/admin/mangas/new">
+				<Link href="/mangas/new">
 					<Button className="font-bold">
 						<Plus className="mr-2 h-4 w-4" /> Adicionar Mangá
 					</Button>
