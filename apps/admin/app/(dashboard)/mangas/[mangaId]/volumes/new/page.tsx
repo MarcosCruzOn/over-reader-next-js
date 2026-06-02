@@ -15,6 +15,8 @@ import { Button } from '@workspace/ui/components/button'
 import { Input } from '@workspace/ui/components/input'
 import { Label } from '@workspace/ui/components/label'
 
+import { api } from '@/lib/api'
+
 export default function NewVolumePage({ params }: { params: Promise<{ mangaId: string }> }) {
 	const router = useRouter()
 
@@ -29,7 +31,7 @@ export default function NewVolumePage({ params }: { params: Promise<{ mangaId: s
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
 
-		console.log('🚀 A iniciar a criação do volume...') // Rastreador no Console
+		console.log('🚀 Iniciando a criação do volume...') // Rastreador no Console
 
 		if (!coverFile) {
 			alert('A Capa do volume é OBRIGATÓRIA para o layout em grelha funcionar!')
@@ -41,14 +43,10 @@ export default function NewVolumePage({ params }: { params: Promise<{ mangaId: s
 
 		try {
 			console.log('Passo 1: A criar dados na base de dados...')
-			const res = await fetch('http://localhost:3333/volumes', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					mangaId,
-					volumeNumber: Number(volumeNumber),
-					title: title ? title : undefined,
-				}),
+			const res = await api.createVolume({
+				mangaId,
+				volumeNumber: Number(volumeNumber),
+				title: title ? title : undefined,
 			})
 
 			if (!res.ok) {
@@ -64,13 +62,7 @@ export default function NewVolumePage({ params }: { params: Promise<{ mangaId: s
 				const formData = new FormData()
 				formData.append('cover', coverFile)
 
-				const uploadRes = await fetch(
-					`http://localhost:3333/volumes/${newVolume.id}/cover`,
-					{
-						method: 'PATCH',
-						body: formData,
-					}
-				)
+				const uploadRes = await api.uploadVolumeCover(newVolume.id, formData)
 
 				if (!uploadRes.ok) {
 					const errorText = await uploadRes.text()

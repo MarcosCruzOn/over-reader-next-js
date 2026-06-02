@@ -15,6 +15,8 @@ import { Button } from '@workspace/ui/components/button'
 import { Input } from '@workspace/ui/components/input'
 import { Label } from '@workspace/ui/components/label'
 
+import { api } from '@/lib/api'
+
 export default function EditVolumePage() {
 	const router = useRouter()
 	const params = useParams()
@@ -33,11 +35,7 @@ export default function EditVolumePage() {
 
 	// Busca os dados atuais do Volume
 	React.useEffect(() => {
-		fetch(`http://localhost:3333/volumes/${volumeId}`)
-			.then((res) => {
-				if (!res.ok) throw new Error('Falha ao buscar volume')
-				return res.json()
-			})
+		api.getVolumeById(volumeId)
 			.then((data) => {
 				setVolumeNumber(data.volumeNumber.toString())
 				setTitle(data.title || '')
@@ -57,13 +55,9 @@ export default function EditVolumePage() {
 
 		try {
 			// Step 1: Atualiza os dados de texto (PUT)
-			const res = await fetch(`http://localhost:3333/volumes/${volumeId}`, {
-				method: 'PUT',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					volumeNumber: Number(volumeNumber),
-					title: title ? title : null,
-				}),
+			const res = await api.updateVolume(volumeId, {
+				volumeNumber: Number(volumeNumber),
+				title: title ? title : null,
 			})
 
 			if (!res.ok) throw new Error('Erro ao atualizar dados do volume.')
@@ -73,10 +67,7 @@ export default function EditVolumePage() {
 				const formData = new FormData()
 				formData.append('cover', coverFile)
 
-				const uploadRes = await fetch(`http://localhost:3333/volumes/${volumeId}/cover`, {
-					method: 'PATCH',
-					body: formData,
-				})
+				const uploadRes = await api.uploadVolumeCover(volumeId, formData)
 
 				if (!uploadRes.ok) throw new Error('Textos salvos, mas falhou ao enviar nova capa.')
 			}

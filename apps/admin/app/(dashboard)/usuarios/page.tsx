@@ -11,7 +11,7 @@ import {
 	MoreVertical,
 	AlertCircle,
 } from 'lucide-react'
-import { Button } from '@workspace/ui/components/button'
+
 import { Badge } from '@workspace/ui/components/badge'
 import {
 	DropdownMenu,
@@ -23,6 +23,8 @@ import {
 	DropdownMenuGroup,
 } from '@workspace/ui/components/dropdown-menu'
 
+import { api } from '@/lib/api'
+
 export default function AdminUsersPage() {
 	const [users, setUsers] = useState<any[]>([])
 	const [isLoading, setIsLoading] = useState(true)
@@ -32,21 +34,18 @@ export default function AdminUsersPage() {
 		'ALL'
 	)
 
-	const fetchUsers = async () => {
-		try {
-			const res = await fetch('http://localhost:3333/users')
-			if (res.ok) {
-				const data = await res.json()
-				setUsers(data)
-			}
-		} catch (error) {
-			console.error('Erro ao buscar usuários:', error)
-		} finally {
-			setIsLoading(false)
-		}
-	}
-
 	useEffect(() => {
+		const fetchUsers = async () => {
+			try {
+				const data = await api.getUsers()
+				setUsers(data)
+			} catch (error) {
+				console.error('Erro ao buscar usuários:', error)
+			} finally {
+				setIsLoading(false)
+			}
+		}
+
 		fetchUsers()
 	}, [])
 
@@ -66,11 +65,7 @@ export default function AdminUsersPage() {
 		if (!window.confirm(mensagens[action])) return
 
 		try {
-			const res = await fetch(`http://localhost:3333/users/${userId}/status`, {
-				method: 'PATCH',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ status: action }),
-			})
+			const res = await api.updateUserStatus(userId, action)
 
 			if (res.ok) {
 				// Atualiza a tabela instantaneamente

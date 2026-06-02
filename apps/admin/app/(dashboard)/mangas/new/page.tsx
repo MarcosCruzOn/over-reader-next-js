@@ -22,6 +22,8 @@ import {
 	SelectValue,
 } from '@workspace/ui/components/select'
 
+import { api } from '@/lib/api'
+
 export default function NewMangaPage() {
 	const router = useRouter()
 
@@ -54,18 +56,14 @@ export default function NewMangaPage() {
 
 		try {
 			// Step 1: Cria o Mangá no banco de dados
-			const mangaRes = await fetch('http://localhost:3333/mangas', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					title,
-					author,
-					genres,
-					synopsis,
-					status,
-					releaseYear: year, // Agora garantimos que é um número válido e obrigatório
-					publisher,
-				}),
+			const mangaRes = await api.createManga({
+				title,
+				author,
+				genres,
+				synopsis,
+				status,
+				releaseYear: year, // Agora garantimos que é um número válido e obrigatório
+				publisher,
 			})
 
 			if (!mangaRes.ok) {
@@ -85,14 +83,8 @@ export default function NewMangaPage() {
 
 				// Disparamos as duas requisições simultaneamente com Promise.all
 				const [coverRes, bannerRes] = await Promise.all([
-					fetch(`http://localhost:3333/mangas/${newManga.id}/cover`, {
-						method: 'PATCH',
-						body: coverData,
-					}),
-					fetch(`http://localhost:3333/mangas/${newManga.id}/banner`, {
-						method: 'PATCH',
-						body: bannerData,
-					}),
+					api.uploadMangaCover(newManga.id, coverData),
+					api.uploadMangaBanner(newManga.id, bannerData),
 				])
 
 				if (!coverRes.ok || !bannerRes.ok) {

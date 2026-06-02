@@ -10,6 +10,8 @@ import { Button } from '@workspace/ui/components/button'
 
 import { columns } from './columns'
 
+import { api } from '@/lib/api'
+
 export default function VolumesPage({ params }: { params: Promise<{ mangaId: string }> }) {
 	const router = useRouter()
 	const resolvedParams = React.use(params)
@@ -21,15 +23,10 @@ export default function VolumesPage({ params }: { params: Promise<{ mangaId: str
 	const [volumes, setVolumes] = React.useState<any[]>([])
 
 	React.useEffect(() => {
+		// 🔥 Usando a central e tratando os erros para manter o fallback original
 		Promise.all([
-			fetch(`http://localhost:3333/mangas/${mangaId}`).then((res) => {
-				if (!res.ok) return null
-				return res.json()
-			}),
-			fetch(`http://localhost:3333/volumes/manga/${mangaId}`).then((res) => {
-				if (!res.ok) return []
-				return res.json()
-			}),
+			api.getMangaById(mangaId).catch(() => null),
+			api.getVolumesByMangaId(mangaId).catch(() => []),
 		])
 			.then(([mangaData, volumesData]) => {
 				setManga(mangaData)
@@ -50,7 +47,7 @@ export default function VolumesPage({ params }: { params: Promise<{ mangaId: str
 		}
 
 		try {
-			const res = await fetch(`http://localhost:3333/volumes/${id}`, { method: 'DELETE' })
+			const res = await api.deleteVolume(id)
 			if (res.ok) {
 				// Remove o volume da tela instantaneamente
 				setVolumes((prev) => prev.filter((vol) => vol.id !== id))

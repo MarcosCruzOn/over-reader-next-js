@@ -22,6 +22,8 @@ import {
 	SelectValue,
 } from '@workspace/ui/components/select'
 
+import { api } from '@/lib/api'
+
 export default function EditMangaPage({ params }: { params: Promise<{ mangaId: string }> }) {
 	const router = useRouter()
 	const resolvedParams = React.use(params)
@@ -47,11 +49,7 @@ export default function EditMangaPage({ params }: { params: Promise<{ mangaId: s
 
 	// Busca os dados antigos do mangá para preencher o formulário
 	React.useEffect(() => {
-		fetch(`http://localhost:3333/mangas/${mangaId}`)
-			.then((res) => {
-				if (!res.ok) throw new Error('Falha ao buscar os dados do mangá')
-				return res.json()
-			})
+		api.getMangaById(mangaId)
 			.then((data) => {
 				setTitle(data.title)
 				setAuthor(data.author)
@@ -81,18 +79,14 @@ export default function EditMangaPage({ params }: { params: Promise<{ mangaId: s
 
 		try {
 			// Step 1: Atualiza os dados de texto (PUT)
-			const mangaRes = await fetch(`http://localhost:3333/mangas/${mangaId}`, {
-				method: 'PUT',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					title,
-					author,
-					genres,
-					synopsis,
-					status,
-					releaseYear: year,
-					publisher,
-				}),
+			const mangaRes = await api.updateManga(mangaId, {
+				title,
+				author,
+				genres,
+				synopsis,
+				status,
+				releaseYear: year,
+				publisher,
 			})
 
 			if (!mangaRes.ok) throw new Error('Falha ao atualizar os dados do mangá.')
@@ -103,30 +97,18 @@ export default function EditMangaPage({ params }: { params: Promise<{ mangaId: s
 			if (coverFile) {
 				const coverData = new FormData()
 				coverData.append('cover', coverFile)
-				uploadPromises.push(
-					fetch(`http://localhost:3333/mangas/${mangaId}/cover`, {
-						method: 'PATCH',
-						body: coverData,
-					})
-				)
+				uploadPromises.push(api.uploadMangaCover(mangaId.toString(), coverData))
 			}
 
 			if (bannerFile) {
 				const bannerData = new FormData()
 				bannerData.append('banner', bannerFile)
-				uploadPromises.push(
-					fetch(`http://localhost:3333/mangas/${mangaId}/banner`, {
-						method: 'PATCH',
-						body: bannerData,
-					})
-				)
+				uploadPromises.push(api.uploadMangaBanner(mangaId.toString(), bannerData))
 			}
 
 			if (uploadPromises.length > 0) {
-				const results = await Promise.all(uploadPromises)
-				const hasError = results.some((res) => !res.ok)
-				if (hasError)
-					throw new Error('Textos atualizados, mas falha no envio das novas imagens.')
+				// Nossa API já lança erro automático se a requisição falhar, deixando o código limpo
+				await Promise.all(uploadPromises)
 			}
 
 			alert('Mangá atualizado com sucesso!')

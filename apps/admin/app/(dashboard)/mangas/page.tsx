@@ -4,11 +4,11 @@ import { DataTable } from '@workspace/ui/components/data-table'
 import { Button } from '@workspace/ui/components/button'
 import { columns } from './columns'
 
+import { api } from '@/lib/api'
+
 async function getMangas() {
 	try {
-		const res = await fetch('http://localhost:3333/mangas', { cache: 'no-store' })
-		if (!res.ok) throw new Error('Falha ao buscar mangás')
-		return await res.json()
+		return await api.getMangas()
 	} catch (error) {
 		console.error(error)
 		return []

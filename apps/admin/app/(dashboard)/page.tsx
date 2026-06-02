@@ -8,6 +8,8 @@ import { Button } from '@workspace/ui/components/button'
 
 import { columns } from './columns'
 
+import { api } from '@/lib/api'
+
 // Função que agrupa os registos e gera os dados do gráfico para os últimos 90 dias
 function generateChartData(mangas: any[], users: any[]) {
 	const dateMap = new Map<string, { date: string; mangas: number; users: number }>()
@@ -36,10 +38,7 @@ function generateChartData(mangas: any[], users: any[]) {
 
 async function getDashboardStats() {
 	try {
-		const [mangasRes, usersRes] = await Promise.all([
-			fetch('http://localhost:3333/mangas', { cache: 'no-store' }),
-			fetch('http://localhost:3333/users', { cache: 'no-store' }),
-		])
+		const [mangasRes, usersRes] = await Promise.all([api.getMangas(), api.getUsers()])
 
 		const mangas = await mangasRes.json()
 		const users = await usersRes.json()
