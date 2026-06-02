@@ -15,6 +15,8 @@ import { Button } from '@workspace/ui/components/button'
 import { Input } from '@workspace/ui/components/input'
 import { Label } from '@workspace/ui/components/label'
 
+import { api } from '@/lib/api'
+
 export default function NewChapterPage({
 	params,
 }: {
@@ -43,23 +45,13 @@ export default function NewChapterPage({
 		setIsLoading(true)
 
 		try {
-			// Step 1: Criar o Capítulo no banco de dados
-			const chapterRes = await fetch('http://localhost:3333/chapters', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					volumeId,
-					chapterNumber: Number(chapterNumber),
-					title: title ? title : undefined,
-					pages: [],
-				}),
+			// Step 1: Criar o Capítulo no banco de dados via central
+			const newChapter = await api.createChapter({
+				volumeId,
+				chapterNumber: Number(chapterNumber),
+				title: title ? title : undefined,
+				pages: [],
 			})
-
-			if (!chapterRes.ok) {
-				const errorText = await chapterRes.text()
-				throw new Error(`Erro ao criar capítulo: ${errorText}`)
-			}
-			const newChapter = await chapterRes.json()
 
 			// Step 2: Fazer o Upload Lote das Páginas!
 			if (pagesFiles.length > 0 && newChapter.id) {
@@ -69,22 +61,16 @@ export default function NewChapterPage({
 					formData.append('pages', file)
 				})
 
-				const uploadRes = await fetch(
-					`http://localhost:3333/chapters/${newChapter.id}/pages`,
-					{
-						method: 'PATCH',
-						body: formData,
-					}
-				)
-
-				// ROLLBACK
-				if (!uploadRes.ok) {
-					// Se a AWS falhou, nós imediatamente deletamos o capítulo "vazio" que acabou de ser criado!
+				try {
+					// Tentando fazer o upload para a AWS
+					await api.uploadChapterPages(newChapter.id, formData)
+				} catch (uploadError) {
+					// ROLLBACK: A API falhou no upload, ativando a limpeza do banco
 					console.log(
 						'Falha na AWS detectada. Executando Rollback (Deletando capítulo fantasma)...'
 					)
-					await fetch(`http://localhost:3333/chapters/${newChapter.id}`, {
-						method: 'DELETE',
+					await api.deleteChapter(newChapter.id).catch(() => {
+						console.error('CRÍTICO: Falha ao tentar fazer o rollback do capítulo.')
 					})
 
 					throw new Error(

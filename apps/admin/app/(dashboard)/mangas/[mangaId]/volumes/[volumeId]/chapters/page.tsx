@@ -6,17 +6,12 @@ import { Button } from '@workspace/ui/components/button'
 
 import { columns } from './columns'
 
+import { api } from '@/lib/api'
+
 // Função para buscar os capítulos do backend
 async function getChapters(volumeId: string) {
 	try {
-		const res = await fetch(`http://localhost:3333/chapters/volume/${volumeId}`, {
-			cache: 'no-store',
-		})
-		if (!res.ok) {
-			const errorText = await res.text()
-			throw new Error(`Erro ${res.status}: ${errorText}`)
-		}
-		return await res.json()
+		return await api.getChaptersByVolumeId(volumeId)
 	} catch (error) {
 		console.error('Erro ao buscar capítulos:', error)
 		return []

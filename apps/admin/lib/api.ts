@@ -121,4 +121,54 @@ export const api = {
 		if (!res.ok) throw new Error('Falha ao apagar o volume')
 		return res
 	},
+
+	getChaptersByVolumeId: async (volumeId: string | number) => {
+		const res = await fetch(`${API_URL}/chapters/volume/${volumeId}`, { cache: 'no-store' })
+		if (!res.ok) throw new Error('Falha ao buscar os capítulos')
+		return await res.json()
+	},
+
+	createChapter: async (chapterData: any) => {
+		const res = await fetch(`${API_URL}/chapters`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(chapterData),
+		})
+		if (!res.ok) {
+			const errorText = await res.text()
+			throw new Error(`Erro ao criar capítulo: ${errorText}`)
+		}
+		return await res.json()
+	},
+
+	uploadChapterPages: async (chapterId: string | number, formData: FormData) => {
+		const res = await fetch(`${API_URL}/chapters/${chapterId}/pages`, {
+			method: 'PATCH',
+			body: formData,
+		})
+		if (!res.ok) throw new Error('Falha no upload das páginas para a AWS.')
+		return await res.json()
+	},
+
+	deleteChapter: async (chapterId: string | number) => {
+		const res = await fetch(`${API_URL}/chapters/${chapterId}`, { method: 'DELETE' })
+		if (!res.ok) throw new Error('Falha ao apagar o capítulo')
+		return res
+	},
+
+	getChapterById: async (chapterId: string | number) => {
+		const res = await fetch(`${API_URL}/chapters/${chapterId}`, { cache: 'no-store' })
+		if (!res.ok) throw new Error('Capítulo não encontrado')
+		return await res.json()
+	},
+
+	updateChapter: async (chapterId: string | number, chapterData: any) => {
+		const res = await fetch(`${API_URL}/chapters/${chapterId}`, {
+			method: 'PUT',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(chapterData),
+		})
+		if (!res.ok) throw new Error('Erro ao atualizar dados do capítulo.')
+		return await res.json()
+	},
 }

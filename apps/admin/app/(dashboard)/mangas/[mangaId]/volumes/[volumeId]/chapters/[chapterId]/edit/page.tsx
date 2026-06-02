@@ -15,6 +15,8 @@ import { Button } from '@workspace/ui/components/button'
 import { Input } from '@workspace/ui/components/input'
 import { Label } from '@workspace/ui/components/label'
 
+import { api } from '@/lib/api'
+
 export default function EditChapterPage({
 	params,
 }: {
@@ -38,11 +40,7 @@ export default function EditChapterPage({
 
 	// Busca dados atuais
 	React.useEffect(() => {
-		fetch(`http://localhost:3333/chapters/${chapterId}`)
-			.then((res) => {
-				if (!res.ok) throw new Error('Capítulo não encontrado')
-				return res.json()
-			})
+		api.getChapterById(chapterId)
 			.then((data) => {
 				setChapterNumber(data.chapterNumber.toString())
 				setTitle(data.title || '')
@@ -62,13 +60,10 @@ export default function EditChapterPage({
 
 		try {
 			// Step 1: Atualizar textos (PUT)
-			const res = await fetch(`http://localhost:3333/chapters/${chapterId}`, {
-				method: 'PUT',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					chapterNumber: Number(chapterNumber),
-					title: title || null,
-				}),
+			const res = await api.updateChapter(chapterId, {
+				chapterNumber: Number(chapterNumber),
+				title: title || null,
+				pages: existingPages,
 			})
 
 			if (!res.ok) throw new Error('Erro ao atualizar dados do capítulo.')
@@ -78,10 +73,7 @@ export default function EditChapterPage({
 				const formData = new FormData()
 				newPagesFiles.forEach((file) => formData.append('pages', file))
 
-				const uploadRes = await fetch(`http://localhost:3333/chapters/${chapterId}/pages`, {
-					method: 'PATCH',
-					body: formData,
-				})
+				const uploadRes = await api.uploadChapterPages(chapterId, formData)
 
 				if (!uploadRes.ok)
 					throw new Error('Dados salvos, mas falha ao atualizar imagens na AWS.')
