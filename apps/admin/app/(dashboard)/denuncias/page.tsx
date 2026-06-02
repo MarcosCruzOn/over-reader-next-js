@@ -3,13 +3,15 @@
 import React, { useState, useEffect } from 'react'
 import { Flag, Trash2, CheckCircle, Loader2, AlertTriangle } from 'lucide-react'
 import { Button } from '@workspace/ui/components/button'
+
+// 🔥 Importando a central conectada à nuvem
 import { api } from '@/lib/api'
 
 export default function AdminReportsPage() {
 	const [reports, setReports] = useState<any[]>([])
 	const [isLoading, setIsLoading] = useState(true)
 
-	// Colocamos a função de busca DENTRO do useEffect
+	// Função de busca corretamente tipada DENTRO do useEffect
 	useEffect(() => {
 		const fetchReports = async () => {
 			try {
@@ -26,9 +28,6 @@ export default function AdminReportsPage() {
 	}, [])
 
 	const handleResolve = async (reportId: number, action: 'dismiss' | 'delete') => {
-// ... o resto do código continua igualzinho daqui para baixo!
-
-	const handleResolve = async (reportId: number, action: 'dismiss' | 'delete') => {
 		const confirmMsg =
 			action === 'delete'
 				? 'Tem a certeza que quer APAGAR este comentário? A ação não pode ser desfeita e todas as respostas também sumirão.'
@@ -37,12 +36,11 @@ export default function AdminReportsPage() {
 		if (!window.confirm(confirmMsg)) return
 
 		try {
-			// Substituído pela chamada da central
-			const res = await api.resolveReport(reportId, action)
+			// Usando a central
+			await api.resolveReport(reportId, action)
 
-			if (res.ok) {
-				setReports(reports.filter((r) => r.id !== reportId))
-			}
+			// Atualiza a tela removendo a denúncia resolvida
+			setReports(reports.filter((r) => r.id !== reportId))
 		} catch (error) {
 			console.error('Erro ao resolver denúncia:', error)
 			alert('Falha ao comunicar com o servidor.')
