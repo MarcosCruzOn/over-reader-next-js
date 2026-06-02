@@ -19,6 +19,7 @@
 	"license": "ISC",
 	"type": "module",
 	"devDependencies": {
+		"@types/node": "^25.9.1",
 		"@workspace/eslint-config": "*",
 		"@workspace/typescript-config": "*",
 		"prettier": "^3.8.1",

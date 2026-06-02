@@ -171,4 +171,19 @@ export const api = {
 		if (!res.ok) throw new Error('Erro ao atualizar dados do capítulo.')
 		return await res.json()
 	},
+
+	getPendingReports: async () => {
+		const res = await fetch(`${API_URL}/comments/reports/pending`, { cache: 'no-store' })
+		if (!res.ok) throw new Error('Falha ao buscar denúncias')
+		return await res.json()
+	},
+	resolveReport: async (reportId: string | number, action: 'dismiss' | 'delete') => {
+		const res = await fetch(`${API_URL}/comments/reports/${reportId}/resolve`, {
+			method: 'PATCH',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ action }),
+		})
+		if (!res.ok) throw new Error('Erro ao resolver denúncia')
+		return res
+	},
 }

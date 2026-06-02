@@ -3,28 +3,30 @@
 import React, { useState, useEffect } from 'react'
 import { Flag, Trash2, CheckCircle, Loader2, AlertTriangle } from 'lucide-react'
 import { Button } from '@workspace/ui/components/button'
+import { api } from '@/lib/api'
 
 export default function AdminReportsPage() {
 	const [reports, setReports] = useState<any[]>([])
 	const [isLoading, setIsLoading] = useState(true)
 
-	const fetchReports = async () => {
-		try {
-			const res = await fetch('http://localhost:3333/comments/reports/pending')
-			if (res.ok) {
-				const data = await res.json()
-				setReports(data)
-			}
-		} catch (error) {
-			console.error('Erro ao buscar denúncias:', error)
-		} finally {
-			setIsLoading(false)
-		}
-	}
-
+	// Colocamos a função de busca DENTRO do useEffect
 	useEffect(() => {
+		const fetchReports = async () => {
+			try {
+				const data = await api.getPendingReports()
+				setReports(data)
+			} catch (error) {
+				console.error('Erro ao buscar denúncias:', error)
+			} finally {
+				setIsLoading(false)
+			}
+		}
+
 		fetchReports()
 	}, [])
+
+	const handleResolve = async (reportId: number, action: 'dismiss' | 'delete') => {
+// ... o resto do código continua igualzinho daqui para baixo!
 
 	const handleResolve = async (reportId: number, action: 'dismiss' | 'delete') => {
 		const confirmMsg =
@@ -35,11 +37,8 @@ export default function AdminReportsPage() {
 		if (!window.confirm(confirmMsg)) return
 
 		try {
-			const res = await fetch(`http://localhost:3333/comments/reports/${reportId}/resolve`, {
-				method: 'PATCH',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ action }),
-			})
+			// Substituído pela chamada da central
+			const res = await api.resolveReport(reportId, action)
 
 			if (res.ok) {
 				setReports(reports.filter((r) => r.id !== reportId))
