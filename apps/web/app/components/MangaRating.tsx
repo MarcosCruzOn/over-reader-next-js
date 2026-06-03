@@ -3,7 +3,9 @@
 import React, { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { Star, Loader2 } from 'lucide-react'
-import { useToast } from '@workspace/ui/hooks/use-toast' // Caso use Sonner/Toast, senão pode usar alert
+
+// 🔥 Importando a nossa URL da nuvem!
+import { API_URL } from '@/app/lib/api'
 
 interface MangaRatingProps {
 	mangaId: number
@@ -23,18 +25,18 @@ export function MangaRating({ mangaId }: MangaRatingProps) {
 		const loadRatingData = async () => {
 			setIsLoading(true)
 			try {
-				// 1. Busca média global e total de votos
-				const statsRes = await fetch(`http://localhost:3333/reviews/manga/${mangaId}/stats`)
+				// 1. Busca média global e total de votos (🔥 Corrigido)
+				const statsRes = await fetch(`${API_URL}/reviews/manga/${mangaId}/stats`)
 				if (statsRes.ok) {
 					const statsData = await statsRes.json()
 					setStats(statsData)
 				}
 
-				// 2. Se logado, busca a nota específica que este usuário deu
+				// 2. Se logado, busca a nota específica que este usuário deu (🔥 Corrigido)
 				if (status === 'authenticated' && session?.user) {
 					const userId = (session.user as any).id
 					const userRatingRes = await fetch(
-						`http://localhost:3333/reviews/user/${userId}/${mangaId}`
+						`${API_URL}/reviews/user/${userId}/${mangaId}`
 					)
 					if (userRatingRes.ok) {
 						const userRatingData = await userRatingRes.json()
@@ -62,7 +64,8 @@ export function MangaRating({ mangaId }: MangaRatingProps) {
 		const userId = (session.user as any).id
 
 		try {
-			const response = await fetch('http://localhost:3333/reviews', {
+			// 🔥 Corrigido
+			const response = await fetch(`${API_URL}/reviews`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
@@ -77,8 +80,8 @@ export function MangaRating({ mangaId }: MangaRatingProps) {
 			// Atualiza o estado local da nota do usuário
 			setRating(selectedRating)
 
-			// Recarrega os status globais (média atualizada instantaneamente)
-			const statsRes = await fetch(`http://localhost:3333/reviews/manga/${mangaId}/stats`)
+			// Recarrega os status globais (média atualizada instantaneamente) (🔥 Corrigido)
+			const statsRes = await fetch(`${API_URL}/reviews/manga/${mangaId}/stats`)
 			if (statsRes.ok) {
 				const statsData = await statsRes.json()
 				setStats(statsData)

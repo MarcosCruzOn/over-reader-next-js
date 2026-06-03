@@ -5,6 +5,9 @@ import { Tabs, TabsList, TabsTrigger } from '@workspace/ui/components/tabs'
 import MangaGrid from './MangaGrid'
 import { useSession } from 'next-auth/react'
 
+// 🔥 Importando a nossa URL da nuvem!
+import { API_URL } from '@/app/lib/api'
+
 export default function LatestUpdatesSection() {
 	const { data: session } = useSession()
 	const [selectedDay, setSelectedDay] = useState('Hoje')
@@ -17,7 +20,8 @@ export default function LatestUpdatesSection() {
 
 	// 🔄 Busca o Feed de Lançamentos
 	useEffect(() => {
-		fetch('http://localhost:3333/chapters/feed/latest?limit=50')
+		// 🔥 Corrigido
+		fetch(`${API_URL}/chapters/feed/latest?limit=50`)
 			.then((res) => (res.ok ? res.json() : []))
 			.then((data) => setFeed(data))
 			.catch(console.error)
@@ -27,7 +31,8 @@ export default function LatestUpdatesSection() {
 	useEffect(() => {
 		if (session?.user) {
 			const userId = (session.user as any).id
-			fetch(`http://localhost:3333/favorites/user/${userId}`)
+			// 🔥 Corrigido
+			fetch(`${API_URL}/favorites/user/${userId}`)
 				.then((res) => (res.ok ? res.json() : []))
 				.then((data) => {
 					setFavoritedIds(data.map((fav: any) => fav.mangaId))

@@ -6,6 +6,9 @@ import { Star } from 'lucide-react'
 import { Button } from '@workspace/ui/components/button'
 import { useRouter } from 'next/navigation'
 
+// 🔥 Importando a nossa URL da nuvem!
+import { API_URL } from '@/app/lib/api'
+
 interface FavoriteChapterButtonProps {
 	chapterId: number
 	variant?: 'icon' | 'full' // 'icon' para a lista, 'full' para o leitor
@@ -28,8 +31,9 @@ export function FavoriteChapterButton({ chapterId, variant = 'icon' }: FavoriteC
 
 			try {
 				const userId = (session.user as any).id
+				// 🔥 Corrigido
 				const response = await fetch(
-					`http://localhost:3333/favorite-chapters/check/${userId}/${chapterId}`
+					`${API_URL}/favorite-chapters/check/${userId}/${chapterId}`
 				)
 				if (response.ok) {
 					const data = await response.json()
@@ -61,8 +65,9 @@ export function FavoriteChapterButton({ chapterId, variant = 'icon' }: FavoriteC
 		try {
 			if (isFavorited) {
 				// Remover favorito
+				// 🔥 Corrigido
 				const response = await fetch(
-					`http://localhost:3333/favorite-chapters/${userId}/${chapterId}`,
+					`${API_URL}/favorite-chapters/${userId}/${chapterId}`,
 					{
 						method: 'DELETE',
 					}
@@ -71,7 +76,8 @@ export function FavoriteChapterButton({ chapterId, variant = 'icon' }: FavoriteC
 				setIsFavorited(false)
 			} else {
 				// Adicionar favorito
-				const response = await fetch('http://localhost:3333/favorite-chapters', {
+				// 🔥 Corrigido
+				const response = await fetch(`${API_URL}/favorite-chapters`, {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({ userId, chapterId: Number(chapterId) }),

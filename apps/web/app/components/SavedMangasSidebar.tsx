@@ -6,6 +6,9 @@ import { ArrowRight, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 
+// 🔥 Importando a nossa URL da nuvem!
+import { API_URL } from '@/app/lib/api'
+
 export default function SavedMangasSidebar() {
 	const { data: session } = useSession()
 	const [savedUpdates, setSavedUpdates] = useState<any[]>([])
@@ -21,8 +24,8 @@ export default function SavedMangasSidebar() {
 			try {
 				const userId = (session.user as any).id
 
-				// 1. Buscamos os mangás que o usuário favoritou
-				const favRes = await fetch(`http://localhost:3333/favorites/user/${userId}`)
+				// 1. Buscamos os mangás que o usuário favoritou (🔥 Corrigido)
+				const favRes = await fetch(`${API_URL}/favorites/user/${userId}`)
 				const favData = favRes.ok ? await favRes.json() : []
 				const favoritedIds = favData.map((fav: any) => fav.mangaId)
 
@@ -32,8 +35,8 @@ export default function SavedMangasSidebar() {
 					return
 				}
 
-				// 2. Buscamos o feed global de lançamentos (que já criamos no backend)
-				const feedRes = await fetch('http://localhost:3333/chapters/feed/latest?limit=50')
+				// 2. Buscamos o feed global de lançamentos (🔥 Corrigido)
+				const feedRes = await fetch(`${API_URL}/chapters/feed/latest?limit=50`)
 				const feedData = feedRes.ok ? await feedRes.json() : []
 
 				// 3. A Mágica: Filtramos o feed para manter APENAS os mangás que o usuário favoritou!
@@ -76,10 +79,14 @@ export default function SavedMangasSidebar() {
 
 				<div className="space-y-4">
 					{savedUpdates.map((item) => {
-						// Usando a capa do volume vinda do Feed!
-						const imageUrl = item.volumeCover
+						// 🔥 Garantindo que a imagem usa a URL correta da API
+						const rawImageUrl = item.volumeCover
 							? item.volumeCover
 							: 'https://placehold.co/80x120/1a1a1a/white.png?text=Sem+Capa'
+
+						const imageUrl = rawImageUrl.startsWith('http')
+							? rawImageUrl
+							: `${API_URL}${rawImageUrl}`
 
 						return (
 							<Link key={item.chapterId} href={`/mangas/${item.mangaId}`}>
@@ -91,7 +98,7 @@ export default function SavedMangasSidebar() {
 											fill
 											sizes="48px"
 											className="object-cover rounded-lg shadow-sm group-hover:scale-105 transition-transform duration-200"
-											unoptimized={imageUrl.includes('localhost')}
+											unoptimized={true} // 🔥 Ajustado para funcionar perfeitamente com a AWS/Nuvem
 											loading="lazy"
 										/>
 									</div>
@@ -101,7 +108,6 @@ export default function SavedMangasSidebar() {
 										</h4>
 										<p className="text-xs text-gray-500 mt-0.5">
 											ATUAL:{' '}
-											{/* 🔥 Adeus CH. 1 estático! Aqui entra o capítulo real! */}
 											<span className="font-medium text-brand-primary">
 												CH. {item.chapterNumber}
 											</span>

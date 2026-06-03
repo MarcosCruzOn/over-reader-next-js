@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { Search, Bookmark, Menu, X, ChevronDown, Bell, Heart, MessageSquare } from 'lucide-react'
-import { io } from 'socket.io-client' // 🔥 Importação do Socket Client
+import { io } from 'socket.io-client'
 
 import { Input } from '@workspace/ui/components/input'
 import { Button } from '@workspace/ui/components/button'
@@ -20,6 +20,9 @@ import {
 	DropdownMenuSeparator,
 } from '@workspace/ui/components/dropdown-menu'
 
+// 🔥 Importando a nossa URL da nuvem!
+import { API_URL } from '@/app/lib/api'
+
 export default function Header() {
 	const router = useRouter()
 	const { data: session, status } = useSession()
@@ -30,7 +33,7 @@ export default function Header() {
 	const [recentFavorites, setRecentFavorites] = useState<any[]>([])
 	const [totalFavorites, setTotalFavorites] = useState(0)
 
-	// 🔥 ESTADOS PARA NOTIFICAÇÕES EM TEMPO REAL
+	// ESTADOS PARA NOTIFICAÇÕES EM TEMPO REAL
 	const [notificationsList, setNotificationsList] = useState<any[]>([])
 	const [unreadCount, setUnreadCount] = useState(0)
 
@@ -39,8 +42,8 @@ export default function Header() {
 		if (session?.user) {
 			const userId = (session.user as any).id
 
-			// 1. Busca Favoritos
-			fetch(`http://localhost:3333/favorites/user/${userId}`)
+			// 1. Busca Favoritos (🔥 Corrigido)
+			fetch(`${API_URL}/favorites/user/${userId}`)
 				.then((res) => (res.ok ? res.json() : []))
 				.then((data) => {
 					setTotalFavorites(data.length)
@@ -48,8 +51,8 @@ export default function Header() {
 				})
 				.catch(console.error)
 
-			// 2. Busca Notificações
-			fetch(`http://localhost:3333/notifications/user/${userId}`)
+			// 2. Busca Notificações (🔥 Corrigido)
+			fetch(`${API_URL}/notifications/user/${userId}`)
 				.then((res) => (res.ok ? res.json() : []))
 				.then((data) => {
 					setNotificationsList(data)
@@ -59,12 +62,13 @@ export default function Header() {
 		}
 	}, [session])
 
-	// 🔥 CONEXÃO VIA WEBSOCKETS (SALA DE ESCUTA EM TEMPO REAL)
+	// CONEXÃO VIA WEBSOCKETS (SALA DE ESCUTA EM TEMPO REAL)
 	useEffect(() => {
 		if (!session?.user) return
 
 		const userId = (session.user as any).id
-		const socket = io('http://localhost:3333')
+		// 🔥 Corrigido para apontar para a nuvem
+		const socket = io(API_URL)
 
 		// Regista o ID na tabela de canais do servidor
 		socket.emit('register', userId)
@@ -86,7 +90,8 @@ export default function Header() {
 		const userId = (session.user as any).id
 
 		setUnreadCount(0)
-		fetch(`http://localhost:3333/notifications/user/${userId}/read`, {
+		// 🔥 Corrigido o PATCH que você notou!
+		fetch(`${API_URL}/notifications/user/${userId}/read`, {
 			method: 'PATCH',
 		}).catch(console.error)
 	}
@@ -155,7 +160,7 @@ export default function Header() {
 										<DropdownMenuItem
 											key={category}
 											className="hover:bg-gray-800 focus:bg-gray-800 focus:text-white cursor-pointer transition-colors"
-											asChild
+											// 🔥 REMOVIDO o asChild que travou o build do TypeScript
 										>
 											<Link
 												href={`/mangas?genre=${category}`}
@@ -193,7 +198,7 @@ export default function Header() {
 					<div className="hidden md:flex items-center space-x-4">
 						{session?.user && (
 							<>
-								{/* 🔥 NOVO: DROPDOWN DE NOTIFICAÇÕES (SINO EM TEMPO REAL) */}
+								{/* DROPDOWN DE NOTIFICAÇÕES (SINO EM TEMPO REAL) */}
 								<DropdownMenu
 									onOpenChange={(open) => open && handleOpenNotifications()}
 								>
@@ -305,7 +310,8 @@ export default function Header() {
 																			'http'
 																		)
 																			? fav.coverUrl
-																			: `http://localhost:3333${fav.coverUrl}`
+																			: // 🔥 Corrigido com a API_URL
+																				`${API_URL}${fav.coverUrl}`
 																	}
 																	alt={fav.title}
 																	className="w-full h-full object-cover"

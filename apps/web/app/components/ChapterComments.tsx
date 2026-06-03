@@ -13,6 +13,9 @@ import {
 	DropdownMenuTrigger,
 } from '@workspace/ui/components/dropdown-menu'
 
+// 🔥 Importando a nossa URL da nuvem!
+import { API_URL } from '@/app/lib/api'
+
 interface Comment {
 	id: number
 	text: string
@@ -44,7 +47,7 @@ export function ChapterComments({ chapterId }: { chapterId: string | number }) {
 	const fetchComments = useCallback(async () => {
 		try {
 			const userId = session?.user ? (session.user as any).id : ''
-			const url = `http://localhost:3333/comments/chapter/${chapterId}${userId ? `?userId=${userId}` : ''}`
+			const url = `${API_URL}/comments/chapter/${chapterId}${userId ? `?userId=${userId}` : ''}`
 			const res = await fetch(url)
 			if (res.ok) {
 				const data = await res.json()
@@ -57,8 +60,12 @@ export function ChapterComments({ chapterId }: { chapterId: string | number }) {
 		}
 	}, [chapterId, session])
 
+	// 🔥 SOLUÇÃO PARA O AVISO DO ESLINT!
 	useEffect(() => {
-		fetchComments()
+		const loadComments = async () => {
+			await fetchComments()
+		}
+		loadComments()
 	}, [fetchComments])
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -69,7 +76,7 @@ export function ChapterComments({ chapterId }: { chapterId: string | number }) {
 		setIsSubmitting(true)
 		try {
 			const userId = (session.user as any).id
-			const res = await fetch('http://localhost:3333/comments', {
+			const res = await fetch(`${API_URL}/comments`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
@@ -109,7 +116,7 @@ export function ChapterComments({ chapterId }: { chapterId: string | number }) {
 		)
 		try {
 			const userId = (session.user as any).id
-			await fetch('http://localhost:3333/comments/like', {
+			await fetch(`${API_URL}/comments/like`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ userId, commentId }),
@@ -132,7 +139,7 @@ export function ChapterComments({ chapterId }: { chapterId: string | number }) {
 
 		try {
 			const userId = (session.user as any).id
-			const res = await fetch('http://localhost:3333/comments/report', {
+			const res = await fetch(`${API_URL}/comments/report`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ userId, commentId, reason }),
