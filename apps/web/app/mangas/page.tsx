@@ -1,172 +1,99 @@
 import React from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
-import { ChevronLeft, ChevronRight, Settings, List } from 'lucide-react'
-import { Button } from '@workspace/ui/components/button'
-// 🔥 IMPORTAÇÃO DO BOTÃO AQUI (Ajuste o caminho conforme o seu projeto)
-import { FavoriteChapterButton } from '@/app/components/FavoriteChapterButton'
+import Image from 'next/link' // Ajuste caso prefira usar o 'next/image'
+import { BookOpen, Search } from 'lucide-react'
+import { Input } from '@workspace/ui/components/input'
 
-async function getChapterData(mangaId: string, chapterNumber: string) {
+// 🔥 Importando a central conectada à nuvem!
+import { api } from '@/app/lib/api'
+
+export default async function MangasPage() {
+	// Puxando os mangás diretamente da nossa API na AWS
+	let mangas = []
 	try {
-		const res = await fetch(
-			`http://localhost:3333/chapters/manga/${mangaId}/number/${chapterNumber}`,
-			{
-				cache: 'no-store',
-			}
-		)
-		if (!res.ok) return null
-		return res.json()
+		mangas = await api.getMangas()
 	} catch (error) {
-		console.error('Erro ao buscar páginas do capítulo:', error)
-		return null
+		console.error('Erro ao buscar a lista de mangás:', error)
 	}
-}
-
-export default async function MangaReaderPage({
-	params,
-}: {
-	params: Promise<{ id: string; chapterId: string }>
-}) {
-	const resolvedParams = await params
-	const responseData = await getChapterData(resolvedParams.id, resolvedParams.chapterId)
-
-	let pages: string[] = []
-	let chapterDbId: number | null = null // Guardará o ID real do BD para usarmos no Favorito
-
-	if (Array.isArray(responseData)) {
-		pages = responseData
-	} else if (responseData && Array.isArray(responseData.pages)) {
-		pages = responseData.pages
-		// 🔥 Recuperamos o ID do capítulo vindo do backend
-		chapterDbId = responseData.id || null
-	}
-
-	if (pages.length === 0) {
-		return (
-			<div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-4">
-				<h1 className="text-2xl font-bold mb-4 text-center">
-					Ops! Capítulo não encontrado ou sem páginas.
-				</h1>
-				<Link href={`/mangas/${resolvedParams.id}`}>
-					<Button className="bg-primary hover:bg-brand-dark text-white font-bold px-8 h-12">
-						<ChevronLeft className="h-4 w-4 mr-2" /> Voltar para a obra
-					</Button>
-				</Link>
-			</div>
-		)
-	}
-
-	const currentChapter = parseInt(resolvedParams.chapterId)
-	const prevChapter = currentChapter > 1 ? currentChapter - 1 : null
-	const nextChapter = currentChapter + 1
 
 	return (
-		<div className="min-h-screen bg-[#050505] text-white selection:bg-primary selection:text-white pb-24">
-			{/* 🧭 NAVBAR MINIMALISTA */}
-			<header className="sticky top-0 z-50 bg-[#050505]/95 backdrop-blur-md border-b border-white/5 px-4 h-16 flex items-center justify-between transition-transform duration-300">
-				<div className="flex items-center gap-4">
-					<Link href={`/mangas/${resolvedParams.id}`}>
-						<Button
-							variant="ghost"
-							size="icon"
-							className="text-gray-400 hover:text-white hover:bg-white/10"
-						>
-							<ChevronLeft className="h-6 w-6" />
-						</Button>
-					</Link>
-					<div className="flex flex-col">
-						<span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-							Lendo agora
-						</span>
-						<h1 className="font-bold text-sm md:text-base line-clamp-1">
-							Capítulo {resolvedParams.chapterId}
+		<div className="min-h-screen bg-[#050505] text-white p-6 md:p-12 selection:bg-primary selection:text-white">
+			<div className="max-w-7xl mx-auto space-y-10">
+				{/* 🏷️ CABEÇALHO DO CATÁLOGO */}
+				<div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-white/5 pb-6">
+					<div>
+						<h1 className="text-3xl md:text-4xl font-black uppercase tracking-tight flex items-center gap-3">
+							<BookOpen className="h-8 w-8 text-primary" />
+							Catálogo de Obras
 						</h1>
+						<p className="text-muted-foreground mt-2 font-medium">
+							Explore nossa coleção completa e encontre a sua próxima leitura.
+						</p>
 					</div>
-				</div>
 
-				<div className="flex items-center gap-1 sm:gap-2">
-					{/* 🔥 BOTÃO DE FAVORITO EM FORMATO DE ÍCONE NA NAVBAR */}
-					{chapterDbId && (
-						<FavoriteChapterButton chapterId={chapterDbId} variant="icon" />
-					)}
-					<Button
-						variant="ghost"
-						size="icon"
-						className="text-gray-400 hover:text-white hover:bg-white/10"
-					>
-						<List className="h-5 w-5" />
-					</Button>
-					<Button
-						variant="ghost"
-						size="icon"
-						className="text-gray-400 hover:text-white hover:bg-white/10 hidden sm:inline-flex"
-					>
-						<Settings className="h-5 w-5" />
-					</Button>
-				</div>
-			</header>
-
-			{/* 📖 MOTOR DE LEITURA (Scroll Vertical) */}
-			<main className="max-w-3xl mx-auto flex flex-col items-center bg-black min-h-screen">
-				{pages.map((pageUrl: string, index: number) => (
-					<div key={index} className="w-full flex justify-center">
-						<img
-							src={pageUrl}
-							alt={`Página ${index + 1}`}
-							className="w-full h-auto object-contain block"
-							loading={index < 3 ? 'eager' : 'lazy'}
+					{/* Barra de Pesquisa */}
+					<div className="relative w-full md:w-80">
+						<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+						<Input
+							placeholder="Buscar mangá..."
+							className="pl-10 h-12 bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-primary transition-colors"
 						/>
 					</div>
-				))}
-			</main>
+				</div>
 
-			{/* 🔥 MEGA BOTÃO DE FAVORITO NO FINAL DO CAPÍTULO (Logo antes de ir pro próximo) */}
-			{chapterDbId && (
-				<div className="max-w-3xl mx-auto flex justify-center py-12 px-4 border-t border-white/5 mt-4">
-					<div className="text-center flex flex-col items-center gap-4">
-						<p className="text-gray-400 text-sm font-medium">
-							Gostou deste capítulo ou quer marcar de onde parou?
+				{/* 📚 GRID DE MANGÁS */}
+				{mangas.length === 0 ? (
+					<div className="flex flex-col items-center justify-center py-32 text-center border border-dashed border-white/10 rounded-2xl bg-white/[0.02]">
+						<BookOpen className="h-16 w-16 text-muted-foreground mb-4 opacity-20" />
+						<h2 className="text-2xl font-bold uppercase tracking-tight">
+							Nenhum mangá encontrado
+						</h2>
+						<p className="text-muted-foreground mt-2">
+							O catálogo está vazio ou ocorreu um erro de conexão com o servidor.
 						</p>
-						<FavoriteChapterButton chapterId={chapterDbId} variant="full" />
 					</div>
-				</div>
-			)}
-
-			{/* 🚀 NAVBAR INFERIOR (Navegação de Capítulos) */}
-			<footer className="fixed bottom-0 w-full bg-[#050505]/95 backdrop-blur-md border-t border-white/5 p-4 z-50">
-				<div className="max-w-3xl mx-auto flex items-center justify-between gap-4">
-					{prevChapter ? (
-						<Link
-							href={`/mangas/${resolvedParams.id}/read/${prevChapter}`}
-							className="flex-1"
-						>
-							<Button
-								variant="outline"
-								className="w-full bg-transparent border-white/10 text-white hover:bg-white/10 h-12"
+				) : (
+					<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 md:gap-8">
+						{mangas.map((manga: any) => (
+							<Link
+								href={`/mangas/${manga.id}`}
+								key={manga.id}
+								className="group flex flex-col gap-3"
 							>
-								<ChevronLeft className="h-4 w-4 mr-2" /> Capítulo Anterior
-							</Button>
-						</Link>
-					) : (
-						<Button
-							disabled
-							variant="outline"
-							className="flex-1 bg-transparent border-white/5 text-white/30 h-12"
-						>
-							<ChevronLeft className="h-4 w-4 mr-2" /> Capítulo Anterior
-						</Button>
-					)}
+								{/* Capa do Mangá */}
+								<div className="relative aspect-[2/3] w-full overflow-hidden rounded-xl bg-white/5 border border-white/10 transition-all duration-300 group-hover:border-primary/50 group-hover:shadow-[0_0_30px_rgba(var(--primary),0.15)]">
+									<img
+										src={
+											manga.coverUrl ||
+											'https://via.placeholder.com/300x450?text=Sem+Capa'
+										}
+										alt={`Capa do mangá ${manga.title}`}
+										className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+										loading="lazy"
+									/>
 
-					<Link
-						href={`/mangas/${resolvedParams.id}/read/${nextChapter}`}
-						className="flex-1"
-					>
-						<Button className="w-full bg-primary hover:bg-brand-dark text-white font-bold h-12">
-							Próximo Capítulo <ChevronRight className="h-4 w-4 ml-2" />
-						</Button>
-					</Link>
-				</div>
-			</footer>
+									{/* Badge de Status */}
+									{manga.status && (
+										<div className="absolute top-2 right-2 bg-black/80 backdrop-blur-md px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border border-white/10 text-white shadow-xl">
+											{manga.status}
+										</div>
+									)}
+								</div>
+
+								{/* Informações */}
+								<div>
+									<h3 className="font-bold text-sm md:text-base line-clamp-1 group-hover:text-primary transition-colors">
+										{manga.title}
+									</h3>
+									<p className="text-xs text-muted-foreground mt-1 line-clamp-1 font-medium">
+										{manga.author || 'Autor Desconhecido'}
+									</p>
+								</div>
+							</Link>
+						))}
+					</div>
+				)}
+			</div>
 		</div>
 	)
 }

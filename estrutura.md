@@ -44,12 +44,15 @@
                 ├── data.json
                 ├── favicon.ico
                 ├── layout.tsx
+            └── 📁lib
+                ├── api.ts
             └── 📁public
                 ├── file.svg
                 ├── globe.svg
                 ├── next.svg
                 ├── vercel.svg
                 ├── window.svg
+            ├── .env
             ├── .gitignore
             ├── AGENTS.md
             ├── CLAUDE.md
@@ -307,6 +310,7 @@
     ├── .gitignore
     ├── api.http
     ├── docker-compose.yml
+    ├── Infraestrutura_AWS.md
     ├── package - raiz.json
     ├── package-lock.json
     ├── package.json

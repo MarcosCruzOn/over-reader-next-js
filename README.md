@@ -7,6 +7,7 @@ Plataforma de leitura de mangás dividida em um monorepo.
 - **Backend:** Node.js, Express, PostgreSQL, Drizzle ORM
 - **Frontend (Web e Admin):** Next.js, shadcn/ui
 - **Cloud/Armazenamento:** AWS S3 (Uploads via Multer)
+- **Infraestrutura:** AWS EC2, AWS RDS, Nginx, PM2, Vercel
 - **Boas Práticas:** SOLID, Clean Code, TDD, DRY
 
 ## 📁 Estrutura do Monorepo
@@ -23,6 +24,15 @@ Na pasta raiz, você pode usar os seguintes comandos:
 - `npm run dev`: Inicia o servidor de desenvolvimento de todos os apps simultaneamente.
 - `npm run build`: Cria a versão de produção de todos os apps.
 - `npm run lint`: Executa a verificação de código em todos os apps.
+
+## ☁️ Infraestrutura e Deploy (Produção)
+
+O sistema opera em uma arquitetura distribuída na nuvem, garantindo segurança e alta disponibilidade:
+
+- **Frontend (Vercel):** Os aplicativos Web e Admin são servidos via edge network com CI/CD automatizado.
+- **Backend (AWS EC2):** Instância Amazon Linux rodando a API Node.js. O **PM2** gerencia os processos em segundo plano, garantindo que o servidor reinicie automaticamente em caso de falhas.
+- **Proxy Reverso e SSL:** O **Nginx** intercepta o tráfego web nas portas 80/443 e roteia para a porta interna da API. A segurança é garantida por um certificado SSL gratuito gerado pelo **Let's Encrypt (Certbot)**.
+- **Banco de Dados (AWS RDS):** Instância PostgreSQL gerenciada e isolada em nuvem, acessível externamente apenas por IPs autorizados via Security Groups.
 
 ## 🎨 Design System & UI
 
@@ -55,9 +65,7 @@ O sistema permite o gerenciamento completo do ciclo de vida dos mangás, estrutu
 1. **Mangás:** Obra principal (Capa, Banner, Título, Sinopse).
 2. **Volumes:** Organização lógica (Arco/Saga) atrelada a um mangá.
 3. **Capítulos:** Páginas de leitura atreladas a um volume.
-
-**Uploads para AWS S3:**
-A plataforma suporta envio de arquivos únicos (Capas e Banners de Mangás/Volumes) e envios em lote (Upload múltiplo de até 100 páginas simultâneas por capítulo, salvas em um JSON Array no banco).
+4. **Uploads para AWS S3:** Suporte a envio de arquivos únicos (Capas/Banners) e envios em lote (Upload múltiplo de até 100 páginas simultâneas por capítulo, salvas em um JSON Array no banco).
 
 ## 🛡️ Módulo: Painel Administrativo (Admin)
 
@@ -84,7 +92,11 @@ O painel de controle do **Over Reader** foi construído com foco em produtividad
 
 ## ⭐️ Sistema de Avaliação e Ranking de Obras
 
-Funcionalidade implementada para permitir que os leitores avaliem os mangás com notas de 1 a 5 estrelas. O sistema utiliza uma estratégia de consolidação de dados de "Nível de Obra", garantindo que a pontuação geral (média) reflita o engajamento coletivo em tempo real e de forma performática.
+Funcionalidade que permite aos leitores avaliarem mangás de 1 a 5 estrelas. A pontuação geral reflete o engajamento coletivo em tempo real.
+
+- **Arquitetura de Dados:** Tabela `reviews` armazena as interações. Um índice único (`user_manga_review_idx`) assegura apenas uma avaliação por usuário por obra, acionando um `UPSERT` para reavaliações.
+- **Endpoints de Estatísticas:** Uso de agregadores SQL (`avg` e `count`) para calcular a média formatada e o volume de votos em tempo real.
+- **Componente Interativo:** `MangaRating.tsx` apresenta estados reativos de hover e atualiza a média global imediatamente após o voto sem recarregamento.
 
 ### 🗄️ Arquitetura do Banco de Dados (`Drizzle ORM`)
 
