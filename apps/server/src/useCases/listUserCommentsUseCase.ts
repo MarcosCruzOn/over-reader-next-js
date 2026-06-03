@@ -8,7 +8,7 @@ export class ListUserCommentsUseCase {
 			throw new Error('O ID do usuário é obrigatório para buscar os comentários.')
 		}
 
-		const comments = await this.commentRepository.findByUser(userId)
+		const comments = await this.commentRepository.getCommentsByUser(userId)
 
 		return comments
 	}

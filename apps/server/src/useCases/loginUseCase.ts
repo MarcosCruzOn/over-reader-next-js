@@ -12,8 +12,10 @@ export class LoginUseCase {
 
 		// 1. Busca o usuário pelo e-mail
 		const user = await this.userRepository.findByEmail(email)
-		if (!user) {
-			throw new Error('Credenciais inválidas.') // Não diga se foi o email ou a senha que errou (segurança!)
+
+		// 🔥 CORREÇÃO AQUI: Garantindo para o TypeScript que a senha existe
+		if (!user || !user.password) {
+			throw new Error('Credenciais inválidas.')
 		}
 
 		// 2. Compara a senha digitada com a senha criptografada do banco
@@ -27,15 +29,10 @@ export class LoginUseCase {
 			throw new Error('Esta conta está bloqueada ou inativa.')
 		}
 
-		// 4. Gera o Token (O nosso "Crachá")
-		// Dica: No futuro, coloque o segredo no arquivo .env como JWT_SECRET="suasenha"
+		// 4. Gera o Token
 		const secret = process.env.JWT_SECRET || 'overreader_super_secret_key_2026'
 
-		const token = jwt.sign(
-			{ id: user.id, role: user.role }, // Dados que vão dentro do crachá
-			secret,
-			{ expiresIn: '7d' } // O login dura 7 dias
-		)
+		const token = jwt.sign({ id: user.id, role: user.role }, secret, { expiresIn: '7d' })
 
 		// 5. Remove a senha antes de devolver pro Frontend
 		const { password, ...userWithoutPassword } = user
