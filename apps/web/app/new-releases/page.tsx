@@ -4,19 +4,12 @@ import MangaGrid from '@/app/components/MangaGrid'
 import { Manga } from '@workspace/types'
 import { Flame } from 'lucide-react'
 
-// Pede ao backend os mangás ordenados por 'newest'
-async function getNewReleases(): Promise<Manga[]> {
-	try {
-		const res = await fetch('http://localhost:3333/mangas?sort=newest', { cache: 'no-store' })
-		if (!res.ok) return []
-		return res.json()
-	} catch (error) {
-		return []
-	}
-}
+// 🔥 Importando a nossa central conectada à nuvem!
+import { api } from '@/app/lib/api'
 
 export default async function NewReleasesPage() {
-	const mangas = await getNewReleases()
+	// Puxando os dados dinamicamente direto da API na AWS
+	const mangas: Manga[] = await api.getNewReleases()
 
 	return (
 		<div className="dark min-h-screen bg-background text-foreground pb-20">
@@ -28,6 +21,7 @@ export default async function NewReleasesPage() {
 						Lançamentos Recentes
 					</h1>
 				</div>
+				{/* Passando os dados limpos para o Grid renderizar as capas */}
 				<MangaGrid mangas={mangas} />
 			</main>
 		</div>

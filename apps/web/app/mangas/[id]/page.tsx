@@ -5,44 +5,19 @@ import Header from '../../components/Header'
 import MangaTabsSection from '@/app/components/MangaTabsSection'
 import { FavoriteButton } from '@/app/components/FavoriteButton'
 import { Bookmark, Star } from 'lucide-react'
-import { Button } from '@workspace/ui/components/button'
 import { Manga } from '@workspace/types'
+import { Button } from '@workspace/ui/components/button'
 import { MangaRating } from '@/app/components/MangaRating'
 
-// ⚡ Server Action: Busca o mangá específico pelo ID
-async function getManga(id: string): Promise<Manga | null> {
-	try {
-		const res = await fetch(`http://localhost:3333/mangas/${id}`, {
-			cache: 'no-store',
-		})
-		if (!res.ok) return null
-		return res.json()
-	} catch (error) {
-		console.error('Erro ao buscar o mangá:', error)
-		return null
-	}
-}
-
-// ⚡ Nova função para buscar os capítulos reais
-async function getMangaChapters(mangaId: string) {
-	try {
-		const res = await fetch(`http://localhost:3333/chapters/manga/${mangaId}`, {
-			cache: 'no-store',
-		})
-		if (!res.ok) return []
-		return res.json()
-	} catch (error) {
-		console.error('Erro ao buscar capítulos:', error)
-		return []
-	}
-}
+// 🔥 Importando a nossa central conectada à nuvem!
+import { api } from '@/app/lib/api'
 
 export default async function MangaDetailPage({ params }: { params: Promise<{ id: string }> }) {
 	const resolvedParams = await params
-	const manga = await getManga(resolvedParams.id)
 
-	// 🔥 BUSCA OS CAPÍTULOS REAIS AQUI
-	const chapters = await getMangaChapters(resolvedParams.id)
+	// 🔥 Buscando os dados dinamicamente direto da API na AWS
+	const manga = await api.getManga(resolvedParams.id)
+	const chapters = await api.getMangaChapters(resolvedParams.id)
 
 	// 🔥 LÓGICA DE AGRUPAMENTO AVANÇADA (No Servidor)
 	const groupedVolumes = Array.from(new Set(chapters.map((ch: any) => ch.volumeNumber)))

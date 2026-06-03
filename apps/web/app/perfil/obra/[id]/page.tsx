@@ -5,9 +5,12 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Star, BookOpen, Loader2, Trash2 } from 'lucide-react'
 import { Button } from '@workspace/ui/components/button'
-import Header from '../../../components/Header'
+import Header from '../../../components/Header' // Ajuste o caminho se necessário
 import Link from 'next/link'
 import Image from 'next/image'
+
+// 🔥 Importando a nossa central conectada à nuvem e a URL base para imagens!
+import { api, API_URL } from '@/app/lib/api'
 
 interface PageProps {
 	params: Promise<{ id: string }>
@@ -39,25 +42,18 @@ export default function PerfilObraPage({ params }: PageProps) {
 			try {
 				const userId = (session.user as any).id
 
-				// 1. Busca os detalhes do mangá
-				const mangaRes = await fetch(`http://localhost:3333/mangas/${mangaId}`)
-				const mangaData = mangaRes.ok ? await mangaRes.json() : null
-
-				// 2. Busca todos os capítulos lançados (para sabermos qual é o último)
-				const chaptersRes = await fetch(`http://localhost:3333/chapters/manga/${mangaId}`)
-				const chaptersData = chaptersRes.ok ? await chaptersRes.json() : []
-
-				// 3. Busca todos os capítulos favoritados pelo utilizador
-				const favChaptersRes = await fetch(
-					`http://localhost:3333/favorite-chapters/user/${userId}`
-				)
-				const favChaptersData = favChaptersRes.ok ? await favChaptersRes.json() : []
+				// 🔥 Substituímos os 3 fetchs manuais por chamadas da nossa API
+				const [mangaData, chaptersData, favChaptersData] = await Promise.all([
+					api.getManga(mangaId),
+					api.getMangaChapters(mangaId),
+					api.getUserFavoriteChapters(userId),
+				])
 
 				setManga(mangaData)
-				setAllChapters(chaptersData)
+				setAllChapters(chaptersData || [])
 
 				// Filtra os capítulos favoritados para manter apenas os DESTE mangá específico
-				const filteredFavs = favChaptersData.filter(
+				const filteredFavs = (favChaptersData || []).filter(
 					(ch: any) => String(ch.mangaId) === String(mangaId)
 				)
 				setFavChapters(filteredFavs)
@@ -79,22 +75,14 @@ export default function PerfilObraPage({ params }: PageProps) {
 		const userId = (session.user as any).id
 
 		try {
-			const response = await fetch(
-				`http://localhost:3333/favorite-chapters/${userId}/${chapterId}`,
-				{
-					method: 'DELETE',
-				}
-			)
+			// 🔥 Usando a nossa API centralizada para deletar
+			await api.removeUserFavoriteChapter(userId, chapterId)
 
-			if (response.ok) {
-				// Atualiza o estado local para remover o card imediatamente da tela
-				setFavChapters((prev) => prev.filter((ch) => ch.chapterId !== chapterId))
-			} else {
-				alert('Não foi possível remover o capítulo dos favoritos.')
-			}
+			// Atualiza o estado local para remover o card imediatamente da tela
+			setFavChapters((prev) => prev.filter((ch) => ch.chapterId !== chapterId))
 		} catch (error) {
 			console.error(error)
-			alert('Erro ao comunicar com o servidor.')
+			alert('Não foi possível remover o capítulo dos favoritos. Verifique sua conexão.')
 		}
 	}
 
@@ -136,12 +124,13 @@ export default function PerfilObraPage({ params }: PageProps) {
 		}
 	)
 
+	// 🔥 Ajustando as URLs das imagens para usar o servidor da AWS
 	const coverUrl = manga.coverUrl?.startsWith('http')
 		? manga.coverUrl
-		: `http://localhost:3333${manga.coverUrl}`
+		: `${API_URL}${manga.coverUrl}`
 	const bannerUrl = manga.bannerUrl?.startsWith('http')
 		? manga.bannerUrl
-		: `http://localhost:3333${manga.bannerUrl}`
+		: `${API_URL}${manga.bannerUrl}`
 
 	return (
 		<div className="dark min-h-screen bg-background text-foreground font-sans pb-20 relative">
@@ -176,7 +165,7 @@ export default function PerfilObraPage({ params }: PageProps) {
 				<div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/50 to-background" />
 			</section>
 
-			{/* PAINEL DE CONTROLO DO LEITOR */}
+			{/* PAINEL DE CONTROLE DO LEITOR */}
 			<main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 -mt-32 md:-mt-48">
 				<div className="bg-card/90 border border-border shadow-2xl backdrop-blur-md rounded-xl p-6 md:p-10 flex flex-col md:flex-row gap-8 lg:gap-12">
 					{/* CAPA DA OBRA */}
@@ -241,7 +230,7 @@ export default function PerfilObraPage({ params }: PageProps) {
 					</div>
 				</div>
 
-				{/* SECÇÃO DE CAPÍTULOS MARCADOS */}
+				{/* SEÇÃO DE CAPÍTULOS MARCADOS */}
 				<div className="mt-8 bg-card border border-border shadow-xl rounded-xl p-6 md:p-8">
 					<h2 className="text-xl font-extrabold text-white uppercase tracking-wider mb-6 flex items-center gap-2">
 						<Star className="w-5 h-5 fill-primary text-primary" />
@@ -251,9 +240,10 @@ export default function PerfilObraPage({ params }: PageProps) {
 					{groupedFavVolumes.length > 0 ? (
 						<div className="space-y-8">
 							{groupedFavVolumes.map((vol) => {
+								// 🔥 Ajustando a imagem do volume
 								const volCoverUrl = vol.volumeCover?.startsWith('http')
 									? vol.volumeCover
-									: `http://localhost:3333${vol.volumeCover}`
+									: `${API_URL}${vol.volumeCover}`
 
 								return (
 									<div

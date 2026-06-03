@@ -4,29 +4,17 @@ import LatestUpdatesSection from '../app/components/LatestUpdatesSection'
 import SavedMangasSidebar from '../app/components/SavedMangasSidebar'
 import { Manga } from '@workspace/types'
 
-// Tipagem baseada na que você já usa no @over-reader/types
-interface MangaHero {
-	manga: Manga[]
-}
+// 🔥 Importando a nossa central conectada à nuvem!
+import { api } from '@/app/lib/api'
 
-// ⚡ Server Action: Busca os mangás direto do Backend
-async function getMangas(): Promise<Manga[]> {
+export default async function WebHomePage() {
+	// Puxando os dados dinamicamente direto da API na AWS
+	let mangas: Manga[] = []
 	try {
-		const res = await fetch('http://localhost:3333/mangas', {
-			cache: 'no-store',
-			// Adicionando um timeout ou header se necessário no futuro
-		})
-		if (!res.ok) return []
-		return res.json()
+		mangas = await api.getMangas()
 	} catch (error) {
-		console.error('Erro ao buscar mangás:', error)
-		return []
+		console.error('Erro ao buscar a lista de mangás para a Home:', error)
 	}
-}
-
-export default async function WebHomePage({ manga }: MangaHero) {
-	// Busca todos os mangás do banco de dados
-	const mangas = await getMangas()
 
 	// Separa os 5 primeiros mangás para o Banner Principal (Hero)
 	const heroMangas = mangas.slice(0, 5)

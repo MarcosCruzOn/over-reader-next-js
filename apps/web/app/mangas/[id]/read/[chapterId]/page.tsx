@@ -4,33 +4,7 @@ import { ChevronLeft } from 'lucide-react'
 import { Button } from '@workspace/ui/components/button'
 import { ReaderClient } from './ReaderClient'
 
-async function getChapterData(mangaId: string, chapterNumber: string) {
-	try {
-		const res = await fetch(
-			`http://localhost:3333/chapters/manga/${mangaId}/number/${chapterNumber}`,
-			{ cache: 'no-store' }
-		)
-		if (!res.ok) return null
-		return res.json()
-	} catch (error) {
-		console.error('Erro ao buscar páginas do capítulo:', error)
-		return null
-	}
-}
-
-// 🔥 Nova função para buscar todos os capítulos da obra para a gaveta lateral
-async function getMangaChapters(mangaId: string) {
-	try {
-		const res = await fetch(`http://localhost:3333/chapters/manga/${mangaId}`, {
-			cache: 'no-store',
-		})
-		if (!res.ok) return []
-		return res.json()
-	} catch (error) {
-		console.error('Erro ao buscar lista de capítulos:', error)
-		return []
-	}
-}
+import { api } from '@/app/lib/api'
 
 export default async function MangaReaderPage({
 	params,
@@ -39,10 +13,10 @@ export default async function MangaReaderPage({
 }) {
 	const resolvedParams = await params
 
-	// 🔥 Buscamos o capítulo atual e a lista completa em paralelo no servidor
+	// 🔥 Buscamos o capítulo atual e a lista completa em paralelo no servidor via API central
 	const [responseData, chaptersData] = await Promise.all([
-		getChapterData(resolvedParams.id, resolvedParams.chapterId),
-		getMangaChapters(resolvedParams.id),
+		api.getChapterData(resolvedParams.id, resolvedParams.chapterId),
+		api.getMangaChapters(resolvedParams.id),
 	])
 
 	let pages: string[] = []

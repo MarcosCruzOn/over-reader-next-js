@@ -20,13 +20,16 @@ import { Input } from '@workspace/ui/components/input'
 import Image from 'next/image'
 import Link from 'next/link'
 
+// 🔥 Importando a nossa central conectada à nuvem e a URL base para imagens!
+import { api, API_URL } from '@/app/lib/api'
+
 export default function PerfilPage() {
 	const { data: session, status, update } = useSession()
 	const router = useRouter()
 	const [activeTab, setActiveTab] = useState('favorites')
 
 	const [favorites, setFavorites] = useState<any[]>([])
-	const [reviews, setReviews] = useState<any[]>([]) // 🔥 Estado para avaliações
+	const [reviews, setReviews] = useState<any[]>([])
 	const [isLoadingFavs, setIsLoadingFavs] = useState(false)
 	const [isLoadingReviews, setIsLoadingReviews] = useState(false)
 	const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
@@ -44,11 +47,8 @@ export default function PerfilPage() {
 				setIsLoadingFavs(true)
 				try {
 					const userId = (session.user as any).id
-					const response = await fetch(`http://localhost:3333/favorites/user/${userId}`)
-					if (response.ok) {
-						const data = await response.json()
-						setFavorites(data)
-					}
+					const data = await api.getUserFavorites(userId)
+					setFavorites(data)
 				} catch (error) {
 					console.error('Erro ao carregar favoritos:', error)
 				} finally {
@@ -66,11 +66,8 @@ export default function PerfilPage() {
 				setIsLoadingReviews(true)
 				try {
 					const userId = (session.user as any).id
-					const response = await fetch(`http://localhost:3333/reviews/user/${userId}`)
-					if (response.ok) {
-						const data = await response.json()
-						setReviews(data)
-					}
+					const data = await api.getUserReviews(userId)
+					setReviews(data)
 				} catch (error) {
 					console.error('Erro ao buscar avaliações:', error)
 				} finally {
@@ -88,11 +85,8 @@ export default function PerfilPage() {
 				setIsLoadingUserComments(true)
 				try {
 					const userId = (session.user as any).id
-					const response = await fetch(`http://localhost:3333/comments/user/${userId}`)
-					if (response.ok) {
-						const data = await response.json()
-						setUserComments(data)
-					}
+					const data = await api.getUserComments(userId)
+					setUserComments(data)
 				} catch (error) {
 					console.error('Erro ao buscar comentários do usuário:', error)
 				} finally {
@@ -107,8 +101,7 @@ export default function PerfilPage() {
 	useEffect(() => {
 		if (session?.user) {
 			const userId = (session.user as any).id
-			fetch(`http://localhost:3333/notifications/user/${userId}`)
-				.then((res) => (res.ok ? res.json() : []))
+			api.getUserNotifications(userId)
 				.then((data) => {
 					setUnreadCount(data.filter((n: any) => !n.isRead).length)
 				})
@@ -116,7 +109,7 @@ export default function PerfilPage() {
 		}
 	}, [session])
 
-	// --- FUNÇÕES DE UPLOAD (MANTIDAS) ---
+	// --- FUNÇÕES DE UPLOAD (MANTIDAS E REFATORADAS) ---
 	const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0]
 		if (!file) return
@@ -127,12 +120,8 @@ export default function PerfilPage() {
 			setIsUploadingAvatar(true)
 			const formData = new FormData()
 			formData.append('avatar', file)
-			const response = await fetch(`http://localhost:3333/users/${userId}/avatar`, {
-				method: 'PATCH',
-				body: formData,
-			})
-			if (!response.ok) throw new Error('Falha ao enviar a imagem')
-			const updatedUser = await response.json()
+
+			const updatedUser = await api.uploadUserAvatar(userId, formData)
 			await update({ image: updatedUser.image })
 		} catch (error) {
 			console.error(error)
@@ -152,12 +141,8 @@ export default function PerfilPage() {
 			setIsUploadingBanner(true)
 			const formData = new FormData()
 			formData.append('banner', file)
-			const response = await fetch(`http://localhost:3333/users/${userId}/banner`, {
-				method: 'PATCH',
-				body: formData,
-			})
-			if (!response.ok) throw new Error('Falha ao enviar o banner')
-			const updatedUser = await response.json()
+
+			const updatedUser = await api.uploadUserBanner(userId, formData)
 			await update({ bannerUrl: updatedUser.bannerUrl })
 		} catch (error) {
 			console.error(error)
@@ -195,7 +180,7 @@ export default function PerfilPage() {
 				</Link>
 			</div>
 
-			{/* 🔥 HEADER DO PERFIL (GRADIENTE REMOVIDO) */}
+			{/* 🔥 HEADER DO PERFIL */}
 			<div className="relative h-[300px] bg-muted overflow-hidden group border-b border-border">
 				<Image
 					src={userBanner}
@@ -226,14 +211,12 @@ export default function PerfilPage() {
 				</label>
 			</div>
 
-			{/* 🔥 ESTRUTURA DO LAYOUT CORRIGIDA */}
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
 				<div className="flex flex-col md:flex-row gap-8 items-start">
-					{/* SIDEBAR (É a única que sobe e sobrepõe o banner agora!) */}
+					{/* SIDEBAR */}
 					<div className="w-full md:w-80 shrink-0 -mt-24">
 						<div className="bg-card border border-border rounded-xl p-6 shadow-2xl backdrop-blur-sm">
 							<div className="relative w-36 h-36 mx-auto -mt-16 mb-4 group">
-								{/* Tag img nativa para evitar erros de domínio do Next.js com fotos do Google */}
 								<img
 									src={
 										session.user.image ||
@@ -294,11 +277,7 @@ export default function PerfilPage() {
 								<Button
 									variant={activeTab === 'comments' ? 'default' : 'ghost'}
 									className="w-full justify-start font-bold relative"
-									onClick={() => {
-										setActiveTab('comments')
-										// Opcional: Se quiser zerar a bolinha ao clicar na aba, descomente a linha abaixo
-										// setUnreadCount(0)
-									}}
+									onClick={() => setActiveTab('comments')}
 								>
 									<MessageSquare className="w-5 h-5 mr-3" /> Comentários
 									{unreadCount > 0 && (
@@ -327,7 +306,7 @@ export default function PerfilPage() {
 						</div>
 					</div>
 
-					{/* ÁREA DE CONTEÚDO (Agora fica naturalmente na direita, abaixo da linha do banner) */}
+					{/* ÁREA DE CONTEÚDO */}
 					<div className="flex-1 mt-8 md:mt-12 w-full pb-12">
 						{/* ABA: FAVORITOS */}
 						{activeTab === 'favorites' && (
@@ -346,10 +325,11 @@ export default function PerfilPage() {
 								) : favorites.length > 0 ? (
 									<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
 										{favorites.map((fav) => {
+											// 🔥 Corrigido: Usando a nossa constante global API_URL
 											const coverUrl = fav.coverUrl
 												? fav.coverUrl.startsWith('http')
 													? fav.coverUrl
-													: `http://localhost:3333${fav.coverUrl}`
+													: `${API_URL}${fav.coverUrl}`
 												: 'https://placehold.co/400x600/1a1a1a/444.png?text=Sem+Capa'
 											return (
 												<Link
@@ -414,11 +394,11 @@ export default function PerfilPage() {
 								) : reviews.length > 0 ? (
 									<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 										{reviews.map((rev) => {
-											// Corrige a URL da imagem com o Join que fizemos no backend
+											// 🔥 Corrigido: Usando a nossa constante global API_URL
 											const coverUrl = rev.manga?.coverUrl
 												? rev.manga.coverUrl.startsWith('http')
 													? rev.manga.coverUrl
-													: `http://localhost:3333${rev.manga.coverUrl}`
+													: `${API_URL}${rev.manga.coverUrl}`
 												: 'https://placehold.co/150x200/1a1a1a/white.png?text=Sem+Capa'
 
 											return (
@@ -503,7 +483,7 @@ export default function PerfilPage() {
 														<div>
 															<span className="text-xs font-bold text-primary uppercase tracking-wider">
 																{comment.manga?.title ||
-																	'Obra Desconhecido'}
+																	'Obra Desconhecida'}
 															</span>
 															<span className="text-xs font-bold text-primary uppercase tracking-wider ml-2">
 																Capítulo{' '}
