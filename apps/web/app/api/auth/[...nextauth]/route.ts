@@ -1,9 +1,27 @@
-import NextAuth from 'next-auth'
+import NextAuth, { User, Session } from 'next-auth'
 import GoogleProvider from 'next-auth/providers/google'
 import { DrizzleAdapter } from '@auth/drizzle-adapter'
-import { sql } from 'drizzle-orm' // 🔥 IMPORTAMOS O SQL PURO
+import { sql } from 'drizzle-orm'
+import { JWT } from 'next-auth/jwt'
 
 import { db } from '@workspace/server/db'
+
+// 🔥 1. Criamos tipagens estritas para remover o "any"
+interface CustomToken extends JWT {
+	bannerUrl?: string
+	picture?: string | null
+	sub?: string
+}
+
+interface CustomSession extends Session {
+	user: {
+		id: string
+		name?: string | null
+		email?: string | null
+		image?: string | null
+		bannerUrl?: string
+	}
+}
 
 const authOptions = {
 	adapter: DrizzleAdapter(db),
@@ -22,24 +40,36 @@ const authOptions = {
 		signIn: '/login',
 	},
 	callbacks: {
-		async jwt({ token, trigger, session, user }) {
-			// Se o user existir, é o exato momento do Login
+		// 🔥 2. Aplicamos a tipagem no lugar do "any"
+		async jwt({
+			token,
+			trigger,
+			session,
+			user,
+		}: {
+			token: CustomToken
+			trigger?: 'signIn' | 'signUp' | 'update'
+			session?: CustomSession
+			user?: User
+		}) {
 			if (user) {
 				token.sub = user.id
 				token.picture = user.image
 
-				// 🔥 BUSCA BRUTA (Bypass no NextAuth e no Turborepo)
-				// Vamos direto ao banco de dados ler a coluna banner_url usando SQL puro
 				try {
 					if (user.email) {
-						// Usamos aspas duplas em "user" porque user é uma palavra reservada no Postgres
 						const result = await db.execute(
 							sql`SELECT banner_url FROM "user" WHERE email = ${user.email} LIMIT 1`
 						)
 
-						// Se encontrou a linha e a coluna não está vazia, injetamos no token!
-						if (result.rows.length > 0 && result.rows[0].banner_url) {
-							token.bannerUrl = result.rows[0].banner_url
+						// 🔥 3. Verificação cega e segura contra null/undefined
+						if (result && result.rows && result.rows.length > 0) {
+							// Dizemos ao TS o formato exato da linha do banco
+							const row = result.rows[0] as { banner_url?: string | null }
+
+							if (row && row.banner_url) {
+								token.bannerUrl = row.banner_url
+							}
 						}
 					}
 				} catch (error) {
@@ -47,27 +77,29 @@ const authOptions = {
 				}
 			}
 
-			// Se o frontend chamou o update()
-			if (trigger === 'update' && session) {
-				if (session.image) token.picture = session.image
-				if (session.bannerUrl) token.bannerUrl = session.bannerUrl
+			if (trigger === 'update' && session?.user) {
+				if (session.user.image) token.picture = session.user.image
+				if (session.user.bannerUrl) token.bannerUrl = session.user.bannerUrl
 			}
 
 			return token
 		},
 
-		async session({ session, token }) {
-			if (session.user && token.sub) {
-				session.user.id = token.sub as string
+		// 🔥 4. Aplicamos a tipagem aqui também
+		async session({ session, token }: { session: Session; token: CustomToken }) {
+			const customSession = session as CustomSession
+
+			if (customSession.user && token.sub) {
+				customSession.user.id = token.sub
 			}
-			if (session.user && token.picture) {
-				session.user.image = token.picture as string
+			if (customSession.user && token.picture) {
+				customSession.user.image = token.picture
 			}
-			if (session.user && token.bannerUrl) {
-				;(session.user as any).bannerUrl = token.bannerUrl as string
+			if (customSession.user && token.bannerUrl) {
+				customSession.user.bannerUrl = token.bannerUrl
 			}
 
-			return session
+			return customSession
 		},
 	},
 }
