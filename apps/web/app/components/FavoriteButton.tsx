@@ -6,6 +6,9 @@ import { Bookmark } from 'lucide-react'
 import { Button } from '@workspace/ui/components/button'
 import { useRouter } from 'next/navigation'
 
+// 🔥 Importando a nossa URL da nuvem!
+import { API_URL } from '@/app/lib/api'
+
 interface FavoriteButtonProps {
 	mangaId: number
 }
@@ -27,9 +30,8 @@ export function FavoriteButton({ mangaId }: FavoriteButtonProps) {
 
 			try {
 				const userId = (session.user as any).id
-				const response = await fetch(
-					`http://localhost:3333/favorites/check/${userId}/${mangaId}`
-				)
+				// 🔥 Corrigido para a nuvem
+				const response = await fetch(`${API_URL}/favorites/check/${userId}/${mangaId}`)
 				if (response.ok) {
 					const data = await response.json()
 					setIsFavorited(data.isFavorited)
@@ -41,6 +43,7 @@ export function FavoriteButton({ mangaId }: FavoriteButtonProps) {
 			}
 		}
 
+		// O linter fica feliz porque a função é assíncrona e está declarada no próprio escopo
 		checkStatus()
 	}, [session, status, mangaId])
 
@@ -58,18 +61,17 @@ export function FavoriteButton({ mangaId }: FavoriteButtonProps) {
 		try {
 			if (isFavorited) {
 				// Se já for favorito, DELETA!
-				const response = await fetch(
-					`http://localhost:3333/favorites/${userId}/${mangaId}`,
-					{
-						method: 'DELETE',
-					}
-				)
+				// 🔥 Corrigido para a nuvem
+				const response = await fetch(`${API_URL}/favorites/${userId}/${mangaId}`, {
+					method: 'DELETE',
+				})
 
 				if (!response.ok) throw new Error('Falha ao remover dos favoritos.')
 				setIsFavorited(false)
 			} else {
 				// Se não for, SALVA!
-				const response = await fetch('http://localhost:3333/favorites', {
+				// 🔥 Corrigido para a nuvem
+				const response = await fetch(`${API_URL}/favorites`, {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({ userId, mangaId: Number(mangaId) }),
