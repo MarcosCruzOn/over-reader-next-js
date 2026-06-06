@@ -20,7 +20,7 @@ export const uploadConfig = multer({
 		s3: s3Config,
 		bucket: process.env.AWS_S3_BUCKET_NAME as string,
 		contentType: multerS3.AUTO_CONTENT_TYPE, // Importante: para o navegador ler a imagem direto em vez de baixar
-		acl: 'public-read', // Define que qualquer pessoa pode ver a imagem usando a URL
+		//acl: 'public-read', // Define que qualquer pessoa pode ver a imagem usando a URL
 		key: (req, file, cb) => {
 			// Gera um nome único para a imagem para evitar que uma sobreescreva a outra
 			const hash = crypto.randomBytes(16).toString('hex')
@@ -32,6 +32,6 @@ export const uploadConfig = multer({
 	}),
 	// Limite de segurança: imagens de no máximo 5MB
 	limits: {
-		fileSize: 5 * 1024 * 1024,
+		fileSize: 5 * 1024 * 1024, // 5MB
 	},
 })

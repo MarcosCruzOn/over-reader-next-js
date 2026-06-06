@@ -27,7 +27,6 @@ import { api } from '@/lib/api'
 export default function NewMangaPage() {
 	const router = useRouter()
 
-	// Estados de texto
 	const [title, setTitle] = React.useState('')
 	const [author, setAuthor] = React.useState('')
 	const [genres, setGenres] = React.useState('')
@@ -36,7 +35,6 @@ export default function NewMangaPage() {
 	const [releaseYear, setReleaseYear] = React.useState('')
 	const [publisher, setPublisher] = React.useState('')
 
-	// Estados de Imagem
 	const [coverFile, setCoverFile] = React.useState<File | null>(null)
 	const [bannerFile, setBannerFile] = React.useState<File | null>(null)
 
@@ -45,7 +43,6 @@ export default function NewMangaPage() {
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
 
-		// 🛡️ BARREIRA DE PROTEÇÃO NO FRONTEND
 		if (!coverFile) return alert('A Capa do mangá é OBRIGATÓRIA!')
 		if (!bannerFile) return alert('O Banner do mangá é OBRIGATÓRIO!')
 
@@ -55,41 +52,50 @@ export default function NewMangaPage() {
 		setIsLoading(true)
 
 		try {
-			// Step 1: Cria o Mangá no banco de dados
+			// ETAPA 1: Cria o Mangá apenas com os textos
 			const mangaRes = await api.createManga({
 				title,
 				author,
 				genres,
 				synopsis,
 				status,
-				releaseYear: year, // Agora garantimos que é um número válido e obrigatório
+				releaseYear: year, // Enviando como número válido
 				publisher,
 			})
 
 			if (!mangaRes.ok) {
-				const errorData = await mangaRes.json().catch(() => ({}))
-				throw new Error(errorData.error || `Erro no servidor: Status ${mangaRes.status}`)
+				throw new Error('Falha ao criar as informações de texto do mangá.')
 			}
 
 			const newManga = await mangaRes.json()
 
-			// Step 2: O Upload Duplo (Capa e Banner ao mesmo tempo na AWS)
+			// ETAPA 2: Uploads das imagens usando o ID gerado
 			if (newManga.id) {
 				const coverData = new FormData()
+				// Atenção: O backend DEVE estar esperando o campo com o nome 'cover'
 				coverData.append('cover', coverFile)
 
 				const bannerData = new FormData()
+				// Atenção: O backend DEVE estar esperando o campo com o nome 'banner'
 				bannerData.append('banner', bannerFile)
 
-				// Disparamos as duas requisições simultaneamente com Promise.all
-				const [coverRes, bannerRes] = await Promise.all([
-					api.uploadMangaCover(newManga.id, coverData),
-					api.uploadMangaBanner(newManga.id, bannerData),
-				])
+				try {
+					const [coverRes, bannerRes] = await Promise.all([
+						api.uploadMangaCover(newManga.id, coverData),
+						api.uploadMangaBanner(newManga.id, bannerData),
+					])
 
-				if (!coverRes.ok || !bannerRes.ok) {
+					if (!coverRes.ok || !bannerRes.ok) {
+						throw new Error('Servidor recusou os arquivos de imagem.')
+					}
+				} catch (uploadError) {
+					// 🔥 SISTEMA DE ROLLBACK: Se a imagem falhar, deletamos o texto fantasma!
+					const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333'
+					await fetch(`${apiUrl}/mangas/${newManga.id}`, { method: 'DELETE' })
+
+					console.error('Erro de Upload:', uploadError)
 					throw new Error(
-						'Mangá criado, mas falhou ao enviar uma das imagens para a AWS.'
+						'Falha no upload das imagens. O cadastro foi cancelado por segurança para não gerar mangá sem capa.'
 					)
 				}
 			}
@@ -119,9 +125,7 @@ export default function NewMangaPage() {
 			</div>
 
 			<div className="grid gap-6 lg:grid-cols-[1fr_400px]">
-				{/* COLUNA PRINCIPAL: Textos e Banner */}
 				<div className="space-y-6">
-					{/* NOVO CARD: Upload do Banner */}
 					<Card>
 						<CardHeader>
 							<CardTitle>Banner do Mangá</CardTitle>
@@ -133,7 +137,6 @@ export default function NewMangaPage() {
 							<div className="flex flex-col items-center justify-center gap-4 border-2 border-dashed border-border rounded-lg p-6 bg-muted/20">
 								{bannerFile ? (
 									<div className="relative w-full aspect-[21/9] rounded-md overflow-hidden bg-muted">
-										{/* 🔥 Pré-visualização com img nativa */}
 										<img
 											src={URL.createObjectURL(bannerFile)}
 											alt="Preview do Banner"
@@ -254,7 +257,6 @@ export default function NewMangaPage() {
 
 								<div className="space-y-2">
 									<Label htmlFor="status">Status de Publicação</Label>
-									{/* 🔥 ERRO DO TYPESCRIPT CORRIGIDO AQUI! */}
 									<Select
 										value={status}
 										onValueChange={(val) => {
@@ -286,7 +288,6 @@ export default function NewMangaPage() {
 					</Card>
 				</div>
 
-				{/* COLUNA LATERAL: Capa e Botão Salvar */}
 				<div className="space-y-6">
 					<Card>
 						<CardHeader>
@@ -297,7 +298,6 @@ export default function NewMangaPage() {
 							<div className="flex flex-col items-center justify-center gap-4 border-2 border-dashed border-border rounded-lg p-6 bg-muted/20">
 								{coverFile ? (
 									<div className="relative w-full aspect-[2/3] rounded-md overflow-hidden bg-muted">
-										{/* 🔥 Pré-visualização com img nativa */}
 										<img
 											src={URL.createObjectURL(coverFile)}
 											alt="Preview da Capa"
