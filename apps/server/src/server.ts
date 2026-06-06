@@ -19,8 +19,8 @@ const allowedOrigins = [
 	'http://localhost:3000',
 	'http://localhost:3001',
 	'https://over-reader-next-js-admin.vercel.app',
-	// Pode colocar a url oficial do seu app Web aqui embaixo também quando tiver:
-	// 'https://over-reader-web.vercel.app'
+
+	'https://over-reader-web.vercel.app',
 ]
 
 app.use(

@@ -35,7 +35,8 @@ const MangaActionsCell = ({ manga }: { manga: Manga }) => {
 
 		setIsDeleting(true)
 		try {
-			const res = await fetch(`http://localhost:3333/mangas/${manga.id}`, {
+			const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333'
+			const res = await fetch(`${apiUrl}/mangas/${manga.id}`, {
 				method: 'DELETE',
 			})
 
