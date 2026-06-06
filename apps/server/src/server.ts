@@ -1,10 +1,9 @@
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
-import { createServer } from 'http' // 🔥 Adicione o import nativo
-import { initSocket } from './utils/socket' // 🔥 Importe o inicializador
+import { createServer } from 'http'
+import { initSocket } from './utils/socket'
 
-// Agora nós importamos apenas UM arquivo que contém todas as rotas!
 import { routes } from './routes'
 
 dotenv.config()
@@ -16,7 +15,19 @@ const server = createServer(app) // Envolve o Express no servidor HTTP
 initSocket(server)
 
 // Middlewares globais
-app.use(cors())
+
+const allowedOrigins = [
+	'http://localhost:3000',
+	'http://localhost:3001',
+	'https://over-reader-next-js-admin.vercel.app',
+	'https://seu-projeto-web.vercel.app',
+]
+app.use(
+	cors({
+		origin: allowedOrigins,
+		credentials: true,
+	})
+)
 app.use(express.json())
 
 // Injetando todas as rotas na aplicação de uma só vez

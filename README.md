@@ -1,6 +1,6 @@
 # Over-Reader 📚
 
-Plataforma de leitura de mangás dividida em um monorepo.
+Over Reader é uma plataforma moderna para leitura e acompanhamento de mangás. O projeto é construído em uma arquitetura de Monorepo utilizando **Next.js (App Router)** para o frontend e uma API dedicada no backend, proporcionando uma experiência rápida, responsiva e com atualizações em tempo real.
 
 ## 🛠️ Stack Tecnológica
 
@@ -124,3 +124,32 @@ O Over-Reader possui um sistema de comunidade robusto e em tempo real, focado no
 - **Modo Leitura Premium:** Interface de comunidade unificada na barra superior (Reading Bar), com esquema de cores `Dark Mode` adaptado para conforto visual durante a leitura, inputs de tamanho fixo e hierarquia clara de tipografia.
 - **Centro de Moderação (Painel Admin):** Sistema integrado de denúncias contra conteúdos inapropriados. Os administradores possuem uma tela dedicada no painel (`/denuncias`) para julgar reportes da comunidade, com poder de exclusão de comentários em cascata (apagando respostas e curtidas associadas) ou anistia (ignorar denúncia), mantendo a plataforma segura.
 - **Arquitetura DRY no Painel Admin:** Uso inteligente do `layout.tsx` do Next.js App Router para envolver todas as rotas administrativas no esqueleto do _Sidebar_ do Shadcn UI, garantindo rotas limpas e escaláveis sem repetição de código.
+
+## 🚀 Desafios Técnicos e Soluções
+
+Durante o desenvolvimento e o deploy desta aplicação na Vercel, enfrentamos e superamos diversos desafios de infraestrutura, tipagem e integração. Abaixo está um resumo das principais soluções arquiteturais aplicadas:
+
+### 1. Compatibilidade de Binários Nativos (Windows vs Linux)
+
+- **O Desafio:** Durante o deploy na Vercel (ambiente Linux), a compilação do Tailwind CSS falhava acusando a falta de módulos nativos (`lightningcss.linux-x64-gnu.node` e `tailwindcss-oxide-linux-x64-gnu`). Como o desenvolvimento local ocorreu no Windows, o `package-lock.json` havia travado as dependências nativas para o ecossistema da Microsoft.
+- **A Solução:** Ajustamos o comando de _Install_ da Vercel para `npm install --no-package-lock`. Isso forçou a plataforma de CI/CD a ignorar o cache do Windows e baixar as dependências nativas (`@tailwindcss/oxide`) compiladas especificamente para a arquitetura Linux de seus servidores, garantindo uma compilação de CSS ultrarrápida com o Turbopack.
+
+### 2. Tipagem Estrita (Strict Mode) em Produção
+
+- **O Desafio:** O compilador da Vercel bloqueou o deploy devido a tipagens implícitas (`any`) não permitidas no modo estrito, especificamente nos callbacks JWT e Session do NextAuth, além de propriedades não declaradas em componentes da UI (ex: `asChild` em DropdownMenuItems do shadcn).
+- **A Solução:** Removemos os _bypasses_ de tipagem. Estendemos as interfaces nativas do NextAuth (`JWT` e `Session`) para criar tipagens customizadas (`CustomToken` e `CustomSession`) que aceitam propriedades adicionais como `bannerUrl`. Também implementamos type-casting seguro em buscas diretas no banco de dados com o Drizzle ORM (`as { banner_url?: string | null }`).
+
+### 3. Desacoplamento de API (Local vs Nuvem)
+
+- **O Desafio:** Dezenas de Client Components (como botões de Favorito, Comentários, Feed de Atualizações e WebSockets) estavam fortemente acoplados ao ambiente de desenvolvimento local (`http://localhost:3333`), quebrando a comunicação na versão de produção.
+- **A Solução:** Implementamos uma variável de ambiente global (`API_URL`). Refatoramos completamente arquivos-chave (`Header.tsx`, `ChapterComments.tsx`, `FavoriteChapterButton.tsx`, etc.) para consumirem rotas dinâmicas. Também padronizamos o carregamento de imagens armazenadas na AWS S3 adicionando a flag `unoptimized={true}` no componente `<Image />` do Next.js para evitar custos desnecessários de otimização de imagens de terceiros.
+
+### 4. Ciclo de Vida e Regras de Linting do React
+
+- **O Desafio:** O ESLint acusava possíveis renderizações em cascata (cascading renders) devido à chamada síncrona de funções de `setState` dentro do `useEffect` (ex: `fetchComments()`), uma vez que a função precisava ser declarada externamente com `useCallback` para ser reaproveitada por outros botões.
+- **A Solução:** Encapsulamos a chamada externa dentro de uma função assíncrona privada diretamente no escopo do `useEffect` (`const loadComments = async () => { await fetchComments() }`). Isso satisfez as regras rígidas do Linter, garantindo uma renderização previsível.
+
+### 5. Conflito de Versão do Compilador TypeScript
+
+- **O Desafio:** A Vercel utilizou a recém-lançada versão 6.0 do TypeScript, que descontinuou a flag de configuração `--ignoreDeprecations: "5.0"`. Isso causou uma falha instantânea no build.
+- **A Solução:** Limpamos o arquivo `tsconfig.json` das flags de silenciamento legadas, alinhando as exigências do repositório com o compilador mais recente.
